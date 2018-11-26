@@ -32,8 +32,20 @@ class Application extends \Atom\Application {
             return new Database($connection);
         };
 
-        $di->View = function () {
-            $view = \Atom\View();
+        $di->LatteViewEngine = function($di) {
+            $engine = new \Atom\View\LatteViewEngine($di->View);
+            return $engine;
+        };
+
+        $di->View = function ($di) {
+            $view = \Atom\View($di);
+            $view->setDefaultExt(".latte");
+            $view->setViewDir(dirname(__FILE__) . "/Views");
+            $view->setEngines([
+                ".latte" => "LatteViewEngine",
+                //".php"   => "PHPViewEngine",
+                //".html"  => "HTMLViewEngine"
+            ]);
             return $view;
         };
 

@@ -38,7 +38,7 @@ abstract class Application
         return $this->container;
     }
 
-    final public function getDispatcher() /* DispatcherInterface */
+    final public function getDispatcher()
     {
         $dispatcher = \FastRoute\simpleDispatcher(function(\FastRoute\RouteCollector $r) {
             $routes = $this->getRouter()->getAllRoutes();
