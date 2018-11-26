@@ -4,13 +4,13 @@ namespace App\Controllers;
 
 use Atom\ViewInfo;
 
-class AccountController extends Controller
+final class AccountController extends Controller
 {
-    public function login() {
+    public final function login() {
         return new ViewInfo('account/login');
     }
 
-    public function logout() {
+    public final function logout() {
         return new ViewInfo('account/logout');
     }
 }

@@ -5,20 +5,16 @@ namespace App\Controllers;
 use Atom\ViewInfo;
 use App\Models\UserRepository;
 
-class HomeController extends Controller
+final class HomeController extends Controller
 {
-    //Public fields should be resolved from container
     public $Database;
     public $UserRepository;
-    public $Application;
     public $View;
     public $Response;
     public $Request;
     public $Container;
 
-    //Should be resolved from container
-    // - primitive types from route params
-    public function index($id = 0, UserRepository $repository)
+    public final function index($id = 0, UserRepository $repository)
     {
         $items = $repository->findAll();
 
@@ -27,28 +23,26 @@ class HomeController extends Controller
         ]);
     }
 
-    public function item() {
+    public final function item() {
         $item = (object)[
             "title" => "Item"
         ];
-        return new ViewInfo('home/item', [
-            'item' => $item
-        ]);
+        return new ViewInfo('home/item', ['item' => $item]);
     }
 
-    public function onGet() {
+    public final function onGet() {
         return "Handled GET";
     }
 
-    public function onPost() {
+    public final function onPost() {
         return "Handled POST";
     }
 
-    public function onPut() {
+    public final function onPut() {
         return "Handled PUT";
     }
 
-    public function onPatch() {
+    public final function onPatch() {
         return "Handled PATCH";
     }
 }
