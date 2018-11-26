@@ -1,12 +1,11 @@
 {layout '../layout.latte'}
 
 {block content}
+    <h2>Some items</h2>
     <table n:if="$items" class="table">
         <tr n:foreach="$items as $item">
-            <td>{$item->id}</td>
-            <td>{$item->uid}</td>
-            <td>{$item->username}</td>
-            <td>{$item->email}</td>
+            <td>{$item->title}</td>
+            <td><a class="btn btn-sm btn-primary" href="item">Detail</a></td>
         </tr>
     </table>
 {/block}
