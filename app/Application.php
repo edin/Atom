@@ -22,7 +22,6 @@ class Application extends \Atom\Application {
         $group->addRoute("GET"  , "/users", "HomeController@onGet");
         $group->addRoute("POST" , "/users", "HomeController@onPost");
         $group->addRoute("PUT"  , "/users", "HomeController@onPut");
-
     }
 
     public function registerServices()
@@ -30,12 +29,17 @@ class Application extends \Atom\Application {
         $di = $this->getContainer();
 
         $di->Database = function () {
-            $connection = new Connection('mysql:host=localhost;dbname=chatbot', 'root', 'root');
+            $connection = new Connection('mysql:host=localhost;dbname=atom', 'root', 'root');
             $db         = new Database($connection);
             return $db;
         };
 
-        $di->UserRepository    = function ($di) { };
+        $di->View = function () {
+            $view = \Atom\View();
+            return $view;
+        };
+
+        $di->UserRepository    = function ($di) { return new \App\Models\UserRepository($di->database); };
         $di->HomeController    = function ($di) { return new \App\Controllers\HomeController();    };
         $di->AccountController = function ($di) { return new \App\Controllers\AccountController(); };
 
@@ -49,3 +53,4 @@ class Application extends \Atom\Application {
         return $this->getContainer()->get($name);
     }
 }
+
