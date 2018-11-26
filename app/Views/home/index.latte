@@ -1,0 +1,12 @@
+{layout '../layout.latte'}
+
+{block content}
+    <table n:if="$items" class="table">
+        <tr n:foreach="$items as $item">
+            <td>{$item->id}</td>
+            <td>{$item->uid}</td>
+            <td>{$item->username}</td>
+            <td>{$item->email}</td>
+        </tr>
+    </table>
+{/block}
