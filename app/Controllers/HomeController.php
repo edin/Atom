@@ -29,4 +29,20 @@ class HomeController extends Controller
             'item' => $item
         ]);
     }
+
+    public function onGet() {
+        return "Handled GET";
+    }
+
+    public function onPost() {
+        return "Handled POST";
+    }
+
+    public function onPut() {
+        return "Handled PUT";
+    }
+
+    public function onPatch() {
+        return "Handled PATCH";
+    }
 }

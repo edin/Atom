@@ -10,8 +10,7 @@ use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 use function FastRoute\simpleDispatcher;
 
-
-class Application
+abstract class Application
 {
     public static $app = null;
 
@@ -102,9 +101,13 @@ class Application
         $controller = $parts[0] ?? "";
         $action     = $parts[1] ?? "index";
 
-        $controller = new \App\Controllers\HomeController();
+        $controller = $this->resolveController($controller);
         $result = $controller->{$action}();
         return $result;
+    }
+
+    public function resolveController($name) {
+        return $this->getContainer()->get($name);
     }
 
     public function initialize()

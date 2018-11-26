@@ -20,8 +20,10 @@ final class Lazy {
 
 final class Container
 {
-    private $registry = [];
+    private $registry  = [];
     private $instances = [];
+    private $namespaceRegistry = [];
+    private $instanceRegistry = [];
 
     public function set(string $name, callable $factory) {
         $this->registry[$name] = $factory;
@@ -52,5 +54,13 @@ final class Container
 
     public function __get($name) {
         return $this->get($name);
+    }
+
+    public function namespaceOf($namespace, $factory) {
+        $this->namespaceRegistry[$namespace] = $factory;
+    }
+
+    public function instanceOf($classname, $factory) {
+        $this->instanceRegistry[$classname] = $factory;
     }
 }
