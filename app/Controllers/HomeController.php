@@ -3,16 +3,24 @@
 namespace App\Controllers;
 
 use Atom\ViewInfo;
+use App\Models\UserRepository;
 
 class HomeController extends Controller
 {
-    public function index() {
-        $items = [];
-        foreach(\range(1, 15) as $index) {
-            $items[] = (object)[
-                "title" => "Item $index"
-            ];
-        }
+    //Public fields should be resolved from container
+    public $Database;
+    public $UserRepository;
+    public $Application;
+    public $View;
+    public $Response;
+    public $Request;
+    public $Container;
+
+    //Should be resolved from container
+    // - primitive types from route params
+    public function index($id = 0, UserRepository $repository)
+    {
+        $items = $repository->findAll();
 
         return new ViewInfo('home/index', [
             'items' => $items
@@ -20,11 +28,9 @@ class HomeController extends Controller
     }
 
     public function item() {
-
         $item = (object)[
             "title" => "Item"
         ];
-
         return new ViewInfo('home/item', [
             'item' => $item
         ]);

@@ -17,7 +17,6 @@ class Application extends \Atom\Application {
         $group->addRoute("GET" , "/login", "AccountController@login");
         $group->addRoute("GET" , "/logout", "AccountController@logout");
 
-
         $group  = $router->addGroup("/api");
         $group->addRoute("GET"  , "/users", "HomeController@onGet");
         $group->addRoute("POST" , "/users", "HomeController@onPost");
@@ -30,8 +29,7 @@ class Application extends \Atom\Application {
 
         $di->Database = function () {
             $connection = new Connection('mysql:host=localhost;dbname=atom', 'root', 'root');
-            $db         = new Database($connection);
-            return $db;
+            return new Database($connection);
         };
 
         $di->View = function () {
@@ -39,18 +37,15 @@ class Application extends \Atom\Application {
             return $view;
         };
 
-        $di->UserRepository    = function ($di) { return new \App\Models\UserRepository($di->database); };
-        $di->HomeController    = function ($di) { return new \App\Controllers\HomeController();    };
-        $di->AccountController = function ($di) { return new \App\Controllers\AccountController(); };
+        $di->UserRepository    = function ($di) { return new \App\Models\UserRepository($di->Database); };
+        $di->HomeController    = function ($di) { return new \App\Controllers\HomeController();         };
+        $di->AccountController = function ($di) { return new \App\Controllers\AccountController();      };
 
-        // $di->namespaceOf("App\\Controllers\\", function ($di, $className) {
-        // });
-        // $di->instanceOf("App\\Models\\Entity", function ($di, $className) {
-        // });
+        // $di->namespaceOf("App\\Controllers\\", function ($di, $className) { });
+        // $di->instanceOf("App\\Models\\Entity", function ($di, $className) { });
     }
 
     public function resolveController($name) {
         return $this->getContainer()->get($name);
     }
 }
-

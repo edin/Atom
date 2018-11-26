@@ -101,10 +101,53 @@ abstract class Application
     {
         $parts = \explode("@", $route->handler);
         $controller = $parts[0] ?? "";
-        $action     = $parts[1] ?? "index";
+        $methodName = $parts[1] ?? "index";
 
         $controller = $this->resolveController($controller);
-        $result = $controller->{$action}();
+
+        $reflectionClass = new \ReflectionClass($controller);
+        $method = $reflectionClass->getMethod($methodName);
+
+        if ($method == null) {
+            throw new \Exception("Class {$reflectionClass->getName()} does not contain method {$methodName}.");
+        }
+
+        $container = $this->getContainer();
+
+        $parameters = [];
+        foreach($method->getParameters() as $param) {
+
+            $paramName = $param->getName();
+            $paramPos  = $param->getPosition();
+            $parameters[$paramPos] = null;
+
+            if ($param->isDefaultValueAvailable()) {
+                $parameters[$paramPos] = $param->getDefaultValue();
+            } else {
+                $parameters[$paramPos] = null;
+            }
+
+            if (isset($vars[$paramPos])) {
+                $parameters[$paramPos] = $vars[$paramName];
+            }
+
+            if ($param->hasType()) {
+                $reflectedTypeClass = new \ReflectionClass($param->getType()->getName());
+                $fullName = $reflectedTypeClass->getName();
+                $shortName = $reflectedTypeClass->getShortName();
+
+                if ($container->has($fullName))
+                {
+                    $parameters[$paramPos] = $container->get($fullName);
+                }
+                elseif ($container->has($shortName))
+                {
+                    $parameters[$paramPos] = $container->get($shortName);
+                }
+            }
+       };
+
+        $result =  call_user_func_array([$controller, $methodName], $parameters);
         return $result;
     }
 
