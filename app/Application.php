@@ -35,21 +35,22 @@ class Application extends \Atom\Application {
 
         $di->LatteViewEngine = function($di) {
             $engine = new \Atom\View\LatteViewEngine($di->View);
+            $engine->cachePath = dirname(__DIR__) . '/resource/cache';
             return $engine;
         };
 
-        $di->LatteViewEngine = function($di) {
+        $di->PhpViewEngine = function($di) {
             $engine = new \Atom\View\PhpViewEngine($di->View);
             return $engine;
         };
 
         $di->View = function ($di) {
-            $view = \Atom\View($di);
-            $view->setDefaultExt(".latte");
+            $view = new \Atom\View\View($di);
+            $view->setDefaultExt(".latte");  // Could avoid this by using first engine as default
             $view->setViewDir(dirname(__FILE__) . "/Views");
             $view->setEngines([
-                ".latte" => "LatteViewEngine",
-                ".php"   => "PhpViewEngine"
+                "latte" => "LatteViewEngine",
+                "php"   => "PhpViewEngine"
             ]);
             return $view;
         };

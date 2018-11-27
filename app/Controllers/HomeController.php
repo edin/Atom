@@ -2,8 +2,8 @@
 
 namespace App\Controllers;
 
-use Atom\ViewInfo;
 use App\Models\UserRepository;
+use Atom\View\ViewInfo;
 
 final class HomeController extends Controller
 {
@@ -14,8 +14,10 @@ final class HomeController extends Controller
     public $Request;
     public $Container;
 
-    public final function index($id = 0, UserRepository $repository)
+    public final function index($id = 0, UserRepository $repository, \App\Application $app)
     {
+        // return ["Hello"];
+
         $items = $repository->findAll();
 
         return new ViewInfo('home/index', [

@@ -1,14 +1,19 @@
 <?php
 
-namespace Atom;
+namespace Atom\View;
 
-use Latte\Engine;
+use Atom\Interfaces\{IViewInfo, IViewEngine};
 
 final class View
 {
     private $defaultExt = "";
     private $viewDir;
+    private $dependencyContainer;
     private $engines = [];
+
+    public function __construct($di) {
+        $this->dependencyContainer = $di;
+    }
 
     public function setDefaultExt(string $extension) {
         $this->defaultExt = $extension;
@@ -26,8 +31,25 @@ final class View
         return $this->viewDir;
     }
 
-    public function render() {
-        //TODO: Render view somehow
+    public function render(IViewInfo $view): string {
+
+        $path = $this->resolvePath($view->getViewName());
+        $ext  = \pathinfo($path, \PATHINFO_EXTENSION);
+
+        $viewEngine = $this->getViewEngine($ext);
+
+        return $viewEngine->render($path, $view->getModel());
+    }
+
+    public function getViewEngine(string $extension): IViewEngine
+    {
+        $viewEngine = $this->engines[$extension] ?? null;
+
+        if ($viewEngine == null) {
+            throw new \Exception("Can't find view engine for file type '{$extension}'");
+        }
+
+        return $this->dependencyContainer->{$viewEngine};
     }
 
     public function setEngines(array $engines) {

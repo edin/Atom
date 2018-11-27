@@ -9,34 +9,31 @@ use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 use function FastRoute\simpleDispatcher;
 use Psr\Http\Message\ResponseInterface;
+use Nyholm\Psr7\Response;
+use Nyholm\Psr7\Factory\Psr17Factory;
 
 
 abstract class Application
 {
     public static $app = null;
+    private $container = null;
 
-    private $router;
-    private $container;
-
-    public function __construct()
+    public function __construct($configuration = [])
     {
         self::$app = $this;
     }
 
-    final public function getRouter(): Router
-    {
-        if (!isset($this->router)) {
-            $this->router = new Router();
-        }
-        return $this->router;
-    }
-
     final public function getContainer(): Container
     {
-        if (!isset($this->container)) {
+        if ($this->container == null) {
             $this->container = new Container();
         }
         return $this->container;
+    }
+
+    final public function getRouter(): Router
+    {
+        return $this->getContainer()->Router;
     }
 
     final public function getDispatcher()
@@ -50,9 +47,29 @@ abstract class Application
         return $dispatcher;
     }
 
+    public function registerDefaultServices()
+    {
+        $di = $this->getContainer();
+        $di->Router = function () {
+            return new Router();
+        };
+        $di->Application = function () {
+            return $this;
+        };
+
+        $di->Request = function () {
+            //return $this->getRequest();
+        };
+
+        $di->Response = function () {
+            //return $this->getResponse();
+        };
+    }
+
     public function registerRoutes()
     {
     }
+
     public function registerServices()
     {
     }
@@ -61,7 +78,6 @@ abstract class Application
     {
         $dispatcher = $this->getDispatcher();
 
-        // TODO: Replace with PSR-thing
         $server = new Server($_SERVER);
         $uri = $server->getUri();
 
@@ -72,7 +88,7 @@ abstract class Application
                 return $this->routeNotFound($uri);
             case \FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
                 $allowedMethods = $routeInfo[1];
-                return $this->methodNotAllowed();
+                return $this->methodNotAllowed($allowedMethods);
             case \FastRoute\Dispatcher::FOUND:
                 $route = $routeInfo[1];
                 $vars  = $routeInfo[2];
@@ -81,27 +97,41 @@ abstract class Application
         }
     }
 
-    public function processResult($result) //: ResponseInterface
+
+    public function processResult($result): ResponseInterface
     {
+        if ($result instanceof ResponseInterface) {
+            return $result;
+        }
+
+        if ($result instanceof \Atom\Interfaces\IViewInfo) {
+            $view = $this->getContainer()->View;
+            $content = $view->render($result);
+
+            $factory = new Psr17Factory();
+            $response = $factory->createResponse();
+            $response->getBody()->write($content);
+            return $response;
+        }
 
         if (is_string($result)) {
-            echo $result;
-            return;
+            $factory = new Psr17Factory();
+            $response = $factory->createResponse();
+            $response->getBody()->write($result);
+            return $response;
         }
 
-        if (is_array($result)) {
-            echo json_encode($result);
-            return;
+        if (is_array($result) || is_object($result)) {
+            $factory = new Psr17Factory();
+            $response = $factory->createResponse()->withAddedHeader("Content-Type", "application/json");
+            $response->getBody()->write(json_encode($result));
+            return $response;
         }
 
-        $appDir   = dirname(dirname(__DIR__));
-        $cacheDir = $appDir . '/resource/cache';
-
-        $latte = new \Latte\Engine;
-        $latte->setTempDirectory($cacheDir);
-        echo $latte->renderToString($appDir ."/app/Views/{$result->viewName}.latte", $result->model);
-
-        //$this->getResponseProcessor($result);
+        $factory = new Psr17Factory();
+        $response = $factory->createResponse();
+        $response->getBody()->write((string)$result);
+        return $response;
     }
 
     public function executeHandler($route, $vars)
@@ -171,6 +201,7 @@ abstract class Application
 
     public function initialize()
     {
+        $this->registerDefaultServices();
         $this->registerServices();
         $this->registerRoutes();
     }
@@ -179,7 +210,28 @@ abstract class Application
     {
         $this->initialize();
         $response = $this->dispatch();
+        $this->sendResponse($response);
+    }
 
-        echo $response;
+    function sendResponse(ResponseInterface $response)
+    {
+        $http_line = sprintf('HTTP/%s %s %s',
+            $response->getProtocolVersion(),
+            $response->getStatusCode(),
+            $response->getReasonPhrase()
+        );
+        header($http_line, true, $response->getStatusCode());
+        foreach ($response->getHeaders() as $name => $values) {
+            foreach ($values as $value) {
+                header("$name: $value", false);
+            }
+        }
+        $stream = $response->getBody();
+        if ($stream->isSeekable()) {
+            $stream->rewind();
+        }
+        while (!$stream->eof()) {
+            echo $stream->read(1024 * 8);
+        }
     }
 }
