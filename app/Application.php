@@ -13,6 +13,7 @@ class Application extends \Atom\Application {
         $group  = $router->addGroup("/");
         $group->addRoute("GET" , "/",     "HomeController@index");
         $group->addRoute("GET" , "/item", "HomeController@item");
+        $group->addRoute("GET" , "/users.json", "HomeController@json");
 
         $group->addRoute("GET" , "/login", "AccountController@login");
         $group->addRoute("GET" , "/logout", "AccountController@logout");
@@ -37,14 +38,18 @@ class Application extends \Atom\Application {
             return $engine;
         };
 
+        $di->LatteViewEngine = function($di) {
+            $engine = new \Atom\View\PhpViewEngine($di->View);
+            return $engine;
+        };
+
         $di->View = function ($di) {
             $view = \Atom\View($di);
             $view->setDefaultExt(".latte");
             $view->setViewDir(dirname(__FILE__) . "/Views");
             $view->setEngines([
                 ".latte" => "LatteViewEngine",
-                //".php"   => "PHPViewEngine",
-                //".html"  => "HTMLViewEngine"
+                ".php"   => "PhpViewEngine"
             ]);
             return $view;
         };
@@ -52,9 +57,6 @@ class Application extends \Atom\Application {
         $di->UserRepository    = function ($di) { return new \App\Models\UserRepository($di->Database); };
         $di->HomeController    = function ($di) { return new \App\Controllers\HomeController();         };
         $di->AccountController = function ($di) { return new \App\Controllers\AccountController();      };
-
-        // $di->namespaceOf("App\\Controllers\\", function ($di, $className) { });
-        // $di->instanceOf("App\\Models\\Entity", function ($di, $className) { });
     }
 
     public function resolveController($name) {

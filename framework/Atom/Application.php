@@ -4,11 +4,12 @@ namespace Atom;
 
 use Atom\Router\Router;
 use Atom\Container\Container;
-
 use Latte\Engine;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 use function FastRoute\simpleDispatcher;
+use Psr\Http\Message\ResponseInterface;
+
 
 abstract class Application
 {
@@ -40,17 +41,21 @@ abstract class Application
 
     final public function getDispatcher()
     {
-        $dispatcher = \FastRoute\simpleDispatcher(function(\FastRoute\RouteCollector $r) {
+        $dispatcher = \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $r) {
             $routes = $this->getRouter()->getAllRoutes();
-            foreach($routes as $route) {
+            foreach ($routes as $route) {
                 $r->addRoute($route->method, $route->getFullPath(), $route);
             }
         });
         return $dispatcher;
     }
 
-    public function registerRoutes()   { }
-    public function registerServices() { }
+    public function registerRoutes()
+    {
+    }
+    public function registerServices()
+    {
+    }
 
     public function dispatch()
     {
@@ -65,25 +70,27 @@ abstract class Application
         switch ($routeInfo[0]) {
             case \FastRoute\Dispatcher::NOT_FOUND:
                 return $this->routeNotFound($uri);
-                break;
             case \FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
                 $allowedMethods = $routeInfo[1];
                 return $this->methodNotAllowed();
-                break;
             case \FastRoute\Dispatcher::FOUND:
                 $route = $routeInfo[1];
                 $vars  = $routeInfo[2];
-
                 $result = $this->executeHandler($route, $vars);
-                $this->processResult($result);
-                break;
+                return $this->processResult($result);
         }
     }
 
-    public function processResult($result)
+    public function processResult($result) //: ResponseInterface
     {
+
         if (is_string($result)) {
             echo $result;
+            return;
+        }
+
+        if (is_array($result)) {
+            echo json_encode($result);
             return;
         }
 
@@ -92,7 +99,7 @@ abstract class Application
 
         $latte = new \Latte\Engine;
         $latte->setTempDirectory($cacheDir);
-        echo $latte->renderToString( $appDir ."/app/Views/{$result->viewName}.latte", $result->model);
+        echo $latte->renderToString($appDir ."/app/Views/{$result->viewName}.latte", $result->model);
 
         //$this->getResponseProcessor($result);
     }
@@ -115,8 +122,7 @@ abstract class Application
         $container = $this->getContainer();
 
         $parameters = [];
-        foreach($method->getParameters() as $param) {
-
+        foreach ($method->getParameters() as $param) {
             $paramName = $param->getName();
             $paramPos  = $param->getPosition();
             $parameters[$paramPos] = null;
@@ -136,26 +142,30 @@ abstract class Application
                 $fullName = $reflectedTypeClass->getName();
                 $shortName = $reflectedTypeClass->getShortName();
 
-                if ($container->has($fullName))
-                {
+                if ($container->has($fullName)) {
                     $parameters[$paramPos] = $container->get($fullName);
-                }
-                elseif ($container->has($shortName))
-                {
+                } elseif ($container->has($shortName)) {
                     $parameters[$paramPos] = $container->get($shortName);
                 }
             }
-       };
+        };
 
         $result =  call_user_func_array([$controller, $methodName], $parameters);
         return $result;
     }
 
-    public function routeNotFound() {
+    public function routeNotFound()
+    {
         return "Not Found";
     }
 
-    public function resolveController($name) {
+    public function methodNotAllowed()
+    {
+        return "Method Not Allowed";
+    }
+
+    public function resolveController($name)
+    {
         return $this->getContainer()->get($name);
     }
 

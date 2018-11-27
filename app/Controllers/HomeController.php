@@ -23,6 +23,12 @@ final class HomeController extends Controller
         ]);
     }
 
+    public final function json(UserRepository $repository)
+    {
+        $items = $repository->findAll();
+        return $items;
+    }
+
     public final function item() {
         $item = (object)[
             "title" => "Item"

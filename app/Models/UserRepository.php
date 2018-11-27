@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-
 class UserRepository {
     private $database;
     public function __construct($database) {
