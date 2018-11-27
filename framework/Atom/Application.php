@@ -80,15 +80,19 @@ abstract class Application
 
         $server = new Server($_SERVER);
         $uri = $server->getUri();
+        $method = $server->getRequestMethod();
 
-        $routeInfo = $dispatcher->dispatch($server->getRequestMethod(), $uri);
+        $routeInfo = $dispatcher->dispatch($method, $uri);
 
         switch ($routeInfo[0]) {
             case \FastRoute\Dispatcher::NOT_FOUND:
-                return $this->routeNotFound($uri);
+                //return $this->routeNotFound($uri);
+                throw new \Exception("Route $uri was not found.");
+
             case \FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
                 $allowedMethods = $routeInfo[1];
-                return $this->methodNotAllowed($allowedMethods);
+                $allowedMethodsStr = implode(", ", $allowedMethods);
+                throw new \Exception("Method $method is not allowed. Allowed methods are $allowedMethodsStr.");
             case \FastRoute\Dispatcher::FOUND:
                 $route = $routeInfo[1];
                 $vars  = $routeInfo[2];

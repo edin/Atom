@@ -16,8 +16,6 @@ final class HomeController extends Controller
 
     public final function index($id = 0, UserRepository $repository, \App\Application $app)
     {
-        // return ["Hello"];
-
         $items = $repository->findAll();
 
         return new ViewInfo('home/index', [
@@ -38,19 +36,31 @@ final class HomeController extends Controller
         return new ViewInfo('home/item', ['item' => $item]);
     }
 
-    public final function onGet() {
-        return "Handled GET";
+    public final function onGet(UserRepository $repository) {
+        return $repository->findAll();
     }
 
     public final function onPost() {
-        return "Handled POST";
+        return ["result" => "Executed onPost method."];
     }
 
-    public final function onPut() {
-        return "Handled PUT";
+    public final function onPut($id = 0) {
+        return ["result" => "Executed onPut method.", "id" => $id];
     }
 
     public final function onPatch() {
-        return "Handled PATCH";
+        return ["result" => "Executed onPatch method."];
+    }
+
+    public final function onDelete() {
+        return ["result" => "Executed onDelete method."];
+    }
+
+    public final function onOptions() {
+        return ["result" => "Executed onOptions method."];
+    }
+
+    public final function onHead() {
+        return [];
     }
 }

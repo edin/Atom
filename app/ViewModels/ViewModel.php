@@ -6,4 +6,3 @@ class ViewModel
 {
     public $message = "Hello World";
 }
-

@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use Atom\ViewInfo;
+use Atom\View\ViewInfo;
 
 final class AccountController extends Controller
 {
