@@ -1,9 +1,5 @@
 <?php
 
-interface IResponseHandler {
-    public function isMatch($response): boolean;
-    public function process($response): IResponse;
-}
 
 interface IRequest {}
 interface IResponse {}
@@ -16,11 +12,3 @@ interface IControllerActionProvider {}
 interface IUser {}
 interface IViewLocator {}
 interface IParameterResolver {}
-
-interface IServiceProvider {
-    function getService($name);
-}
-
-interface IConfigurationProvider {
-    function getConfiguration($name);
-}

@@ -1,13 +1,15 @@
 <?php
 
-class LatteViewProcessor implements \Atom\Interfaces\ViewEngineInterface
+namespace Atom\View;
+
+use App\View\View;
+
+class LatteViewEngine implements \Atom\Interfaces\IViewEngine
 {
     public $cachePath;
-    public $viewPath;
-
     private $view;
 
-    public function __construct(\App\View\View $view) {
+    public function __construct(View $view) {
         $this->view = $view;
     }
 
