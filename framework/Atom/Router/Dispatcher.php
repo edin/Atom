@@ -2,7 +2,9 @@
 
 namespace Atom\Router;
 
-final class Dispatcher {
-    public function dispatch() {
+final class Dispatcher
+{
+    public function dispatch()
+    {
     }
 }

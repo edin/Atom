@@ -1,19 +1,26 @@
 <?php
 
-final class Action {
-    public function getRoute() {
+namespace Atom;
+
+final class Action
+{
+    public function getRoute()
+    {
     }
 
-    public function getController() {
+    public function getController()
+    {
     }
 
-    public function getMethod() {
+    public function getMethod()
+    {
     }
 
-    public function getParameters() {
+    public function getParameters()
+    {
     }
 
-    public function execute() {
-
+    public function execute()
+    {
     }
 }

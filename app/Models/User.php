@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
-final class User {
+final class User
+{
     public $id;
     public $username;
     public $email;
 
-    public static function from($id, $username, $email) {
+    public static function from($id, $username, $email)
+    {
         $user = new static();
         $user->id = $id;
         $user->username = $username;

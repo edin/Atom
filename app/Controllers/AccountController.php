@@ -6,11 +6,13 @@ use Atom\View\ViewInfo;
 
 final class AccountController extends Controller
 {
-    public final function login() {
+    final public function login()
+    {
         return new ViewInfo('account/login');
     }
 
-    public final function logout() {
+    final public function logout()
+    {
         return new ViewInfo('account/logout');
     }
 }

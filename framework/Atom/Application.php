@@ -2,16 +2,15 @@
 
 namespace Atom;
 
-use Latte\Engine;
+use Atom\Container\Container;
 use Atom\Router\Router;
 use FastRoute\Dispatcher;
-use Nyholm\Psr7\Response;
-use Atom\Container\Container;
 use FastRoute\RouteCollector;
+use function FastRoute\simpleDispatcher;
 use Nyholm\Psr7\Factory\Psr17Factory;
+use Nyholm\Psr7\Response;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
-use function FastRoute\simpleDispatcher;
 
 abstract class Application
 {
@@ -23,7 +22,7 @@ abstract class Application
         self::$app = $this;
     }
 
-    public final function getContainer(): Container
+    final public function getContainer(): Container
     {
         if ($this->container == null) {
             $this->container = new Container();
@@ -31,22 +30,22 @@ abstract class Application
         return $this->container;
     }
 
-    public final function getRouter(): Router
+    final public function getRouter(): Router
     {
         return $this->getContainer()->Router;
     }
 
-    public final function getRequest(): RequestInterface
+    final public function getRequest(): RequestInterface
     {
         return $this->getContainer()->Request;
     }
 
-    public final function getResponse(): ResponseInterface
+    final public function getResponse(): ResponseInterface
     {
         return $this->getContainer()->Response;
     }
 
-    public final function getDispatcher()
+    final public function getDispatcher()
     {
         $dispatcher = \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $r) {
             $routes = $this->getRouter()->getAllRoutes();
@@ -82,12 +81,17 @@ abstract class Application
         };
     }
 
-    public function registerRoutes() { }
-    public function registerServices() { }
+    public function registerRoutes()
+    {
+    }
+
+    public function registerServices()
+    {
+    }
 
     public function dispatch()
     {
-        $request    = $this->getRequest();
+        $request = $this->getRequest();
         $dispatcher = $this->getDispatcher();
 
         $server = new Server($_SERVER);
@@ -105,7 +109,7 @@ abstract class Application
                 throw new \Exception("Method $method is not allowed. Allowed methods are $allowedMethodsStr.");
             case \FastRoute\Dispatcher::FOUND:
                 $route = $routeInfo[1];
-                $vars  = $routeInfo[2];
+                $vars = $routeInfo[2];
                 $result = $this->executeHandler($route, $vars);
                 return $this->processResult($result);
         }
@@ -139,14 +143,13 @@ abstract class Application
         }
 
         $response = $this->getResponse();
-        $response->getBody()->write((string)$result);
+        $response->getBody()->write((string) $result);
         return $response;
     }
 
     public function executeHandler($route, $routeParams)
     {
         if ($route->handler instanceof \Closure) {
-
             $method = new \ReflectionFunction($route->handler);
             $parameters = $this->resolveMethodParameters($method, $routeParams);
 
@@ -171,14 +174,15 @@ abstract class Application
         return $result;
     }
 
-    private function resolveMethodParameters(\ReflectionFunctionAbstract $method, array $routeParams) {
+    private function resolveMethodParameters(\ReflectionFunctionAbstract $method, array $routeParams)
+    {
         $parameters = [];
 
         $container = $this->getContainer();
 
         foreach ($method->getParameters() as $param) {
             $paramName = $param->getName();
-            $paramPos  = $param->getPosition();
+            $paramPos = $param->getPosition();
 
             if (isset($routeParams[$paramName])) {
                 $parameters[$paramPos] = $routeParams[$paramName];
@@ -188,7 +192,7 @@ abstract class Application
 
             if ($param->hasType()) {
                 $typeClass = new \ReflectionClass($param->getType()->getName());
-                $fullName  = $typeClass->getName();
+                $fullName = $typeClass->getName();
                 $shortName = $typeClass->getShortName();
 
                 if ($container->has($fullName)) {

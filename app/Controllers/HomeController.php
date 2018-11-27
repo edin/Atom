@@ -14,53 +14,61 @@ final class HomeController extends Controller
     public $Request;
     public $Container;
 
-    public final function index($id = 0, UserRepository $repository, \App\Application $app)
+    final public function index($id = 0, UserRepository $repository, \App\Application $app)
     {
         $items = $repository->findAll();
 
         return new ViewInfo('home/index', [
-            'items' => $items
+            'items' => $items,
         ]);
     }
 
-    public final function json(UserRepository $repository)
+    final public function json(UserRepository $repository)
     {
         $items = $repository->findAll();
         return $items;
     }
 
-    public final function item() {
-        $item = (object)[
-            "title" => "Item"
+    final public function item()
+    {
+        $item = (object) [
+            "title" => "Item",
         ];
         return new ViewInfo('home/item', ['item' => $item]);
     }
 
-    public final function onGet(UserRepository $repository) {
+    final public function onGet(UserRepository $repository)
+    {
         return $repository->findAll();
     }
 
-    public final function onPost() {
+    final public function onPost()
+    {
         return ["result" => "Executed onPost method."];
     }
 
-    public final function onPut($id = 0) {
+    final public function onPut($id = 0)
+    {
         return ["result" => "Executed onPut method.", "id" => $id];
     }
 
-    public final function onPatch() {
+    final public function onPatch()
+    {
         return ["result" => "Executed onPatch method."];
     }
 
-    public final function onDelete() {
+    final public function onDelete()
+    {
         return ["result" => "Executed onDelete method."];
     }
 
-    public final function onOptions() {
+    final public function onOptions()
+    {
         return ["result" => "Executed onOptions method."];
     }
 
-    public final function onHead() {
+    final public function onHead()
+    {
         return [];
     }
 }

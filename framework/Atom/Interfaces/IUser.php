@@ -2,7 +2,8 @@
 
 namespace Atom\Interfaces;
 
-interface IUser {
+interface IUser
+{
     public function getId();
     public function getUsername(): string;
     public function getEmail(): string;

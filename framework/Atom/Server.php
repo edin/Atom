@@ -2,32 +2,39 @@
 
 namespace Atom;
 
-class Server {
+class Server
+{
     private $vars = [];
 
-    public function __construct($vars) {
+    public function __construct($vars)
+    {
         $this->vars = $vars;
     }
 
-    public function getRequestMethod() {
+    public function getRequestMethod()
+    {
         return $this->vars['REQUEST_METHOD'];
     }
 
-    public function getRequestUri() {
+    public function getRequestUri()
+    {
         return $this->vars['REQUEST_URI'];
     }
 
-    public function getScriptName() {
+    public function getScriptName()
+    {
         return $this->vars['SCRIPT_NAME'];
     }
 
-    public function getBasePath() {
+    public function getBasePath()
+    {
         $path = $this->getScriptName();
         $dir = \pathinfo($path, PATHINFO_DIRNAME);
         return $dir;
     }
 
-    public function getUri() {
+    public function getUri()
+    {
         $httpMethod = $this->getRequestMethod();
         $uri = $this->getRequestUri();
         $basePath = $this->getBasePath();
@@ -37,7 +44,7 @@ class Server {
         }
 
         $size = strlen($basePath);
-        $uri  = substr($uri, $size);
+        $uri = substr($uri, $size);
 
         $uri = rawurldecode($uri);
         return $uri;

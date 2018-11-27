@@ -2,7 +2,8 @@
 
 namespace Atom\Interfaces;
 
-interface IViewInfo {
+interface IViewInfo
+{
     public function getViewName(): string;
     public function getModel();
 }

@@ -2,13 +2,17 @@
 
 namespace App\Models;
 
-class UserRepository {
+class UserRepository
+{
     private $database;
-    public function __construct($database) {
+
+    public function __construct($database)
+    {
         $this->database = $database;
     }
 
-    public function findAll() {
+    public function findAll()
+    {
         return [
             User::from(1, "user1", "user1@mail.com"),
             User::from(2, "user2", "user2@mail.com"),
@@ -19,7 +23,7 @@ class UserRepository {
             User::from(7, "user7", "user7@mail.com"),
             User::from(8, "user8", "user8@mail.com"),
             User::from(9, "user9", "user9@mail.com"),
-            User::from(10, "user10", "user10@mail.com")
+            User::from(10, "user10", "user10@mail.com"),
         ];
     }
 }

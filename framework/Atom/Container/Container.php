@@ -2,34 +2,20 @@
 
 namespace Atom\Container;
 
-// final class Lazy {
-//     private $value = null;
-//     private $factory;
-
-//     public function __construct($factory) {
-//         $this->factory = $factory;
-//     }
-
-//     public function getValue($container) {
-//         if ($this->value === null) {
-//             $this->value = call_user_func($this->factory, $container);
-//         }
-//         return $this->value;
-//     }
-// }
-
 final class Container
 {
-    private $registry  = [];
+    private $registry = [];
     private $instances = [];
     private $namespaceRegistry = [];
     private $instanceRegistry = [];
 
-    public function set(string $name, callable $factory) {
+    public function set(string $name, callable $factory)
+    {
         $this->registry[$name] = $factory;
     }
 
-    public function get($name) {
+    public function get($name)
+    {
         if (!isset($this->instances[$name])) {
             if (isset($this->registry[$name])) {
                 $factory = $this->registry[$name];
@@ -44,23 +30,27 @@ final class Container
         return null;
     }
 
-    public function has($name) {
+    public function has($name)
+    {
         return isset($this->registry[$name]);
     }
 
-    public function __set($name, $value) {
+    public function __set($name, $value)
+    {
         $this->set($name, $value);
     }
 
-    public function __get($name) {
+    public function __get($name)
+    {
         return $this->get($name);
     }
 
-    public function namespaceOf($namespace, $factory) {
+    public function namespaceOf($namespace, $factory)
+    {
         $this->namespaceRegistry[$namespace] = $factory;
     }
 
-    public function instanceOf($classname, $factory) {
+    function instanceof ($classname, $factory) {
         $this->instanceRegistry[$classname] = $factory;
     }
 }

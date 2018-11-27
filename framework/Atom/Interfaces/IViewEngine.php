@@ -2,6 +2,7 @@
 
 namespace Atom\Interfaces;
 
-interface IViewEngine {
+interface IViewEngine
+{
     public function render(string $viewPath, array $params = []): string;
 }

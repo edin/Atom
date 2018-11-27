@@ -1,6 +1,7 @@
 <?php
 
-class SomeType {
+class SomeType
+{
     public $Database;
     public $UserRepository;
     public $Response;
@@ -23,7 +24,7 @@ $r = new \ReflectionClass(new SomeType);
 
 $props = $r->getProperties(\ReflectionProperty::IS_PUBLIC);
 
-foreach($props as $prop) {
+foreach ($props as $prop) {
     echo $prop->getName(), "\n";
 }
 

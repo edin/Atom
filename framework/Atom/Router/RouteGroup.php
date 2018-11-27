@@ -2,19 +2,22 @@
 
 namespace Atom\Router;
 
-final class RouteGroup {
+final class RouteGroup
+{
 
     private $middlewares = [];
     private $routes = [];
     private $path = "";
 
-    public function addMiddleware($middleware) {
+    public function addMiddleware($middleware)
+    {
         $this->middlewares[] = $middleware;
     }
 
-    public function addRoute($method, $path, $handler): Route {
+    public function addRoute($method, $path, $handler): Route
+    {
         $route = new Route;
-        $route->group  = $this;
+        $route->group = $this;
         $route->method = $method;
         $route->path = $path;
         $route->handler = $handler;
@@ -22,19 +25,23 @@ final class RouteGroup {
         return $route;
     }
 
-    public function setPrefixPath(string $path) {
+    public function setPrefixPath(string $path)
+    {
         $this->path = $path;
     }
 
-    public function getPrefixPath() {
+    public function getPrefixPath()
+    {
         return $this->path;
     }
 
-    public function getRoutes(): array {
+    public function getRoutes(): array
+    {
         return $this->routes;
     }
 
-    public function getMiddlewares(): array {
+    public function getMiddlewares(): array
+    {
         return $this->middlewares;
     }
 }
