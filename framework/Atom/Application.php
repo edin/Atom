@@ -2,16 +2,16 @@
 
 namespace Atom;
 
-use Atom\Router\Router;
-use Atom\Container\Container;
 use Latte\Engine;
+use Atom\Router\Router;
 use FastRoute\Dispatcher;
-use FastRoute\RouteCollector;
-use function FastRoute\simpleDispatcher;
-use Psr\Http\Message\ResponseInterface;
 use Nyholm\Psr7\Response;
+use Atom\Container\Container;
+use FastRoute\RouteCollector;
 use Nyholm\Psr7\Factory\Psr17Factory;
-
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use function FastRoute\simpleDispatcher;
 
 abstract class Application
 {
@@ -23,7 +23,7 @@ abstract class Application
         self::$app = $this;
     }
 
-    final public function getContainer(): Container
+    public final function getContainer(): Container
     {
         if ($this->container == null) {
             $this->container = new Container();
@@ -31,12 +31,22 @@ abstract class Application
         return $this->container;
     }
 
-    final public function getRouter(): Router
+    public final function getRouter(): Router
     {
         return $this->getContainer()->Router;
     }
 
-    final public function getDispatcher()
+    public final function getRequest(): RequestInterface
+    {
+        return $this->getContainer()->Request;
+    }
+
+    public final function getResponse(): ResponseInterface
+    {
+        return $this->getContainer()->Response;
+    }
+
+    public final function getDispatcher()
     {
         $dispatcher = \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $r) {
             $routes = $this->getRouter()->getAllRoutes();
@@ -50,32 +60,34 @@ abstract class Application
     public function registerDefaultServices()
     {
         $di = $this->getContainer();
+
         $di->Router = function () {
             return new Router();
         };
+
         $di->Application = function () {
             return $this;
         };
 
         $di->Request = function () {
-            //return $this->getRequest();
+            $factory = new \Nyholm\Psr7\Factory\Psr17Factory();
+            $creator = new \Nyholm\Psr7Server\ServerRequestCreator($factory, $factory, $factory, $factory);
+            $serverRequest = $creator->fromGlobals();
+            return $serverRequest;
         };
 
         $di->Response = function () {
-            //return $this->getResponse();
+            $factory = new Psr17Factory();
+            return $factory->createResponse();
         };
     }
 
-    public function registerRoutes()
-    {
-    }
-
-    public function registerServices()
-    {
-    }
+    public function registerRoutes() { }
+    public function registerServices() { }
 
     public function dispatch()
     {
+        $request    = $this->getRequest();
         $dispatcher = $this->getDispatcher();
 
         $server = new Server($_SERVER);
@@ -86,9 +98,7 @@ abstract class Application
 
         switch ($routeInfo[0]) {
             case \FastRoute\Dispatcher::NOT_FOUND:
-                //return $this->routeNotFound($uri);
                 throw new \Exception("Route $uri was not found.");
-
             case \FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
                 $allowedMethods = $routeInfo[1];
                 $allowedMethodsStr = implode(", ", $allowedMethods);
@@ -101,7 +111,6 @@ abstract class Application
         }
     }
 
-
     public function processResult($result): ResponseInterface
     {
         if ($result instanceof ResponseInterface) {
@@ -112,34 +121,38 @@ abstract class Application
             $view = $this->getContainer()->View;
             $content = $view->render($result);
 
-            $factory = new Psr17Factory();
-            $response = $factory->createResponse();
+            $response = $this->getResponse();
             $response->getBody()->write($content);
             return $response;
         }
 
         if (is_string($result)) {
-            $factory = new Psr17Factory();
-            $response = $factory->createResponse();
+            $response = $this->getResponse();
             $response->getBody()->write($result);
             return $response;
         }
 
         if (is_array($result) || is_object($result)) {
-            $factory = new Psr17Factory();
-            $response = $factory->createResponse()->withAddedHeader("Content-Type", "application/json");
+            $response = $response = $this->getResponse()->withAddedHeader("Content-Type", "application/json");
             $response->getBody()->write(json_encode($result));
             return $response;
         }
 
-        $factory = new Psr17Factory();
-        $response = $factory->createResponse();
+        $response = $this->getResponse();
         $response->getBody()->write((string)$result);
         return $response;
     }
 
-    public function executeHandler($route, $vars)
+    public function executeHandler($route, $routeParams)
     {
+        if ($route->handler instanceof \Closure) {
+
+            $method = new \ReflectionFunction($route->handler);
+            $parameters = $this->resolveMethodParameters($method, $routeParams);
+
+            return call_user_func_array($route->handler, $parameters);
+        }
+
         $parts = \explode("@", $route->handler);
         $controller = $parts[0] ?? "";
         $methodName = $parts[1] ?? "index";
@@ -153,28 +166,30 @@ abstract class Application
             throw new \Exception("Class {$reflectionClass->getName()} does not contain method {$methodName}.");
         }
 
+        $parameters = $this->resolveMethodParameters($method, $routeParams);
+        $result = call_user_func_array([$controller, $methodName], $parameters);
+        return $result;
+    }
+
+    private function resolveMethodParameters(\ReflectionFunctionAbstract $method, array $routeParams) {
+        $parameters = [];
+
         $container = $this->getContainer();
 
-        $parameters = [];
         foreach ($method->getParameters() as $param) {
             $paramName = $param->getName();
             $paramPos  = $param->getPosition();
-            $parameters[$paramPos] = null;
 
-            if ($param->isDefaultValueAvailable()) {
-                $parameters[$paramPos] = $param->getDefaultValue();
+            if (isset($routeParams[$paramName])) {
+                $parameters[$paramPos] = $routeParams[$paramName];
             } else {
-                $parameters[$paramPos] = null;
-            }
-
-            if (isset($vars[$paramPos])) {
-                $parameters[$paramPos] = $vars[$paramName];
+                $parameters[$paramPos] = ($param->isDefaultValueAvailable() ? $param->getDefaultValue() : null);
             }
 
             if ($param->hasType()) {
-                $reflectedTypeClass = new \ReflectionClass($param->getType()->getName());
-                $fullName = $reflectedTypeClass->getName();
-                $shortName = $reflectedTypeClass->getShortName();
+                $typeClass = new \ReflectionClass($param->getType()->getName());
+                $fullName  = $typeClass->getName();
+                $shortName = $typeClass->getShortName();
 
                 if ($container->has($fullName)) {
                     $parameters[$paramPos] = $container->get($fullName);
@@ -184,18 +199,7 @@ abstract class Application
             }
         };
 
-        $result =  call_user_func_array([$controller, $methodName], $parameters);
-        return $result;
-    }
-
-    public function routeNotFound()
-    {
-        return "Not Found";
-    }
-
-    public function methodNotAllowed()
-    {
-        return "Method Not Allowed";
+        return $parameters;
     }
 
     public function resolveController($name)
@@ -217,9 +221,10 @@ abstract class Application
         $this->sendResponse($response);
     }
 
-    function sendResponse(ResponseInterface $response)
+    public function sendResponse(ResponseInterface $response)
     {
-        $http_line = sprintf('HTTP/%s %s %s',
+        $http_line = sprintf(
+            'HTTP/%s %s %s',
             $response->getProtocolVersion(),
             $response->getStatusCode(),
             $response->getReasonPhrase()

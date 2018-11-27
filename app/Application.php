@@ -15,6 +15,14 @@ class Application extends \Atom\Application {
         $group->addRoute("GET" , "/item",       "HomeController@item");
         $group->addRoute("GET" , "/users.json", "HomeController@json");
 
+        $group->addRoute("GET" , "/function/{id}", function($id, \App\Models\UserRepository $repository) {
+            return [
+                "result" => "From Function",
+                "id" => $id,
+                "users" => $repository->findAll()
+            ];
+        });
+
         $group->addRoute("GET" , "/login",  "AccountController@login");
         $group->addRoute("GET" , "/logout", "AccountController@logout");
 

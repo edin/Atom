@@ -1,6 +1,6 @@
 <?php
 
-class Action {
+final class Action {
     public function getRoute() {
     }
 
