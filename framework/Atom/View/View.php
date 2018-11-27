@@ -27,13 +27,25 @@ final class View
     }
 
     public function render() {
-        // $appDir   = dirname(dirname(__DIR__));
-        // $cacheDir = $appDir . '/resource/cache';
-
         //TODO: Render view somehow
     }
 
     public function setEngines(array $engines) {
         $this->engines = $engines;
+    }
+
+    public function resolvePath(string $viewName): string {
+
+        $ext = \pathinfo($viewName, \PATHINFO_EXTENSION);
+        if ($ext == "") {
+            $viewName = $viewName . $this->defaultExt;
+        }
+
+        $ext = \pathinfo($viewName, \PATHINFO_EXTENSION);
+
+        $viewDir = rtrim($this->viewDir, " /");
+        $viewName  = ltrim($viewName, " /");
+
+        return $viewDir . "/" . $viewName;
     }
 }

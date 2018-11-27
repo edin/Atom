@@ -26,3 +26,7 @@ $props = $r->getProperties(\ReflectionProperty::IS_PUBLIC);
 foreach($props as $prop) {
     echo $prop->getName(), "\n";
 }
+
+$ext = \pathinfo("abc.test", \PATHINFO_EXTENSION);
+
+echo var_dump($ext);
