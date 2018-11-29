@@ -5,7 +5,7 @@ namespace App\Controllers;
 use App\Models\UserRepository;
 use Atom\View\ViewInfo;
 
-final class HomeController extends Controller
+final class HomeController
 {
     public $Database;
     public $UserRepository;
@@ -16,24 +16,25 @@ final class HomeController extends Controller
 
     final public function index($id = 0, UserRepository $repository, \App\Application $app)
     {
-        $items = $repository->findAll();
-
-        return new ViewInfo('home/index', [
-            'items' => $items,
-        ]);
+        return new ViewInfo('home/index', ['items' => $repository->findAll()]);
     }
 
     final public function json(UserRepository $repository)
     {
-        $items = $repository->findAll();
-        return $items;
+        return [
+            "items" => $repository->findAll(),
+            "Database" => $this->Database,
+            "UserRepository" => $this->UserRepository,
+            "View" => $this->View,
+            "Request" => $this->Request,
+            "Container" => $this->Container,
+        ];
     }
 
     final public function item()
     {
-        $item = (object) [
-            "title" => "Item",
-        ];
+        $item = new \stdClass;
+        $item->title = "Item";
         return new ViewInfo('home/item', ['item' => $item]);
     }
 
@@ -65,10 +66,5 @@ final class HomeController extends Controller
     final public function onOptions()
     {
         return ["result" => "Executed onOptions method."];
-    }
-
-    final public function onHead()
-    {
-        return [];
     }
 }

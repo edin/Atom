@@ -8,7 +8,9 @@
             <td>{$item->username}</td>
             <td>{$item->email}</td>
             <td>
-                <a class="btn btn-sm btn-primary" href="item">Detail</a>
+                <div class="float-right">
+                    <a class="btn btn-sm btn-primary" href="{$baseUrl|noescape}item">Detail</a>
+                </div>
             </td>
         </tr>
     </table>

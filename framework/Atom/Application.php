@@ -16,6 +16,7 @@ abstract class Application
 {
     public static $app = null;
     private $container = null;
+    protected $baseUrl = "";
 
     public function __construct($configuration = [])
     {
@@ -68,6 +69,10 @@ abstract class Application
             return $this;
         };
 
+        $di->Container = function () {
+            return $this->getContainer();
+        };
+
         $di->Request = function () {
             $factory = new \Nyholm\Psr7\Factory\Psr17Factory();
             $creator = new \Nyholm\Psr7Server\ServerRequestCreator($factory, $factory, $factory, $factory);
@@ -89,20 +94,44 @@ abstract class Application
     {
     }
 
+    public function getBaseUrl(): string
+    {
+        return $this->baseUrl;
+    }
+
     public function dispatch()
     {
         $request = $this->getRequest();
+        $method = $request->getMethod();
+        $uri = $request->getUri();
+        $serverParams = $request->getServerParams();
+
+        $scriptName = $serverParams['SCRIPT_NAME'] ?? "";
+        $scriptDir = \pathinfo($scriptName, PATHINFO_DIRNAME);
+
+        $this->baseUrl = rtrim($scriptDir, " /") . "/";
+
+        $uriPath = $uri->getPath();
+
+        if (false !== $pos = strpos($uriPath, '?')) {
+            $uriPath = substr($uriPath, 0, $pos);
+        }
+
+        $size = strlen($scriptDir);
+        $uriPath = substr($uriPath, $size);
+        $uriPath = rawurldecode($uriPath);
+        if ($uriPath == "") {
+            $uriPath = "/";
+        } else if ($uriPath[0] !== "/") {
+            $uriPath = "/" . $uriPath;
+        }
+
         $dispatcher = $this->getDispatcher();
-
-        $server = new Server($_SERVER);
-        $uri = $server->getUri();
-        $method = $server->getRequestMethod();
-
-        $routeInfo = $dispatcher->dispatch($method, $uri);
+        $routeInfo = $dispatcher->dispatch($method, $uriPath);
 
         switch ($routeInfo[0]) {
             case \FastRoute\Dispatcher::NOT_FOUND:
-                throw new \Exception("Route $uri was not found.");
+                throw new \Exception("Route '$uriPath' was not found.");
             case \FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
                 $allowedMethods = $routeInfo[1];
                 $allowedMethodsStr = implode(", ", $allowedMethods);
@@ -169,12 +198,33 @@ abstract class Application
             throw new \Exception("Class {$reflectionClass->getName()} does not contain method {$methodName}.");
         }
 
+        $this->resolveProperties($controller);
+
         $parameters = $this->resolveMethodParameters($method, $routeParams);
         $result = call_user_func_array([$controller, $methodName], $parameters);
         return $result;
     }
 
-    private function resolveMethodParameters(\ReflectionFunctionAbstract $method, array $routeParams)
+    private function resolveProperties(object $instance): void
+    {
+        $reflection = new \ReflectionClass($instance);
+        $properties = $reflection->getProperties(\ReflectionProperty::IS_PUBLIC);
+
+        $container = $this->getContainer();
+
+        foreach ($properties as $property) {
+            $value = $property->getValue($instance);
+            $name = $property->getName();
+
+            if (empty($value)) {
+                if ($container->has($name)) {
+                    $property->setValue($instance, $container->get($name));
+                }
+            }
+        }
+    }
+
+    private function resolveMethodParameters(\ReflectionFunctionAbstract $method, array $routeParams): array
     {
         $parameters = [];
 

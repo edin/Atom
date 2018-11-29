@@ -19,11 +19,9 @@ final class View
     public function getDefaultExt(): string
     {
         $extensions = array_keys($this->engines);
-
         if (isset($extensions[0])) {
             return "." . $extensions[0];
         }
-
         return "";
     }
 
@@ -44,7 +42,11 @@ final class View
 
         $viewEngine = $this->getViewEngine($ext);
 
-        return $viewEngine->render($path, $view->getModel());
+        $parameters = $view->getModel();
+        $parameters['baseUrl'] = $this->dependencyContainer->Application->getBaseUrl();
+        $parameters['container'] = $this->dependencyContainer;
+
+        return $viewEngine->render($path, $parameters);
     }
 
     public function getViewEngine(string $extension): IViewEngine

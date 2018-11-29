@@ -8,7 +8,6 @@ use Opis\Database\Database;
 
 class Application extends \Atom\Application
 {
-
     public function registerRoutes()
     {
         $router = $this->getRouter();
