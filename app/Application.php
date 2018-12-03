@@ -53,17 +53,17 @@ class Application extends \Atom\Application
             return $engine;
         };
 
-        $di->PhpViewEngine = function ($di) {
-            $engine = new \Atom\View\PhpViewEngine($di->View);
-            return $engine;
-        };
+        // $di->PhpViewEngine = function ($di) {
+        //     $engine = new \Atom\View\PhpViewEngine($di->View);
+        //     return $engine;
+        // };
 
         $di->View = function ($di) {
             $view = new \Atom\View\View($di);
             $view->setViewDir(dirname(__FILE__) . "/Views");
             $view->setEngines([
                 "latte" => "LatteViewEngine",
-                "php" => "PhpViewEngine",
+                //"php" => "PhpViewEngine",
             ]);
             return $view;
         };
