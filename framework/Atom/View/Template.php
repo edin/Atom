@@ -9,7 +9,7 @@ final class Template {
     public $viewName;
     public $content;
 
-    public function __construct(View $view, string $viewName) {
+    public function __construct(ViewEngine $view, string $viewName) {
         $this->view = $view;
         $this->viewName = $viewName;
     }
@@ -19,7 +19,7 @@ final class Template {
         $parent->child = $this;
     }
 
-    public function render(array $params): string {
+    public function render(array $params = []): string {
         extract($params);
 
         $view = $this->view;

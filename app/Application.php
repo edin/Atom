@@ -47,29 +47,23 @@ class Application extends \Atom\Application
             return new Database($connection);
         };
 
-        $di->LatteViewEngine = function ($di) {
-            $engine = new \Atom\View\LatteViewEngine($di->View);
-            $engine->cachePath = dirname(__DIR__) . '/resource/cache';
-            return $engine;
-        };
 
-        // $di->PhpViewEngine = function ($di) {
-        //     $engine = new \Atom\View\PhpViewEngine($di->View);
-        //     return $engine;
-        // };
+        $di->ViewEngine = function ($di) {
+             $engine = new \Atom\View\ViewEngine($di->View);
+             return $engine;
+        };
 
         $di->View = function ($di) {
             $view = new \Atom\View\View($di);
             $view->setViewDir(dirname(__FILE__) . "/Views");
             $view->setEngines([
-                "latte" => "LatteViewEngine",
-                //"php" => "PhpViewEngine",
+                ".php" => "ViewEngine",
             ]);
             return $view;
         };
 
-        $di->UserRepository = function ($di) {return new \App\Models\UserRepository($di->Database);};
-        $di->HomeController = function ($di) {return new \App\Controllers\HomeController();};
+        $di->UserRepository    = function ($di) {return new \App\Models\UserRepository($di->Database);};
+        $di->HomeController    = function ($di) {return new \App\Controllers\HomeController();};
         $di->AccountController = function ($di) {return new \App\Controllers\AccountController();};
     }
 

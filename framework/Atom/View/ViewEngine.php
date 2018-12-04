@@ -7,8 +7,10 @@ final class ViewEngine implements \Atom\Interfaces\IViewEngine
     public $sections = [];
     public $prevSections = [];
     private $sectionStack;
+    private $view;
 
-    public function __construct() {
+    public function __construct(View $view) {
+        $this->view = $view;
         $this->sectionStack = new \SplStack();
     }
 
@@ -54,7 +56,6 @@ final class ViewEngine implements \Atom\Interfaces\IViewEngine
         return $this->renderTemplate(new Template($this, $templatePath));
     }
 
-
     public function parent() {
         return $this->getSectionPlacholder($this->sectionStack->top()->name);
     }
@@ -81,15 +82,8 @@ final class ViewEngine implements \Atom\Interfaces\IViewEngine
         $this->currentTemplate->render();
     }
 
-    public function extend($template) {
-        $this->currentTemplate->setParent(new Template($this, $template));
+    public function extend(string $viewName) {
+        $viewName = $this->view->resolvePath($viewName);
+        $this->currentTemplate->setParent(new Template($this, $viewName));
     }
 }
-
-
-
-// $view = new AtomViewEngine();
-// $template = new Template($view, "view-template.php");
-// $result = $view->renderTemplate($template);
-
-// echo $result;

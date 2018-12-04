@@ -1,4 +1,4 @@
-<?php $this->extend("../layout.php"); ?>
+<?php $view->extend("layout"); ?>
 
 <h2>Login</h2>
 <form>

@@ -1,4 +1,4 @@
-<?php $this->extend("../layout.php"); ?>
+<?php $view->extend("layout"); ?>
 
 <h2>Some items</h2>
 <table n:if="$items" class="table">

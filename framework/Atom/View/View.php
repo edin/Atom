@@ -20,7 +20,7 @@ final class View
     {
         $extensions = array_keys($this->engines);
         if (isset($extensions[0])) {
-            return "." . $extensions[0];
+            return $extensions[0];
         }
         return "";
     }
@@ -38,7 +38,7 @@ final class View
     public function render(IViewInfo $view): string
     {
         $path = $this->resolvePath($view->getViewName());
-        $ext = \pathinfo($path, \PATHINFO_EXTENSION);
+        $ext = "." . \pathinfo($path, \PATHINFO_EXTENSION);
 
         $viewEngine = $this->getViewEngine($ext);
 
