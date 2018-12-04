@@ -9,25 +9,47 @@ final class Container
     private $namespaceRegistry = [];
     private $instanceRegistry = [];
 
-    public function set(string $name, callable $factory)
+    private function createInstance(Registration $registration)
     {
-        $this->registry[$name] = $factory;
+        switch($registration->type) {
+            case Registration::INSTANCE:
+                return $registration->instance;
+            case Registration::CLASS_NAME;
+                //TODO: Resolve constructor params
+                //TODO: Inject dependencies
+                return new $registration->className;
+            case Registration::FACTORY_METHOD;
+                return call_user_func($registration->factory, $this);
+        }
+        throw new \Exception("Type '$registration->type' is not supported by createInstance method.");
+    }
+
+    public function set(string $name, $definition)
+    {
+        $registration = Registration::create($definition);
+        $registration->name = $name;
+        $registration->isShared = true;
+        $this->registry[$name] = $registration;
     }
 
     public function get($name)
     {
-        if (!isset($this->instances[$name])) {
-            if (isset($this->registry[$name])) {
-                $factory = $this->registry[$name];
-                $this->instances[$name] = call_user_func($factory, $this);
-                return $this->instances[$name];
-            } else {
-                throw new \Exception("Can't find definition for '$name' depdendency.");
-            }
-        } else {
+        if (isset($this->instances[$name])) {
             return $this->instances[$name];
         }
-        return null;
+
+        if (!$this->has($name)) {
+            throw new \Exception("Can't find definition for '$name' depdendency.");
+        }
+
+        $registration = $this->registry[$name];
+        $instance = $this->createInstance($registration);
+
+        if ($registration->isShared) {
+            $this->instances[$name] = $instance;
+        }
+
+        return $instance;
     }
 
     public function has($name)
@@ -45,14 +67,14 @@ final class Container
         return $this->get($name);
     }
 
-    public function namespaceOf($namespace, $factory)
-    {
-        $this->namespaceRegistry[$namespace] = $factory;
-    }
+    // public function namespaceOf($namespace, $factory)
+    // {
+    //     $this->namespaceRegistry[$namespace] = $factory;
+    // }
 
-    public function instanceof ($classname, $factory) {
-        $this->instanceRegistry[$classname] = $factory;
-    }
+    // public function instanceof ($classname, $factory) {
+    //     $this->instanceRegistry[$classname] = $factory;
+    // }
 
     public function resolveProperties(object $instance): void
     {

@@ -17,14 +17,6 @@ class Application extends \Atom\Application
         $group->addRoute("GET", "/item", "HomeController@item");
         $group->addRoute("GET", "/users.json", "HomeController@json");
 
-        $group->addRoute("GET", "/function/{id}", function ($id, UserRepository $repository) {
-            return [
-                "result" => "From Function",
-                "id" => $id,
-                "users" => $repository->findAll(),
-            ];
-        });
-
         $group->addRoute("GET", "/login", "AccountController@login");
         $group->addRoute("GET", "/logout", "AccountController@logout");
 
@@ -47,12 +39,6 @@ class Application extends \Atom\Application
             return new Database($connection);
         };
 
-
-        $di->ViewEngine = function ($di) {
-             $engine = new \Atom\View\ViewEngine($di->View);
-             return $engine;
-        };
-
         $di->View = function ($di) {
             $view = new \Atom\View\View($di);
             $view->setViewsDir(dirname(__FILE__) . "/Views");
@@ -62,9 +48,15 @@ class Application extends \Atom\Application
             return $view;
         };
 
+        //$di->bind("UserRepository", App\Models\UserRepository::class);
+
+        // $di->UserRepository    = function ($di) {return new \App\Models\UserRepository($di->Database);};
+        // $di->HomeController    = function ($di) {return new \App\Controllers\HomeController();};
+        // $di->AccountController = function ($di) {return new \App\Controllers\AccountController();};
+
         $di->UserRepository    = function ($di) {return new \App\Models\UserRepository($di->Database);};
-        $di->HomeController    = function ($di) {return new \App\Controllers\HomeController();};
-        $di->AccountController = function ($di) {return new \App\Controllers\AccountController();};
+        $di->HomeController    = \App\Controllers\HomeController::class;
+        $di->AccountController = \App\Controllers\AccountController::class;
     }
 
     public function resolveController($name)

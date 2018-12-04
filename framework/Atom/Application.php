@@ -84,6 +84,13 @@ abstract class Application
             $factory = new Psr17Factory();
             return $factory->createResponse();
         };
+
+        $di->ViewEngine = function ($di) {
+            $engine = new \Atom\View\ViewEngine($di->View);
+            return $engine;
+        };
+
+
     }
 
     public function registerRoutes()
