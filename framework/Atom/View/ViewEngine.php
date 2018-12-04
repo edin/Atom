@@ -53,7 +53,7 @@ final class ViewEngine implements \Atom\Interfaces\IViewEngine
 
     public function render(string $templatePath, array $params = []): string
     {
-        return $this->renderTemplate(new Template($this, $templatePath));
+        return $this->renderTemplate(new Template($this, $templatePath, $params));
     }
 
     public function parent() {
@@ -84,6 +84,6 @@ final class ViewEngine implements \Atom\Interfaces\IViewEngine
 
     public function extend(string $viewName) {
         $viewName = $this->view->resolvePath($viewName);
-        $this->currentTemplate->setParent(new Template($this, $viewName));
+        $this->currentTemplate->setParent(new Template($this, $viewName, []));
     }
 }

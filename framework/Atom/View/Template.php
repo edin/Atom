@@ -8,10 +8,12 @@ final class Template {
     public $view;
     public $viewName;
     public $content;
+    public $params = [];
 
-    public function __construct(ViewEngine $view, string $viewName) {
+    public function __construct(ViewEngine $view, string $viewName, array $params) {
         $this->view = $view;
         $this->viewName = $viewName;
+        $this->params = $params;
     }
 
     public function setParent(Template $parent) {
@@ -19,8 +21,8 @@ final class Template {
         $parent->child = $this;
     }
 
-    public function render(array $params = []): string {
-        extract($params);
+    public function render(): string {
+        extract($this->params);
 
         $view = $this->view;
         $content = $this->content;

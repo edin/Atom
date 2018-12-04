@@ -50,7 +50,54 @@ final class Container
         $this->namespaceRegistry[$namespace] = $factory;
     }
 
-    function instanceof ($classname, $factory) {
+    public function instanceof ($classname, $factory) {
         $this->instanceRegistry[$classname] = $factory;
+    }
+
+    public function resolveProperties(object $instance): void
+    {
+        $reflection = new \ReflectionClass($instance);
+        $properties = $reflection->getProperties(\ReflectionProperty::IS_PUBLIC);
+
+        foreach ($properties as $property) {
+            $value = $property->getValue($instance);
+            $name = $property->getName();
+
+            if (empty($value)) {
+                if ($this->has($name)) {
+                    $property->setValue($instance, $this->get($name));
+                }
+            }
+        }
+    }
+
+    public function resolveMethodParameters(\ReflectionFunctionAbstract $method, array $params): array
+    {
+        $parameters = [];
+
+        foreach ($method->getParameters() as $param) {
+            $paramName = $param->getName();
+            $paramPos = $param->getPosition();
+
+            if (isset($params[$paramName])) {
+                $parameters[$paramPos] = $params[$paramName];
+            } else {
+                $parameters[$paramPos] = ($param->isDefaultValueAvailable() ? $param->getDefaultValue() : null);
+            }
+
+            if ($param->hasType()) {
+                $typeClass = new \ReflectionClass($param->getType()->getName());
+                $fullName = $typeClass->getName();
+                $shortName = $typeClass->getShortName();
+
+                if ($this->has($fullName)) {
+                    $parameters[$paramPos] = $this->get($fullName);
+                } elseif ($this->has($shortName)) {
+                    $parameters[$paramPos] = $this->get($shortName);
+                }
+            }
+        };
+
+        return $parameters;
     }
 }
