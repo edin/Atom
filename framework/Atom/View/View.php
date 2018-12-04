@@ -7,16 +7,17 @@ use Atom\Interfaces\IViewInfo;
 
 final class View
 {
-    private $viewDir;
-    private $dependencyContainer;
+    private $viewsDir;
+    private $di;
     private $engines = [];
 
     public function __construct($di)
     {
-        $this->dependencyContainer = $di;
+        // TODO: Replace with exact dependencies
+        $this->di = $di;
     }
 
-    public function getDefaultExt(): string
+    public function getDefaultExtension(): string
     {
         $extensions = array_keys($this->engines);
         if (isset($extensions[0])) {
@@ -25,14 +26,14 @@ final class View
         return "";
     }
 
-    public function setViewDir(string $viewDir)
+    public function setViewsDir(string $viewDir)
     {
-        $this->viewDir = $viewDir;
+        $this->viewsDir = $viewDir;
     }
 
-    public function getViewDir(): string
+    public function getViewsDir(): string
     {
-        return $this->viewDir;
+        return $this->viewsDir;
     }
 
     public function render(IViewInfo $view): string
@@ -43,21 +44,20 @@ final class View
         $viewEngine = $this->getViewEngine($ext);
 
         $parameters = $view->getModel();
-        $parameters['baseUrl'] = $this->dependencyContainer->Application->getBaseUrl();
-        $parameters['container'] = $this->dependencyContainer;
+        $parameters['baseUrl'] = $this->di->Application->getBaseUrl();
+        $parameters['container'] = $this->di;
 
-        return $viewEngine->render($path, $parameters);
+        $viewEngine->setParams($parameters);
+        return $viewEngine->render($view->getViewName(), $parameters);
     }
 
     public function getViewEngine(string $extension): IViewEngine
     {
         $viewEngine = $this->engines[$extension] ?? null;
-
         if ($viewEngine == null) {
             throw new \Exception("Can't find view engine for file type '{$extension}'");
         }
-
-        return $this->dependencyContainer->{$viewEngine};
+        return $this->di->{$viewEngine};
     }
 
     public function setEngines(array $engines)
@@ -69,12 +69,10 @@ final class View
     {
         $ext = \pathinfo($viewName, \PATHINFO_EXTENSION);
         if ($ext == "") {
-            $viewName = $viewName . $this->getDefaultExt();
+            $viewName = $viewName . $this->getDefaultExtension();
         }
 
-        $ext = \pathinfo($viewName, \PATHINFO_EXTENSION);
-
-        $viewDir = rtrim($this->viewDir, " /");
+        $viewDir = rtrim($this->viewsDir, " /");
         $viewName = ltrim($viewName, " /");
 
         return $viewDir . "/" . $viewName;

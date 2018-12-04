@@ -2,7 +2,8 @@
 
 namespace Atom\View;
 
-final class Template {
+final class Template
+{
     public $parent = null;
     public $child = null;
     public $view;
@@ -10,25 +11,29 @@ final class Template {
     public $content;
     public $params = [];
 
-    public function __construct(ViewEngine $view, string $viewName, array $params) {
+    public function __construct(ViewEngine $view, string $viewName, array $params)
+    {
         $this->view = $view;
         $this->viewName = $viewName;
         $this->params = $params;
     }
 
-    public function setParent(Template $parent) {
+    public function setParent(Template $parent)
+    {
         $this->parent = $parent;
         $parent->child = $this;
     }
 
-    public function render(): string {
+    public function render(): string
+    {
+        extract($this->view->getParams());
         extract($this->params);
 
         $view = $this->view;
         $content = $this->content;
 
         ob_start();
-        include($this->viewName);
+        include $this->viewName;
         $this->content = ob_get_contents();
         ob_end_clean();
 

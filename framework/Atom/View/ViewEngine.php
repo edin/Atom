@@ -8,34 +8,45 @@ final class ViewEngine implements \Atom\Interfaces\IViewEngine
     public $prevSections = [];
     private $sectionStack;
     private $view;
+    private $params = [];
 
-    public function __construct(View $view) {
+    public function __construct(View $view)
+    {
         $this->view = $view;
         $this->sectionStack = new \SplStack();
     }
 
-    public function getSectionPlacholder(string $name): string {
-        return "<!-- {SECTION:$name:SECTION} -->";
+    public function getParams(): array {
+        return $this->params;
     }
 
-    public function section($name) {
+    public function setParams(array $params): void {
+        $this->params = $params;
+    }
 
+    public function getSectionPlacholder(string $name): string
+    {
+        return "<!-- {Section($name)} -->";
+    }
+
+    public function section($name)
+    {
         $prevSection = $this->prevSections[$name] ?? null;
         $sectionContent = $this->sections[$name]->content ?? "";
 
         if ($prevSection) {
-            $sectionContent = str_replace($this->getSectionPlacholder($name), $sectionContent, $prevSection->content);
+            $placeHolder = $this->getSectionPlacholder($name);
+            $sectionContent = str_replace($placeHolder, $sectionContent, $prevSection->content);
         }
 
         return $sectionContent;
     }
 
-    public function start($name) {
-
+    public function start($name)
+    {
         if (isset($this->sections[$name])) {
             $this->prevSections[$name] = $this->sections[$name];
         }
-
         $section = new \stdClass;
         $section->name = $name;
         $section->content = null;
@@ -44,23 +55,29 @@ final class ViewEngine implements \Atom\Interfaces\IViewEngine
         ob_start();
     }
 
-    public function stop() {
+    public function stop()
+    {
         $content = ob_get_contents();
         ob_end_clean();
         $lastSection = $this->sectionStack->pop();
         $lastSection->content = $content;
     }
 
-    public function render(string $templatePath, array $params = []): string
+    public function render(string $viewName, array $params = []): string
     {
-        return $this->renderTemplate(new Template($this, $templatePath, $params));
+        $viewName = $this->view->resolvePath($viewName);
+        $template = new Template($this, $viewName, $params);
+        return $this->renderTemplate($template);
     }
 
-    public function parent() {
-        return $this->getSectionPlacholder($this->sectionStack->top()->name);
+    public function parent()
+    {
+        $sectionName = $this->sectionStack->top()->name;
+        return $this->getSectionPlacholder($sectionName);
     }
 
-    public function renderTemplate(Template $template) {
+    public function renderTemplate(Template $template)
+    {
         $rootTemplate = null;
 
         while ($template) {
@@ -77,13 +94,16 @@ final class ViewEngine implements \Atom\Interfaces\IViewEngine
         return $rootTemplate->content;
     }
 
-    private function processTemplate(Template $template) {
+    private function processTemplate(Template $template)
+    {
         $this->currentTemplate = $template;
         $this->currentTemplate->render();
     }
 
-    public function extend(string $viewName) {
+    public function extend(string $viewName)
+    {
         $viewName = $this->view->resolvePath($viewName);
-        $this->currentTemplate->setParent(new Template($this, $viewName, []));
+        $template = new Template($this, $viewName, []);
+        $this->currentTemplate->setParent($template);
     }
 }

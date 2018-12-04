@@ -4,5 +4,6 @@ namespace Atom\Interfaces;
 
 interface IViewEngine
 {
-    public function render(string $viewPath, array $params = []): string;
+    public function setParams(array $params): void;
+    public function render(string $viewName, array $params = []): string;
 }

@@ -55,7 +55,7 @@ class Application extends \Atom\Application
 
         $di->View = function ($di) {
             $view = new \Atom\View\View($di);
-            $view->setViewDir(dirname(__FILE__) . "/Views");
+            $view->setViewsDir(dirname(__FILE__) . "/Views");
             $view->setEngines([
                 ".php" => "ViewEngine",
             ]);
