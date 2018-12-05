@@ -49,7 +49,6 @@ class Application extends \Atom\Application
         };
 
         //$di->bind("UserRepository", App\Models\UserRepository::class);
-
         // $di->UserRepository    = function ($di) {return new \App\Models\UserRepository($di->Database);};
         // $di->HomeController    = function ($di) {return new \App\Controllers\HomeController();};
         // $di->AccountController = function ($di) {return new \App\Controllers\AccountController();};

@@ -89,8 +89,6 @@ abstract class Application
             $engine = new \Atom\View\ViewEngine($di->View);
             return $engine;
         };
-
-
     }
 
     public function registerRoutes()
@@ -211,57 +209,6 @@ abstract class Application
         $result = call_user_func_array([$controller, $methodName], $parameters);
         return $result;
     }
-
-    // private function resolveProperties(object $instance): void
-    // {
-    //     $reflection = new \ReflectionClass($instance);
-    //     $properties = $reflection->getProperties(\ReflectionProperty::IS_PUBLIC);
-
-    //     $container = $this->getContainer();
-
-    //     foreach ($properties as $property) {
-    //         $value = $property->getValue($instance);
-    //         $name = $property->getName();
-
-    //         if (empty($value)) {
-    //             if ($container->has($name)) {
-    //                 $property->setValue($instance, $container->get($name));
-    //             }
-    //         }
-    //     }
-    // }
-
-    // private function resolveMethodParameters(\ReflectionFunctionAbstract $method, array $routeParams): array
-    // {
-    //     $parameters = [];
-
-    //     $container = $this->getContainer();
-
-    //     foreach ($method->getParameters() as $param) {
-    //         $paramName = $param->getName();
-    //         $paramPos = $param->getPosition();
-
-    //         if (isset($routeParams[$paramName])) {
-    //             $parameters[$paramPos] = $routeParams[$paramName];
-    //         } else {
-    //             $parameters[$paramPos] = ($param->isDefaultValueAvailable() ? $param->getDefaultValue() : null);
-    //         }
-
-    //         if ($param->hasType()) {
-    //             $typeClass = new \ReflectionClass($param->getType()->getName());
-    //             $fullName = $typeClass->getName();
-    //             $shortName = $typeClass->getShortName();
-
-    //             if ($container->has($fullName)) {
-    //                 $parameters[$paramPos] = $container->get($fullName);
-    //             } elseif ($container->has($shortName)) {
-    //                 $parameters[$paramPos] = $container->get($shortName);
-    //             }
-    //         }
-    //     };
-
-    //     return $parameters;
-    // }
 
     public function resolveController($name)
     {

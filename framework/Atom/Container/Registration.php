@@ -57,9 +57,11 @@ final class Registration
         if (is_string($definition)) {
             return Registration::fromClassName($definition);
         }
+
         if ($definition instanceof \Closure) {
             return Registration::fromFactory($definition);
         }
+
         return Registration::fromInstance($definition);
     }
 }

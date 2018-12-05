@@ -7,12 +7,12 @@ use Atom\Interfaces\IViewInfo;
 final class ViewInfo implements IViewInfo
 {
     private $viewName;
-    private $model;
+    private $params;
 
-    public function __construct(string $viewName, array $model = [])
+    public function __construct(string $viewName, array $params = [])
     {
         $this->viewName = $viewName;
-        $this->model = $model;
+        $this->params = $params;
     }
 
     public function getViewName(): string
@@ -20,8 +20,8 @@ final class ViewInfo implements IViewInfo
         return $this->viewName;
     }
 
-    public function getModel()
+    public function getModel(): array
     {
-        return $this->model;
+        return $this->params;
     }
 }
