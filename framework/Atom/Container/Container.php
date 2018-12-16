@@ -107,7 +107,7 @@ final class Container
                 $parameters[$paramPos] = ($param->isDefaultValueAvailable() ? $param->getDefaultValue() : null);
             }
 
-            if ($param->hasType()) {
+            if ($param->hasType() && !$param->getType()->isBuiltin()) {
                 $typeClass = new \ReflectionClass($param->getType()->getName());
                 $fullName = $typeClass->getName();
                 $shortName = $typeClass->getShortName();
