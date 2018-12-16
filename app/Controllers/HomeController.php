@@ -7,7 +7,6 @@ use Atom\View\ViewInfo;
 
 final class HomeController
 {
-    public $Database;
     public $UserRepository;
     public $View;
     public $Response;
@@ -23,7 +22,6 @@ final class HomeController
     {
         return [
             "items" => $repository->findAll(),
-            "Database" => $this->Database,
             "UserRepository" => $this->UserRepository,
             "View" => $this->View,
             "Request" => $this->Request,

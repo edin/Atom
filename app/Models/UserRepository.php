@@ -4,12 +4,12 @@ namespace App\Models;
 
 class UserRepository
 {
-    private $database;
+    // private $database;
 
-    public function __construct($database)
-    {
-        $this->database = $database;
-    }
+    // public function __construct($database)
+    // {
+    //     $this->database = $database;
+    // }
 
     public function findAll()
     {
