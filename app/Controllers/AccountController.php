@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 use Atom\View\ViewInfo;
 
-final class AccountController extends Controller
+final class AccountController
 {
     final public function login()
     {
