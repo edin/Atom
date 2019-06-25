@@ -10,7 +10,7 @@ final class Route
     public $path;
     public $handler;
 
-    public function withName($name): Route
+    public function withName(string $name): Route
     {
         $this->name = $name;
         return $this;
@@ -29,5 +29,9 @@ final class Route
         }
 
         return $result;
+    }
+
+    public function getGroup(): RouteGroup {
+        return $this->group;
     }
 }

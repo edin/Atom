@@ -4,7 +4,6 @@ namespace Atom\Router;
 
 final class RouteGroup
 {
-
     private $middlewares = [];
     private $routes = [];
     private $path = "";

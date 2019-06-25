@@ -13,7 +13,6 @@ final class View
 
     public function __construct($di)
     {
-        // TODO: Replace with exact dependencies
         $this->di = $di;
     }
 

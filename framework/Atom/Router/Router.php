@@ -6,11 +6,15 @@ final class Router
 {
     private $groups = [];
 
-    public function addGroup($path = ""): RouteGroup
+    public function addGroup(string $path = "", callable $routes = null): RouteGroup
     {
         $group = new RouteGroup();
         $group->setPrefixPath($path);
         $this->groups[] = $group;
+
+        if ($routes !== null) {
+            $routes($group);
+        }
         return $group;
     }
 

@@ -4,15 +4,15 @@ namespace Atom;
 
 use Atom\Container\Container;
 use Atom\Router\Router;
-use FastRoute\Dispatcher;
-use FastRoute\RouteCollector;
-use function FastRoute\simpleDispatcher;
+use Atom\Router\Route;
 use Nyholm\Psr7\Factory\Psr17Factory;
-use Nyholm\Psr7\Response;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Server\RequestHandlerInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
-abstract class Application
+
+abstract class Application //implements RequestHandlerInterface
 {
     public static $app = null;
     private $container = null;
@@ -48,10 +48,10 @@ abstract class Application
 
     final public function getDispatcher()
     {
-        $dispatcher = \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $r) {
+        $dispatcher = \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $collector) {
             $routes = $this->getRouter()->getAllRoutes();
             foreach ($routes as $route) {
-                $r->addRoute($route->method, $route->getFullPath(), $route);
+                $collector->addRoute($route->method, $route->getFullPath(), $route);
             }
         });
         return $dispatcher;
@@ -91,11 +91,11 @@ abstract class Application
         };
     }
 
-    public function registerRoutes()
+    public function registerRoutes(Router $router)
     {
     }
 
-    public function registerServices()
+    public function registerServices(Container $container)
     {
     }
 
@@ -104,9 +104,8 @@ abstract class Application
         return $this->baseUrl;
     }
 
-    public function dispatch()
+    public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $request = $this->getRequest();
         $method = $request->getMethod();
         $uri = $request->getUri();
         $serverParams = $request->getServerParams();
@@ -144,8 +143,8 @@ abstract class Application
             case \FastRoute\Dispatcher::FOUND:
                 $route = $routeInfo[1];
                 $vars = $routeInfo[2];
-                $result = $this->executeHandler($route, $vars);
-                return $this->processResult($result);
+                $result = $this->executeHandler($request, $route, $vars);
+                return $result;
         }
     }
 
@@ -181,33 +180,33 @@ abstract class Application
         return $response;
     }
 
-    public function executeHandler($route, $routeParams)
+    private function resolveMiddlewares(Route $route): array {
+        $middlewares = $route->getGroup()->getMiddlewares();
+        $results = [];
+
+        foreach($middlewares as $middleware) {
+
+            if (is_string($middleware)) {
+                $results[] = new $middleware;
+            }
+            else if (is_object($middleware)) {
+                $results[] = $middleware;
+            }
+            else {
+                throw new \Exception("Can't initialize middleware, unsupported definition.");
+            }
+        }
+
+        return $results;
+    }
+
+    public function executeHandler(RequestInterface $request, Route $route, array $routeParams)
     {
-        if ($route->handler instanceof \Closure) {
-            $method = new \ReflectionFunction($route->handler);
-            $parameters = $this->resolveMethodParameters($method, $routeParams);
-            return call_user_func_array($route->handler, $parameters);
-        }
+        $middlewares =  $this->resolveMiddlewares($route);
+        $queueHandler = new QueueRequestHandler(new RouteHandler($this, $route, $routeParams));
+        $queueHandler->add($middlewares);
 
-        $parts = \explode("@", $route->handler);
-        $controller = $parts[0] ?? "";
-        $methodName = $parts[1] ?? "index";
-
-        $controller = $this->resolveController($controller);
-
-        $reflectionClass = new \ReflectionClass($controller);
-        $method = $reflectionClass->getMethod($methodName);
-
-        if ($method == null) {
-            throw new \Exception("Class {$reflectionClass->getName()} does not contain method {$methodName}.");
-        }
-
-        $container = $this->getContainer();
-        $container->resolveProperties($controller);
-
-        $parameters = $container->resolveMethodParameters($method, $routeParams);
-        $result = call_user_func_array([$controller, $methodName], $parameters);
-        return $result;
+        return $queueHandler->handle($request);
     }
 
     public function resolveController($name)
@@ -218,14 +217,14 @@ abstract class Application
     public function initialize()
     {
         $this->registerDefaultServices();
-        $this->registerServices();
-        $this->registerRoutes();
+        $this->registerServices($this->getContainer());
+        $this->registerRoutes($this->getRouter());
     }
 
     public function run()
     {
         $this->initialize();
-        $response = $this->dispatch();
+        $response = $this->handle($this->getRequest());
         $this->sendResponse($response);
     }
 
@@ -250,5 +249,77 @@ abstract class Application
         while (!$stream->eof()) {
             echo $stream->read(1024 * 8);
         }
+    }
+}
+
+class RouteHandler implements RequestHandlerInterface
+{
+    private $app;
+    private $route;
+    private $routeParams;
+
+    public function __construct(Application $app, Route $route, array $routeParams)
+    {
+        $this->app = $app;
+        $this->route = $route;
+        $this->routeParams = $routeParams;
+    }
+
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        $container = $this->app->getContainer();
+        $route = $this->route;
+        $routeParams = $this->routeParams;
+
+        if ($route->handler instanceof \Closure) {
+            $method = new \ReflectionFunction($route->handler);
+            $parameters = $container->resolveMethodParameters($method, $routeParams);
+            $result = call_user_func_array($route->handler, $parameters);
+            return $this->app->processResult($result);
+        }
+
+        $parts = \explode("@", $route->handler);
+        $controller = $parts[0] ?? "";
+        $methodName = $parts[1] ?? "index";
+
+        $controller = $this->app->resolveController($controller);
+
+        $reflectionClass = new \ReflectionClass($controller);
+        $method = $reflectionClass->getMethod($methodName);
+
+        if ($method == null) {
+            throw new \Exception("Class {$reflectionClass->getName()} does not contain method {$methodName}.");
+        }
+
+        $container->resolveProperties($controller);
+        $parameters = $container->resolveMethodParameters($method, $routeParams);
+        $result = call_user_func_array([$controller, $methodName], $parameters);
+        return $this->app->processResult($result);
+    }
+}
+
+class QueueRequestHandler implements RequestHandlerInterface
+{
+    private $middleware = [];
+    private $fallbackHandler;
+
+    public function __construct(RequestHandlerInterface $fallbackHandler)
+    {
+        $this->fallbackHandler = $fallbackHandler;
+    }
+
+    public function add(array $middleware)
+    {
+        $this->middleware = $middleware;
+    }
+
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        if (count($this->middleware) === 0) {
+            return $this->fallbackHandler->handle($request);
+        }
+
+        $middleware = array_shift($this->middleware);
+        return $middleware->process($request, $this);
     }
 }
