@@ -11,15 +11,34 @@ class Application extends \Atom\Application
 {
     public function registerRoutes(Router $router)
     {
+        /*
+            $router->addMiddleware(\App\Middlewares\LogMiddleware::class);
+            $router->addMiddleware(\App\Middlewares\LogMiddleware::class);
+        */
+
         $router->addGroup("/", function(RouteGroup $group) {
 
             $group->addMiddleware(\App\Middlewares\LogMiddleware::class);
 
-            $group->addRoute("GET", "/", "HomeController@index")->withName("home");
+            //ReflectionUtils::respondsTo(["action", Route::class])
+
+            $group->addRoute("GET", "/", "HomeController@index")->withName("home")
+                ->addMiddleware(\App\Middlewares\LogMiddleware::class);
+
             $group->addRoute("GET", "/item", "HomeController@item");
             $group->addRoute("GET", "/users-json", "HomeController@json");
             $group->addRoute("GET", "/login", "AccountController@login");
             $group->addRoute("GET", "/logout", "AccountController@logout");
+
+            $group->addGroup("/sub1", function(RouteGroup $group) {
+                $group->addRoute("GET", "/", "HomeController@index");
+                $group->addRoute("GET", "/item", "HomeController@item");
+            });
+
+            $group->addGroup("/sub1", function(RouteGroup $group) {
+                $group->addRoute("GET", "/", "HomeController@index");
+                $group->addRoute("GET", "/item", "HomeController@item");
+            });
         });
 
         $router->addGroup("/api", function(RouteGroup $group) {

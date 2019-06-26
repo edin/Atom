@@ -104,6 +104,7 @@ abstract class Application //implements RequestHandlerInterface
         return $this->baseUrl;
     }
 
+    // Move to Dispatcher and maybe that should be Middleware but will see
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $method = $request->getMethod();
@@ -252,74 +253,38 @@ abstract class Application //implements RequestHandlerInterface
     }
 }
 
-class RouteHandler implements RequestHandlerInterface
+
+class ResultProcessor
 {
-    private $app;
-    private $route;
-    private $routeParams;
-
-    public function __construct(Application $app, Route $route, array $routeParams)
+    public function processResult($result): ResponseInterface
     {
-        $this->app = $app;
-        $this->route = $route;
-        $this->routeParams = $routeParams;
-    }
-
-    public function handle(ServerRequestInterface $request): ResponseInterface
-    {
-        $container = $this->app->getContainer();
-        $route = $this->route;
-        $routeParams = $this->routeParams;
-
-        if ($route->handler instanceof \Closure) {
-            $method = new \ReflectionFunction($route->handler);
-            $parameters = $container->resolveMethodParameters($method, $routeParams);
-            $result = call_user_func_array($route->handler, $parameters);
-            return $this->app->processResult($result);
+        if ($result instanceof ResponseInterface) {
+            return $result;
         }
 
-        $parts = \explode("@", $route->handler);
-        $controller = $parts[0] ?? "";
-        $methodName = $parts[1] ?? "index";
+        if ($result instanceof \Atom\Interfaces\IViewInfo) {
+            $view = $this->getContainer()->View;
+            $content = $view->render($result);
 
-        $controller = $this->app->resolveController($controller);
-
-        $reflectionClass = new \ReflectionClass($controller);
-        $method = $reflectionClass->getMethod($methodName);
-
-        if ($method == null) {
-            throw new \Exception("Class {$reflectionClass->getName()} does not contain method {$methodName}.");
+            $response = $this->getResponse();
+            $response->getBody()->write($content);
+            return $response;
         }
 
-        $container->resolveProperties($controller);
-        $parameters = $container->resolveMethodParameters($method, $routeParams);
-        $result = call_user_func_array([$controller, $methodName], $parameters);
-        return $this->app->processResult($result);
-    }
-}
-
-class QueueRequestHandler implements RequestHandlerInterface
-{
-    private $middleware = [];
-    private $fallbackHandler;
-
-    public function __construct(RequestHandlerInterface $fallbackHandler)
-    {
-        $this->fallbackHandler = $fallbackHandler;
-    }
-
-    public function add(array $middleware)
-    {
-        $this->middleware = $middleware;
-    }
-
-    public function handle(ServerRequestInterface $request): ResponseInterface
-    {
-        if (count($this->middleware) === 0) {
-            return $this->fallbackHandler->handle($request);
+        if (is_string($result)) {
+            $response = $this->getResponse();
+            $response->getBody()->write($result);
+            return $response;
         }
 
-        $middleware = array_shift($this->middleware);
-        return $middleware->process($request, $this);
+        if (is_array($result) || is_object($result)) {
+            $response = $response = $this->getResponse()->withAddedHeader("Content-Type", "application/json");
+            $response->getBody()->write(json_encode($result));
+            return $response;
+        }
+
+        $response = $this->getResponse();
+        $response->getBody()->write((string) $result);
+        return $response;
     }
 }
