@@ -61,17 +61,9 @@ abstract class Application
     {
         $di = $this->getContainer();
 
-        $di->Router = function () {
-            return new Router();
-        };
-
-        $di->Application = function () {
-            return $this;
-        };
-
-        $di->Container = function () {
-            return $this->getContainer();
-        };
+        $di->Router = Router::class;
+        $di->Application = $this;
+        $di->bind(Container::class)->toInstance($di);
 
         $di->Request = function () {
             $factory = new \Nyholm\Psr7\Factory\Psr17Factory();
@@ -85,10 +77,8 @@ abstract class Application
             return $factory->createResponse();
         };
 
-        $di->ViewEngine = function ($di) {
-            $engine = new \Atom\View\ViewEngine($di->View);
-            return $engine;
-        };
+        $di->ViewEngine = \Atom\View\ViewEngine::class;
+
     }
 
     public function registerRoutes()
@@ -132,6 +122,7 @@ abstract class Application
         }
 
         $dispatcher = $this->getDispatcher();
+
         $routeInfo = $dispatcher->dispatch($method, $uriPath);
 
         switch ($routeInfo[0]) {
@@ -203,7 +194,7 @@ abstract class Application
         }
 
         $container = $this->getContainer();
-        $container->resolveProperties($controller);
+        //$container->resolveProperties($controller);
 
         $parameters = $container->resolveMethodParameters($method, $routeParams);
         $result = call_user_func_array([$controller, $methodName], $parameters);

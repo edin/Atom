@@ -4,6 +4,7 @@ namespace Atom\View;
 
 use Atom\Interfaces\IViewEngine;
 use Atom\Interfaces\IViewInfo;
+use Atom\Container\Container;
 
 final class View
 {
@@ -11,7 +12,7 @@ final class View
     private $di;
     private $engines = [];
 
-    public function __construct($di)
+    public function __construct(Container $di)
     {
         // TODO: Replace with exact dependencies
         $this->di = $di;

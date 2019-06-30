@@ -2,8 +2,6 @@
 
 namespace App;
 
-use App\Models\UserRepository;
-
 class Application extends \Atom\Application
 {
     public function registerRoutes()
@@ -32,16 +30,25 @@ class Application extends \Atom\Application
     {
         $di = $this->getContainer();
 
-        $di->View = function ($di) {
+        $di->bind(\Atom\View\View::class)->withName("View")->asShared()->toFactory(function () use($di) {
             $view = new \Atom\View\View($di);
             $view->setViewsDir(dirname(__FILE__) . "/Views");
             $view->setEngines([
                 ".php" => "ViewEngine",
             ]);
             return $view;
-        };
+        });
 
-        $di->UserRepository    = function ($di) {return new \App\Models\UserRepository();};
+        $di->bind(\Atom\View\View::class)->withName("View")->asShared()->toFactory(function () use($di) {
+            $view = new \Atom\View\View($di);
+            $view->setViewsDir(dirname(__FILE__) . "/Views");
+            $view->setEngines([
+                ".php" => "ViewEngine",
+            ]);
+            return $view;
+        });
+
+        $di->UserRepository    = \App\Models\UserRepository::class;
         $di->HomeController    = \App\Controllers\HomeController::class;
         $di->AccountController = \App\Controllers\AccountController::class;
     }
