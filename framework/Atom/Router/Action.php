@@ -1,6 +1,6 @@
 <?php
 
-namespace Atom;
+namespace Atom\Router;
 
 use Atom\Router\Route;
 

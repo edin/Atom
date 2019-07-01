@@ -2,33 +2,54 @@
 
 namespace App;
 
+use Atom\Router\Router;
+use Atom\Router\RouteGroup;
+use Atom\Container\Container;
+use App\Models\UserRepository;
+
 class Application extends \Atom\Application
 {
-    public function registerRoutes()
+    public function registerRoutes(Router $router)
     {
-        $router = $this->getRouter();
+        $router->addMiddleware(\App\Middlewares\LogMiddleware::class);
 
-        $group = $router->addGroup("/");
-        $group->addRoute("GET", "/", "HomeController@index");
-        $group->addRoute("GET", "/item", "HomeController@item");
-        $group->addRoute("GET", "/users.json", "HomeController@json");
+        $router->addGroup("/", function(RouteGroup $group) {
 
-        $group->addRoute("GET", "/login", "AccountController@login");
-        $group->addRoute("GET", "/logout", "AccountController@logout");
+            $group->addMiddleware(\App\Middlewares\LogMiddleware::class);
 
-        $group = $router->addGroup("/api");
-        $group->addRoute("GET", "/users", "HomeController@onGet");
-        $group->addRoute("POST", "/users", "HomeController@onPost");
-        $group->addRoute("PUT", "/users/{id}", "HomeController@onPut");
-        $group->addRoute("PATCH", "/users", "HomeController@onPatch");
-        $group->addRoute("DELETE", "/users", "HomeController@onDelete");
-        $group->addRoute("OPTIONS", "/users", "HomeController@onOptions");
-        $group->addRoute("HEAD", "/users", "HomeController@onHead");
+            $group->addRoute("GET", "/", "HomeController@index")->withName("home")
+                  ->addMiddleware(\App\Middlewares\LogMiddleware::class)
+                  ;
+
+
+            $group->addRoute("GET", "/item", "HomeController@item");
+            $group->addRoute("GET", "/users-json", "HomeController@json");
+            $group->addRoute("GET", "/login", "AccountController@login");
+            $group->addRoute("GET", "/logout", "AccountController@logout");
+
+            $group->addGroup("/sub1", function(RouteGroup $group) {
+                $group->addRoute("GET", "/", "HomeController@index");
+                $group->addRoute("GET", "/item", "HomeController@item");
+            });
+        });
+
+        $router->addGroup("/api", function(RouteGroup $group) {
+
+            $group->addRoute("GET", "/users", "HomeController@onGet");
+            $group->addRoute("POST", "/users", "HomeController@onPost");
+            $group->addRoute("PUT", "/users/{id}", "HomeController@onPut");
+            $group->addRoute("PATCH", "/users", "HomeController@onPatch");
+            $group->addRoute("DELETE", "/users", "HomeController@onDelete");
+            $group->addRoute("OPTIONS", "/users", "HomeController@onOptions");
+
+            $group->addRoute("GET", "/hello", function(UserRepository $users) {
+                return $users->findAll();
+            });
+        });
     }
 
-    public function registerServices()
+    public function registerServices(Container $container)
     {
-        $di = $this->getContainer();
 
         $di->bind(\Atom\View\View::class)->withName("View")->asShared()->toFactory(function () use($di) {
             $view = new \Atom\View\View($di);

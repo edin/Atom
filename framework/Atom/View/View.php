@@ -14,7 +14,6 @@ final class View
 
     public function __construct(Container $di)
     {
-        // TODO: Replace with exact dependencies
         $this->di = $di;
     }
 
