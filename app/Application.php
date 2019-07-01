@@ -11,29 +11,21 @@ class Application extends \Atom\Application
 {
     public function registerRoutes(Router $router)
     {
-        /*
-            $router->addMiddleware(\App\Middlewares\LogMiddleware::class);
-            $router->addMiddleware(\App\Middlewares\LogMiddleware::class);
-        */
+        $router->addMiddleware(\App\Middlewares\LogMiddleware::class);
 
         $router->addGroup("/", function(RouteGroup $group) {
 
             $group->addMiddleware(\App\Middlewares\LogMiddleware::class);
 
-            //ReflectionUtils::respondsTo(["action", Route::class])
-
             $group->addRoute("GET", "/", "HomeController@index")->withName("home")
-                ->addMiddleware(\App\Middlewares\LogMiddleware::class);
+                  ->addMiddleware(\App\Middlewares\LogMiddleware::class)
+                  ;
+
 
             $group->addRoute("GET", "/item", "HomeController@item");
             $group->addRoute("GET", "/users-json", "HomeController@json");
             $group->addRoute("GET", "/login", "AccountController@login");
             $group->addRoute("GET", "/logout", "AccountController@logout");
-
-            $group->addGroup("/sub1", function(RouteGroup $group) {
-                $group->addRoute("GET", "/", "HomeController@index");
-                $group->addRoute("GET", "/item", "HomeController@item");
-            });
 
             $group->addGroup("/sub1", function(RouteGroup $group) {
                 $group->addRoute("GET", "/", "HomeController@index");
@@ -67,11 +59,8 @@ class Application extends \Atom\Application
             return $view;
         };
 
-        $container->UserRepository    = function ($di) {
-             return new \App\Models\UserRepository();
-        };
-
-        $container->HomeController    = \App\Controllers\HomeController::class;
+        $container->UserRepository = \App\Models\UserRepository::class;
+        $container->HomeController = \App\Controllers\HomeController::class;
         $container->AccountController = \App\Controllers\AccountController::class;
     }
 }

@@ -4,15 +4,12 @@ namespace Atom;
 
 use Atom\Container\Container;
 use Atom\Router\Router;
-use Atom\Router\Route;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-use Psr\Http\Message\ServerRequestInterface;
 
-
-abstract class Application //implements RequestHandlerInterface
+abstract class Application
 {
     public static $app = null;
     private $container = null;
@@ -46,15 +43,9 @@ abstract class Application //implements RequestHandlerInterface
         return $this->getContainer()->Response;
     }
 
-    final public function getDispatcher()
+    final public function getDispatcher(): RequestHandlerInterface
     {
-        $dispatcher = \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $collector) {
-            $routes = $this->getRouter()->getAllRoutes();
-            foreach ($routes as $route) {
-                $collector->addRoute($route->method, $route->getFullPath(), $route);
-            }
-        });
-        return $dispatcher;
+        return $this->getContainer()->Dispatcher;
     }
 
     public function registerDefaultServices()
@@ -85,129 +76,38 @@ abstract class Application //implements RequestHandlerInterface
             return $factory->createResponse();
         };
 
-        $di->ViewEngine = function ($di) {
-            $engine = new \Atom\View\ViewEngine($di->View);
-            return $engine;
+        $di->{"Psr\Http\Message\RequestInterface"} = function($di) {
+            return $di->Request;
         };
+
+        $di->{"Psr\Http\Message\ResponseInterface"} = function($di) {
+            return $di->Response;
+        };
+
+        // $di->ViewEngine = function ($di) {
+        //     $engine = new \Atom\View\ViewEngine($di->View);
+        //     return $engine;
+        // };
+
+        // $di->Dispatcher = function ($di) {
+        //     return new \Atom\Dispatcher\Dispatcher($di);
+        // };
+
+        // $di->ResultHandler = function ($di) {
+        //     return new \Atom\Dispatcher\ResultHandler($di);
+        // };
+
+        $di->ViewEngine = \Atom\View\ViewEngine::class;
+        $di->Dispatcher = \Atom\Dispatcher\Dispatcher::class;
+        $di->ResultHandler = \Atom\Dispatcher\ResultHandler::class;
     }
 
-    public function registerRoutes(Router $router)
-    {
-    }
-
-    public function registerServices(Container $container)
-    {
-    }
+    public abstract function registerRoutes(Router $router);
+    public abstract function registerServices(Container $container);
 
     public function getBaseUrl(): string
     {
         return $this->baseUrl;
-    }
-
-    // Move to Dispatcher and maybe that should be Middleware but will see
-    public function handle(ServerRequestInterface $request): ResponseInterface
-    {
-        $method = $request->getMethod();
-        $uri = $request->getUri();
-        $serverParams = $request->getServerParams();
-
-        $scriptName = $serverParams['SCRIPT_NAME'] ?? "";
-        $scriptDir = \pathinfo($scriptName, PATHINFO_DIRNAME);
-
-        $this->baseUrl = rtrim($scriptDir, " /") . "/";
-
-        $uriPath = $uri->getPath();
-
-        if (false !== $pos = strpos($uriPath, '?')) {
-            $uriPath = substr($uriPath, 0, $pos);
-        }
-
-        $size = strlen($scriptDir);
-        $uriPath = substr($uriPath, $size);
-        $uriPath = rawurldecode($uriPath);
-        if ($uriPath == "") {
-            $uriPath = "/";
-        } else if ($uriPath[0] !== "/") {
-            $uriPath = "/" . $uriPath;
-        }
-
-        $dispatcher = $this->getDispatcher();
-        $routeInfo = $dispatcher->dispatch($method, $uriPath);
-
-        switch ($routeInfo[0]) {
-            case \FastRoute\Dispatcher::NOT_FOUND:
-                throw new \Exception("Route '$uriPath' was not found.");
-            case \FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
-                $allowedMethods = $routeInfo[1];
-                $allowedMethodsStr = implode(", ", $allowedMethods);
-                throw new \Exception("Method $method is not allowed. Allowed methods are $allowedMethodsStr.");
-            case \FastRoute\Dispatcher::FOUND:
-                $route = $routeInfo[1];
-                $vars = $routeInfo[2];
-                $result = $this->executeHandler($request, $route, $vars);
-                return $result;
-        }
-    }
-
-    public function processResult($result): ResponseInterface
-    {
-        if ($result instanceof ResponseInterface) {
-            return $result;
-        }
-
-        if ($result instanceof \Atom\Interfaces\IViewInfo) {
-            $view = $this->getContainer()->View;
-            $content = $view->render($result);
-
-            $response = $this->getResponse();
-            $response->getBody()->write($content);
-            return $response;
-        }
-
-        if (is_string($result)) {
-            $response = $this->getResponse();
-            $response->getBody()->write($result);
-            return $response;
-        }
-
-        if (is_array($result) || is_object($result)) {
-            $response = $response = $this->getResponse()->withAddedHeader("Content-Type", "application/json");
-            $response->getBody()->write(json_encode($result));
-            return $response;
-        }
-
-        $response = $this->getResponse();
-        $response->getBody()->write((string) $result);
-        return $response;
-    }
-
-    private function resolveMiddlewares(Route $route): array {
-        $middlewares = $route->getGroup()->getMiddlewares();
-        $results = [];
-
-        foreach($middlewares as $middleware) {
-
-            if (is_string($middleware)) {
-                $results[] = new $middleware;
-            }
-            else if (is_object($middleware)) {
-                $results[] = $middleware;
-            }
-            else {
-                throw new \Exception("Can't initialize middleware, unsupported definition.");
-            }
-        }
-
-        return $results;
-    }
-
-    public function executeHandler(RequestInterface $request, Route $route, array $routeParams)
-    {
-        $middlewares =  $this->resolveMiddlewares($route);
-        $queueHandler = new QueueRequestHandler(new RouteHandler($this, $route, $routeParams));
-        $queueHandler->add($middlewares);
-
-        return $queueHandler->handle($request);
     }
 
     public function resolveController($name)
@@ -225,8 +125,7 @@ abstract class Application //implements RequestHandlerInterface
     public function run()
     {
         $this->initialize();
-        $response = $this->handle($this->getRequest());
-        $this->sendResponse($response);
+        $this->sendResponse($this->getDispatcher()->handle($this->getRequest()));
     }
 
     public function sendResponse(ResponseInterface $response)
@@ -250,41 +149,5 @@ abstract class Application //implements RequestHandlerInterface
         while (!$stream->eof()) {
             echo $stream->read(1024 * 8);
         }
-    }
-}
-
-
-class ResultProcessor
-{
-    public function processResult($result): ResponseInterface
-    {
-        if ($result instanceof ResponseInterface) {
-            return $result;
-        }
-
-        if ($result instanceof \Atom\Interfaces\IViewInfo) {
-            $view = $this->getContainer()->View;
-            $content = $view->render($result);
-
-            $response = $this->getResponse();
-            $response->getBody()->write($content);
-            return $response;
-        }
-
-        if (is_string($result)) {
-            $response = $this->getResponse();
-            $response->getBody()->write($result);
-            return $response;
-        }
-
-        if (is_array($result) || is_object($result)) {
-            $response = $response = $this->getResponse()->withAddedHeader("Content-Type", "application/json");
-            $response->getBody()->write(json_encode($result));
-            return $response;
-        }
-
-        $response = $this->getResponse();
-        $response->getBody()->write((string) $result);
-        return $response;
     }
 }
