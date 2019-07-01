@@ -2,24 +2,49 @@
 
 namespace Atom\Router;
 
-final class RouteGroup
+class RouteGroup
 {
+    private $groups = [];
     private $middlewares = [];
     private $routes = [];
     private $path = "";
+    private $parent = null;
 
-    public function addMiddleware($middleware)
-    {
-        $this->middlewares[] = $middleware;
+    private function setParent(RouteGroup $parent) {
+        $this->parent = $parent;
     }
 
-    public function addRoute($method, $path, $handler): Route
+    public function getParent(): ?RouteGroup {
+        return $this->parent;
+    }
+
+    public function addGroup(string $path = "", callable $routes = null): RouteGroup
     {
-        $route = new Route;
-        $route->group = $this;
-        $route->method = $method;
-        $route->path = $path;
-        $route->handler = $handler;
+        $group = new RouteGroup();
+        $group->setPrefixPath($path);
+        $group->setParent($this);
+        $this->groups[] = $group;
+
+        if ($routes !== null) {
+            $routes($group);
+        }
+        return $group;
+    }
+
+    public function getGroups(): array
+    {
+        return $this->groups;
+    }
+
+    public function addMiddleware($middleware): self
+    {
+        $this->middlewares[] = $middleware;
+        return $this;
+    }
+
+    public function addRoute(string $method, string $path, $handler): Route
+    {
+        $route = new Route($this, $method, $path, $handler);
         $this->routes[] = $route;
         return $route;
     }
@@ -39,8 +64,15 @@ final class RouteGroup
         return $this->routes;
     }
 
+    public function getOwnMidlewares(): array {
+        return $this->middlewares;
+    }
+
     public function getMiddlewares(): array
     {
+        if ($this->parent) {
+            return \array_merge($this->parent->getMiddlewares(), $this->middlewares);
+        }
         return $this->middlewares;
     }
 }

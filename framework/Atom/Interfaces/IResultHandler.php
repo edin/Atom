@@ -6,6 +6,6 @@ use Psr\Http\Message\ResponseInterface;
 
 interface IResultHandler
 {
-    public function isMatch($result): boolean;
+    public function isMatch($result): bool;
     public function process($result): ResponseInterface;
 }

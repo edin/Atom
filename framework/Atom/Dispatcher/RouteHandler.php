@@ -1,43 +1,46 @@
 <?php
 
-namespace Atom;
+namespace Atom\Dispatcher;
 
 use Atom\Router\Route;
+use Atom\Container\Container;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
+
 class RouteHandler implements RequestHandlerInterface
 {
-    private $app;
+    private $container;
     private $route;
     private $routeParams;
 
-    public function __construct(Application $app, Route $route, array $routeParams)
+    public function __construct(Container $container, Route $route, array $routeParams)
     {
-        $this->app = $app;
+        $this->container = $container;
         $this->route = $route;
         $this->routeParams = $routeParams;
     }
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $container = $this->app->getContainer();
+        $container = $this->container;
         $route = $this->route;
         $routeParams = $this->routeParams;
+        $handler = $route->getHandler();
 
-        if ($route->handler instanceof \Closure) {
-            $method = new \ReflectionFunction($route->handler);
+        if ($handler instanceof \Closure) {
+            $method = new \ReflectionFunction($handler);
             $parameters = $container->resolveMethodParameters($method, $routeParams);
-            $result = call_user_func_array($route->handler, $parameters);
-            return $this->app->processResult($result);
+            $result = call_user_func_array($handler, $parameters);
+            return $container->ResultHandler->process($result);
         }
 
-        $parts = \explode("@", $route->handler);
+        $parts = \explode("@", $handler);
         $controller = $parts[0] ?? "";
         $methodName = $parts[1] ?? "index";
 
-        $controller = $this->app->resolveController($controller);
+        $controller = $this->container->Application->resolveController($controller);
 
         $reflectionClass = new \ReflectionClass($controller);
         $method = $reflectionClass->getMethod($methodName);
@@ -49,6 +52,7 @@ class RouteHandler implements RequestHandlerInterface
         $container->resolveProperties($controller);
         $parameters = $container->resolveMethodParameters($method, $routeParams);
         $result = call_user_func_array([$controller, $methodName], $parameters);
-        return $this->app->processResult($result);
+
+        return $container->ResultHandler->process($result);
     }
 }
