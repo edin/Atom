@@ -2,7 +2,7 @@
 
 namespace Atom\Container;
 
-final class ResolutionScope
+final class ResolutionContext
 {
     private $instances = [];
     public $level = 0;

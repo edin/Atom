@@ -52,6 +52,7 @@ abstract class Application
     {
         $di = $this->getContainer();
 
+
         $di->Router = Router::class;
         $di->Application = $this;
         $di->bind(Container::class)->toInstance($di);
@@ -70,35 +71,22 @@ abstract class Application
 
         $di->ViewEngine = \Atom\View\ViewEngine::class;
 
-        $di->{"Psr\Http\Message\RequestInterface"} = function($di) {
+        $di->{"Psr\Http\Message\RequestInterface"} = function () use ($di) {
             return $di->Request;
         };
 
 
-        $di->{"Psr\Http\Message\ResponseInterface"} = function($di) {
+        $di->{"Psr\Http\Message\ResponseInterface"} = function () use ($di) {
             return $di->Response;
         };
-
-        // $di->ViewEngine = function ($di) {
-        //     $engine = new \Atom\View\ViewEngine($di->View);
-        //     return $engine;
-        // };
-
-        // $di->Dispatcher = function ($di) {
-        //     return new \Atom\Dispatcher\Dispatcher($di);
-        // };
-
-        // $di->ResultHandler = function ($di) {
-        //     return new \Atom\Dispatcher\ResultHandler($di);
-        // };
 
         $di->ViewEngine = \Atom\View\ViewEngine::class;
         $di->Dispatcher = \Atom\Dispatcher\Dispatcher::class;
         $di->ResultHandler = \Atom\Dispatcher\ResultHandler::class;
     }
 
-    public abstract function registerRoutes(Router $router);
-    public abstract function registerServices(Container $container);
+    abstract public function registerRoutes(Router $router);
+    abstract public function registerServices(Container $container);
 
     public function getBaseUrl(): string
     {

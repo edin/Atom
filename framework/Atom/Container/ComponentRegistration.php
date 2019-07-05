@@ -2,6 +2,11 @@
 
 namespace Atom\Container;
 
+use Atom\Container\Resolver\AliasResolver;
+use Atom\Container\Resolver\InstanceResolver;
+use Atom\Container\Resolver\FactoryResolver;
+use Atom\Container\Resolver\ClassResolver;
+
 final class ComponentRegistration
 {
     public const CLASS_NAME = 1;
@@ -11,7 +16,6 @@ final class ComponentRegistration
     public $type;
     public $name;
     public $factory;
-    public $factoryMethod;
     public $sourceType;
     public $targetType;
     public $constructorArguments = [];
@@ -24,6 +28,11 @@ final class ComponentRegistration
     {
         $this->container = $container;
         $this->sourceType = $sourceType;
+    }
+
+    public function getContainer()
+    {
+        return $this->container;
     }
 
     public function to(string $targetType): self
@@ -52,7 +61,6 @@ final class ComponentRegistration
     {
         $this->type = self::FACTORY_METHOD;
         $this->factory = $factory;
-        $this->factoryMethod = new \ReflectionFunction($factory);
         return $this;
     }
 
@@ -78,5 +86,34 @@ final class ComponentRegistration
     {
         $this->properties = $properties;
         return $this;
+    }
+
+    public function getResolvers(): array
+    {
+        $resolvers = [];
+
+        if ($this->name) {
+            $resolvers[$this->name] = new AliasResolver($this);
+        }
+
+        switch ($this->type) {
+            case self::INSTANCE: {
+                $resolvers[$this->sourceType] = new InstanceResolver($this);
+                break;
+            }
+            case self::FACTORY_METHOD: {
+                $resolvers[$this->sourceType] = new FactoryResolver($this);
+                break;
+            }
+            case self::CLASS_NAME: {
+                $resolvers[$this->sourceType] = new ClassResolver($this);
+                break;
+            }
+            default: {
+                throw new \Exception("Invalid component registration");
+            }
+        }
+
+        return $resolvers;
     }
 }

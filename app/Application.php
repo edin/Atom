@@ -13,8 +13,7 @@ class Application extends \Atom\Application
     {
         $router->addMiddleware(\App\Middlewares\LogMiddleware::class);
 
-        $router->addGroup("/", function(RouteGroup $group) {
-
+        $router->addGroup("/", function (RouteGroup $group) {
             $group->addMiddleware(\App\Middlewares\LogMiddleware::class);
 
             $group->addRoute("GET", "/", "HomeController@index")->withName("home")
@@ -27,14 +26,13 @@ class Application extends \Atom\Application
             $group->addRoute("GET", "/login", "AccountController@login");
             $group->addRoute("GET", "/logout", "AccountController@logout");
 
-            $group->addGroup("/sub1", function(RouteGroup $group) {
+            $group->addGroup("/sub1", function (RouteGroup $group) {
                 $group->addRoute("GET", "/", "HomeController@index");
                 $group->addRoute("GET", "/item", "HomeController@item");
             });
         });
 
-        $router->addGroup("/api", function(RouteGroup $group) {
-
+        $router->addGroup("/api", function (RouteGroup $group) {
             $group->addRoute("GET", "/users", "HomeController@onGet");
             $group->addRoute("POST", "/users", "HomeController@onPost");
             $group->addRoute("PUT", "/users/{id}", "HomeController@onPut");
@@ -42,7 +40,7 @@ class Application extends \Atom\Application
             $group->addRoute("DELETE", "/users", "HomeController@onDelete");
             $group->addRoute("OPTIONS", "/users", "HomeController@onOptions");
 
-            $group->addRoute("GET", "/hello", function(UserRepository $users) {
+            $group->addRoute("GET", "/hello", function (UserRepository $users) {
                 return $users->findAll();
             });
         });
@@ -50,9 +48,8 @@ class Application extends \Atom\Application
 
     public function registerServices(Container $container)
     {
-
-        $di->bind(\Atom\View\View::class)->withName("View")->asShared()->toFactory(function () use($di) {
-            $view = new \Atom\View\View($di);
+        $container->bind(\Atom\View\View::class)->withName("View")->asShared()->toFactory(function () use ($container) {
+            $view = new \Atom\View\View($container);
             $view->setViewsDir(dirname(__FILE__) . "/Views");
             $view->setEngines([
                 ".php" => "ViewEngine",
@@ -60,8 +57,8 @@ class Application extends \Atom\Application
             return $view;
         });
 
-        $di->bind(\Atom\View\View::class)->withName("View")->asShared()->toFactory(function () use($di) {
-            $view = new \Atom\View\View($di);
+        $container->bind(\Atom\View\View::class)->withName("View")->asShared()->toFactory(function () use ($container) {
+            $view = new \Atom\View\View($container);
             $view->setViewsDir(dirname(__FILE__) . "/Views");
             $view->setEngines([
                 ".php" => "ViewEngine",
@@ -69,9 +66,9 @@ class Application extends \Atom\Application
             return $view;
         });
 
-        $di->UserRepository    = \App\Models\UserRepository::class;
-        $di->HomeController    = \App\Controllers\HomeController::class;
-        $di->AccountController = \App\Controllers\AccountController::class;
+        $container->UserRepository    = \App\Models\UserRepository::class;
+        $container->HomeController    = \App\Controllers\HomeController::class;
+        $container->AccountController = \App\Controllers\AccountController::class;
     }
 
     public function resolveController($name)

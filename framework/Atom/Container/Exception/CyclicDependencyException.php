@@ -1,6 +1,6 @@
 <?php
 
-namespace Atom\Container;
+namespace Atom\Container\Exception;
 
 final class CyclicDependencyException extends \Exception
 {

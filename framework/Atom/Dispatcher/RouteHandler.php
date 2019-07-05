@@ -8,7 +8,6 @@ use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
-
 class RouteHandler implements RequestHandlerInterface
 {
     private $container;
@@ -49,7 +48,7 @@ class RouteHandler implements RequestHandlerInterface
             throw new \Exception("Class {$reflectionClass->getName()} does not contain method {$methodName}.");
         }
 
-        $container->resolveProperties($controller);
+        //$container->resolveProperties($controller);
         $parameters = $container->resolveMethodParameters($method, $routeParams);
         $result = call_user_func_array([$controller, $methodName], $parameters);
 
