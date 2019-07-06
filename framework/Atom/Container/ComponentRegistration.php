@@ -14,7 +14,7 @@ final class ComponentRegistration
     public const INSTANCE = 3;
 
     public $type;
-    public $name;
+    //public $name;
     public $factory;
     public $sourceType;
     public $targetType;
@@ -70,11 +70,11 @@ final class ComponentRegistration
         return $this;
     }
 
-    public function withName(string $name): self
-    {
-        $this->name = $name;
-        return $this;
-    }
+    // public function withName(string $name): self
+    // {
+    //     $this->name = $name;
+    //     return $this;
+    // }
 
     public function asShared(): self
     {
@@ -92,9 +92,9 @@ final class ComponentRegistration
     {
         $resolvers = [];
 
-        if ($this->name) {
-            $resolvers[$this->name] = new AliasResolver($this);
-        }
+        // if ($this->name) {
+        //     $resolvers[$this->name] = new AliasResolver($this);
+        // }
 
         switch ($this->type) {
             case self::INSTANCE: {

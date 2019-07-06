@@ -9,6 +9,7 @@ final class Container
     private $registry = [];
     private $resolvers = [];
     private $instances = [];
+    private $alias = [];
     private $dependencyResolver;
 
     public function __construct()
@@ -26,13 +27,14 @@ final class Container
         return $this->registry[$name];
     }
 
-    public function getResolver($name): IDependencyResolver
+    public function getResolver($typeName): IDependencyResolver
     {
-        if (!isset($this->resolvers[$name])) {
-            $registration  = $this->registry[$name] ?? null;
+        if (isset($this->alias[$typeName])) {
+            $typeName = $this->alias[$typeName];
+        }
 
-            //TODO: Add search by name
-
+        if (!isset($this->resolvers[$typeName])) {
+            $registration  = $this->registry[$typeName] ?? null;
             if ($registration !== null) {
                 foreach ($registration->getResolvers() as $key => $value) {
                     $this->resolvers[$key] = $value;
@@ -40,16 +42,19 @@ final class Container
             }
         }
 
-        if (!isset($this->resolvers[$name]) && !isset($this->registry[$name])) {
-            $registration = $this->bind($name)->toSelf();
+        if (!isset($this->resolvers[$typeName]) && !isset($this->registry[$typeName])) {
+            $registration = $this->bind($typeName)->toSelf();
             foreach ($registration->getResolvers() as $key => $value) {
-                print_r($value);
-                exit;
                 $this->resolvers[$key] = $value;
             }
         }
 
-        return $this->resolvers[$name];
+        return $this->resolvers[$typeName];
+    }
+
+    public function alias(string $alias, string $target)
+    {
+        $this->alias[$alias] = $target;
     }
 
     public function bind(string $typeName): ComponentRegistration
@@ -70,6 +75,24 @@ final class Container
 
     public function resolve(string $typeName, $params = [])
     {
+        if (isset($this->alias[$typeName])) {
+            $typeName = $this->alias[$typeName];
+        }
+
+        if (isset($this->instances[$typeName])) {
+            return $this->instances[$typeName];
+        }
+
+        $context = new ResolutionContext();
+        return $this->resolveInContext($context, $typeName, $params);
+    }
+
+    public function resolveInContext(ResolutionContext $context, string $typeName, array $params = [])
+    {
+        if (isset($this->alias[$typeName])) {
+            $typeName = $this->alias[$typeName];
+        }
+
         if (isset($this->instances[$typeName])) {
             return $this->instances[$typeName];
         }
@@ -77,22 +100,18 @@ final class Container
         $resolver = $this->getResolver($typeName);
         $registration = $resolver->getRegistration();
 
-        $context = new ResolutionContext();
-        $instance =  $resolver->resolve($context, $params);
+
+        $instance = $resolver->resolve($context, $params);
 
         if ($registration->isShared) {
             $this->instances[$typeName] = $instance;
         }
-
         return $instance;
     }
 
     public function has($name): bool
     {
-        if (isset($this->registry[$name])) {
-            return true;
-        }
-        return false;
+        return isset($this->registry[$name]);
     }
 
     public function get($name)
@@ -126,6 +145,6 @@ final class Container
 
     public function __get($name)
     {
-        return $this->get($name);
+        return $this->resolve($name);
     }
 }

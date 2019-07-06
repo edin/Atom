@@ -21,7 +21,7 @@ final class AliasResolver implements IDependencyResolver
 
     public function resolve(ResolutionContext $context, array $params = [])
     {
-        return $this->container->getResolver($this->target)->resolve($context, $params);
+        return $this->container->resolveInContext($context, $this->target, $params);
     }
 
     public function getRegistration(): ComponentRegistration

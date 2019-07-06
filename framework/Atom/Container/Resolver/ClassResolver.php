@@ -54,6 +54,8 @@ final class ClassResolver implements IDependencyResolver
 
             if ($parameter->resolvedType) {
                 $args[$index] = $this->container->getResolver($parameter->resolvedType)->resolve($context);
+            } elseif ($parameter->typeName && !$parameter->isBuiltinType) {
+                $args[$index] = $this->container->getResolver($parameter->typeName)->resolve($context);
             } else {
                 $args[$index] = $value ?? $parameter->defaultValue;
             }
@@ -71,10 +73,6 @@ final class ClassResolver implements IDependencyResolver
 
 
         $context->set($sourceType, $instance);
-        // if ($this->registration->isShared) {
-        //     $this->container->setInstance($sourceType, $instance);
-        // }
-
         return $instance;
     }
 
