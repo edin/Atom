@@ -70,11 +70,12 @@ final class ComponentRegistration
         return $this;
     }
 
-    // public function withName(string $name): self
-    // {
-    //     $this->name = $name;
-    //     return $this;
-    // }
+    public function withName(string $name): self
+    {
+        //$this->name = $name;
+        $this->container->alias($name, $this->sourceType);
+        return $this;
+    }
 
     public function asShared(): self
     {

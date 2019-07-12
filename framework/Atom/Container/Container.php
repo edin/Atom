@@ -133,7 +133,8 @@ final class Container
         } elseif (is_array($definition)) {
             throw new \Exception("Array configuration is not yet supported.");
         } elseif (is_string($name) && is_string($definition)  && (class_exists($definition)  && !class_exists($name))) {
-            $this->bind($definition)->toSelf()->asShared()->withName($name);
+            $this->bind($definition)->toSelf()->asShared();
+            $this->alias($name, $definition);
         } elseif (is_string($definition)) {
             $this->bind($name)->to($definition)->asShared();
         } elseif ($definition instanceof \Closure) {

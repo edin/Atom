@@ -3,9 +3,15 @@
 $query  = Query::delete()->from("users", "t")
         ->where("id", Operator::equal(1))
         ->where("skill_id", Operator::in([1,2,3,4,5]))
-        ->leftJoin("comments c",  function (Join $join) { $join->on("c.id", "t.user_id"); })
-        ->crossJoin("comments c", function (Join $join) { $join->on("c.id", "t.user_id"); })
-        ->rightJoin("comments c", function (Join $join) { $join->on("c.id", "t.user_id"); })
+        ->leftJoin("comments c", function (Join $join) {
+            $join->on("c.id", "t.user_id");
+        })
+        ->crossJoin("comments c", function (Join $join) {
+            $join->on("c.id", "t.user_id");
+        })
+        ->rightJoin("comments c", function (Join $join) {
+            $join->on("c.id", "t.user_id");
+        })
         ->leftJoin(function ($join) {
             $join->on("t.id", "c.user_id");
         })
@@ -42,7 +48,7 @@ $command = $database->createCommand($query);
 $command->execute();
 
 
-$mapper->mapEntity(User::class, function(EntityMapper $entity){
+$mapper->mapEntity(User::class, function (EntityMapper $entity) {
     $entity->mapProperty("FirstName")->string();
     $entity->mapProperty("LastName")->string();
     $entity->mapProperty("Email")->string();
@@ -52,19 +58,21 @@ $mapper->mapEntity(User::class, function(EntityMapper $entity){
     $entity->mapProperty("CommentsMap")->toStringMap(Comment::class);
 });
 
-class User {
+class User
+{
     public $first_name;
     public $last_name;
     public $email;
 
-    public function assign(array $data) {
+    public function assign(array $data)
+    {
         $this->first_name = $data['first_name'] ?? "";
         $this->last_name  = $data['last_name'] ?? "";
         $this->email      = $data['email'] ?? "";
     }
 
-    public function decoder() {
-
+    public function decoder()
+    {
     }
 }
 
