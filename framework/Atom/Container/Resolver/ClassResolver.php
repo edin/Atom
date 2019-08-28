@@ -88,6 +88,6 @@ final class ClassResolver implements IDependencyResolver
 
     public function resolveType(): ?string
     {
-        return $this->name;
+        return $this->registration->targetType;
     }
 }

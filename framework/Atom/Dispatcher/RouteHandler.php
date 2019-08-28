@@ -31,7 +31,7 @@ class RouteHandler implements RequestHandlerInterface
         if ($handler instanceof \Closure) {
             $method = new \ReflectionFunction($handler);
             $parameters = $container->resolveMethodParameters($method, $routeParams);
-            $result = call_user_func_array($handler, $parameters);
+            $result = $method->invokeArgs($parameters);
             return $container->ResultHandler->process($result);
         }
 
@@ -48,9 +48,8 @@ class RouteHandler implements RequestHandlerInterface
             throw new \Exception("Class {$reflectionClass->getName()} does not contain method {$methodName}.");
         }
 
-        //$container->resolveProperties($controller);
         $parameters = $container->resolveMethodParameters($method, $routeParams);
-        $result = call_user_func_array([$controller, $methodName], $parameters);
+        $result = $method->invokeArgs($controller, $parameters);
 
         return $container->ResultHandler->process($result);
     }

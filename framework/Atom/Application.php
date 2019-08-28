@@ -91,36 +91,11 @@ abstract class Application
     public function getBaseUrl(): string
     {
         return $this->baseUrl;
-        if ($route->handler instanceof \Closure) {
-            $method = new \ReflectionFunction($route->handler);
-            $parameters = $this->resolveMethodParameters($method, $routeParams);
-            return call_user_func_array($route->handler, $parameters);
-        }
-
-        $parts = \explode("@", $route->handler);
-        $controller = $parts[0] ?? "";
-        $methodName = $parts[1] ?? "index";
-
-        $controller = $this->resolveController($controller);
-
-        $reflectionClass = new \ReflectionClass($controller);
-        $method = $reflectionClass->getMethod($methodName);
-
-        if ($method == null) {
-            throw new \Exception("Class {$reflectionClass->getName()} does not contain method {$methodName}.");
-        }
-
-        $container = $this->getContainer();
-        //$container->resolveProperties($controller);
-
-        $parameters = $container->resolveMethodParameters($method, $routeParams);
-        $result = call_user_func_array([$controller, $methodName], $parameters);
-        return $result;
     }
 
     public function resolveController($name)
     {
-        return $this->getContainer()->get($name);
+        return $this->getContainer()->resolveWithProperties($name);
     }
 
     public function initialize()

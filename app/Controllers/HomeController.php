@@ -15,7 +15,7 @@ final class HomeController
 
     final public function index($id = 0, UserRepository $repository, \App\Application $app)
     {
-        return new ViewInfo('home/index', ['items' => $repository->findAll()]);
+        return new ViewInfo('home/index', ['items' => $this->UserRepository->findAll() ]);
     }
 
     final public function json(UserRepository $repository)

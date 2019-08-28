@@ -70,9 +70,4 @@ class Application extends \Atom\Application
         $container->HomeController    = \App\Controllers\HomeController::class;
         $container->AccountController = \App\Controllers\AccountController::class;
     }
-
-    public function resolveController($name)
-    {
-        return $this->getContainer()->get($name);
-    }
 }

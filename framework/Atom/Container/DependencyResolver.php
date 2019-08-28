@@ -66,7 +66,7 @@ final class DependencyResolver
                 $info->typeName = $param->getType()->getName();
                 $info->isBuiltinType = $param->getType()->isBuiltin();
                 if (!$info->isBuiltinType) {
-                    // $info->resolvedType = $this->container->resolveType($info->typeName);
+                    $info->resolvedType = $this->container->resolveType($info->typeName);
                 }
             }
 
