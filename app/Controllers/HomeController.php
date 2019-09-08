@@ -4,14 +4,33 @@ namespace App\Controllers;
 
 use App\Models\UserRepository;
 use Atom\View\ViewInfo;
+use Atom\View\View;
+use Atom\Container\Container;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
+use Atom\Database\Connection;
 
 final class HomeController
 {
-    public $UserRepository;
-    public $View;
-    public $Response;
-    public $Request;
-    public $Container;
+    private $UserRepository;
+    private $View;
+    private $Response;
+    private $Request;
+    private $Container;
+
+    public function __construct(
+        UserRepository $userRepository,
+        View $view,
+        RequestInterface $response,
+        RequestInterface $request,
+        Container $container
+    ) {
+        $this->UserRepository = $userRepository;
+        $this->View = $view;
+        $this->Response = $response;
+        $this->Request = $request;
+        $this->Container = $container;
+    }
 
     final public function index($id = 0, UserRepository $repository, \App\Application $app)
     {
@@ -20,13 +39,16 @@ final class HomeController
 
     final public function json(UserRepository $repository)
     {
-        return [
-            "items" => $repository->findAll(),
-            "UserRepository" => $this->UserRepository,
-            "View" => $this->View,
-            "Request" => $this->Request,
-            "Container" => $this->Container,
-        ];
+        $db = new Connection(Connection::MySQL, "localhost", "root", "root", "developers");
+        $rows = $db->queryAll("SELECT * FROM skills");
+
+        // Query::select()
+        //     ->from("users u")
+        //     ->columns([
+        //         "u.a", "b", "c", "d",
+        //     ])
+        //     ->show();
+        return $rows;
     }
 
     final public function item()
