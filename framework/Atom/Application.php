@@ -55,7 +55,7 @@ abstract class Application
 
         $di->Router = Router::class;
         $di->Application = $this;
-        $di->bind(Container::class)->toInstance($di);
+        $di->bind(Container::class)->toInstance($di)->withName("Container");
 
         $di->Request = function () {
             $factory = new \Nyholm\Psr7\Factory\Psr17Factory();
@@ -95,7 +95,7 @@ abstract class Application
 
     public function resolveController($name)
     {
-        return $this->getContainer()->resolveWithProperties($name);
+        return $this->getContainer()->get($name);
     }
 
     public function initialize()

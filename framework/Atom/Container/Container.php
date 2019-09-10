@@ -87,15 +87,18 @@ final class Container
         return $this->resolveInContext($context, $typeName, $params);
     }
 
-    public function resolveWithProperties(string $typeName, $params = []) {
+    public function resolveWithProperties(string $typeName, $params = [])
+    {
         $context = new ResolutionContext();
         $instance = $this->resolveInContext($context, $typeName, $params);
 
         $properties = $this->dependencyResolver->getProperties(get_class($instance));
 
-        var_dump($properties);
-        exit();
-
+        foreach ($properties as $propertyDependency) {
+            if ($propertyDependency->defaultValue === null) {
+                $instance->{$propertyDependency->name} = $this->get($propertyDependency->name);
+            }
+        }
 
         return $instance;
     }
@@ -107,7 +110,7 @@ final class Container
         $result = [];
         $parameters = $this->dependencyResolver->getFunctionDependencies($method);
 
-        foreach($parameters as $parameterDependency) {
+        foreach ($parameters as $parameterDependency) {
             if (isset($params[$parameterDependency->name])) {
                 $result[$parameterDependency->position] = $params[$parameterDependency->name];
             } else {
