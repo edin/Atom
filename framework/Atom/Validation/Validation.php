@@ -1,8 +1,10 @@
 <?php
 
-class RuleBuilder {
+class RuleBuilder
+{
     public $rules = [];
-    public function __get($name) {
+    public function __get($name)
+    {
         if (!isset($this->rules[$name])) {
             $this->rules[$name] = new Rule();
         }
@@ -10,20 +12,25 @@ class RuleBuilder {
     }
 }
 
-class Rule {
-    public function required(): Rule {
+class Rule
+{
+    public function required(): Rule
+    {
         $this->required = true;
         return $this;
     }
 
-    public function nullable(): Rule {
+    public function nullable(): Rule
+    {
         $this->nullable = true;
         return $this;
     }
 }
 
-class Validation {
-    public static function create(callable $builder) {
+class Validation
+{
+    public static function create(callable $builder)
+    {
         $v = new static;
         $v->builder = new RuleBuilder();
         $builder($v->builder);
@@ -32,26 +39,19 @@ class Validation {
 }
 
 
-Validation::create(function(RuleBuilder $rule) {
+Validation::create(function (RuleBuilder $rule) {
     $rule->FieldName->required();
     $rule->LastName->required();
     $rule->Email->email()->nullable();
 });
 
-// function create(callable $factory): Validation {
-//     return new Validation(
-//         Application::$Instance->getContainer()->invoke($factory)
-//     );
-// }
-
 
 $validation = new Validation();
-$validation->FirstName->required()->unique(function() {  });
+$validation->FirstName->required()->unique(function () {
+});
 $validation->LastName->required();
 $validation->Email->required();
 
 $customer = $validation->map(new Customer);
 
 print_r($validation);
-
-

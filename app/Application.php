@@ -16,13 +16,12 @@ class Application extends \Atom\Application
         $router->addGroup("/", function (RouteGroup $group) {
             $group->addMiddleware(\App\Middlewares\LogMiddleware::class);
 
-            $group->addRoute("GET", "/", "HomeController@index")->withName("home")
-                  ->addMiddleware(\App\Middlewares\LogMiddleware::class)
-                  ;
-
+            $group->addRoute("GET", "/", "HomeController@index")
+                ->withName("home")
+                ->addMiddleware(\App\Middlewares\LogMiddleware::class);
 
             $group->addRoute("GET", "/item", "HomeController@item");
-            $group->addRoute("GET", "/users-json", "HomeController@json");
+            $group->addRoute("GET", "/json", "HomeController@json");
             $group->addRoute("GET", "/login", "AccountController@login");
             $group->addRoute("GET", "/logout", "AccountController@logout");
 
@@ -48,7 +47,10 @@ class Application extends \Atom\Application
 
     public function registerServices(Container $container)
     {
-        $container->bind(\Atom\View\View::class)->withName("View")->asShared()->toFactory(function () use ($container) {
+        $container->bind(\Atom\View\View::class)
+        ->withName("View")
+        ->asShared()
+        ->toFactory(function () use ($container) {
             $view = new \Atom\View\View($container);
             $view->setViewsDir(dirname(__FILE__) . "/Views");
             $view->setEngines([
@@ -57,7 +59,10 @@ class Application extends \Atom\Application
             return $view;
         });
 
-        $container->bind(\Atom\View\View::class)->withName("View")->asShared()->toFactory(function () use ($container) {
+        $container->bind(\Atom\View\View::class)
+        ->withName("View")
+        ->asShared()
+        ->toFactory(function () use ($container) {
             $view = new \Atom\View\View($container);
             $view->setViewsDir(dirname(__FILE__) . "/Views");
             $view->setEngines([

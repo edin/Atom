@@ -9,9 +9,6 @@ $query  = Query::delete()->from("users", "t")
         ->crossJoin("comments c", function (Join $join) {
             $join->on("c.id", "t.user_id");
         })
-        ->rightJoin("comments c", function (Join $join) {
-            $join->on("c.id", "t.user_id");
-        })
         ->leftJoin(function ($join) {
             $join->on("t.id", "c.user_id");
         })
@@ -19,25 +16,24 @@ $query  = Query::delete()->from("users", "t")
             $join->on("t.id", "c.user_id");
         })
         ;
+/*
+    ->whereGroup(function ($query) {
+        $query->orWhere("t.id", Operator::in([1,2,3,4,5]));
+        $query->orWhere("t.id", Operator::in([1,2,3,4,5]));
+        $query->orWhere("t.id", Operator::in([1,2,3,4,5]));
+        $query->orWhere("t.id", Operator::in([1,2,3,4,5]));
+        $query->orWhere("t.id", Operator::in([1,2,3,4,5]));
+    })
+    ->whereGroup(function ($query) {
+        $query->orWhere("t.id", Operator::in([1,2,3,4,5]));
+        $query->orWhere("t.id", Operator::in([1,2,3,4,5]));
+        $query->orWhere("t.id", Operator::in([1,2,3,4,5]));
+        $query->orWhere("t.id", Operator::in([1,2,3,4,5]));
+        $query->orWhere("t.id", Operator::in([1,2,3,4,5]));
+    });
+*/
 
-        /***
-        ->whereGroup(function ($query) {
-            $query->orWhere("t.id", Operator::in([1,2,3,4,5]));
-            $query->orWhere("t.id", Operator::in([1,2,3,4,5]));
-            $query->orWhere("t.id", Operator::in([1,2,3,4,5]));
-            $query->orWhere("t.id", Operator::in([1,2,3,4,5]));
-            $query->orWhere("t.id", Operator::in([1,2,3,4,5]));
-        })
-        ->whereGroup(function ($query) {
-            $query->orWhere("t.id", Operator::in([1,2,3,4,5]));
-            $query->orWhere("t.id", Operator::in([1,2,3,4,5]));
-            $query->orWhere("t.id", Operator::in([1,2,3,4,5]));
-            $query->orWhere("t.id", Operator::in([1,2,3,4,5]));
-            $query->orWhere("t.id", Operator::in([1,2,3,4,5]));
-        });
-        ***/
-
-$query   = Query::delete()->from("users", "t")
+$query = Query::delete()->from("users", "t")
     ->where("t.id", Operator::in([1,2,3,4,5]))
     ->where("t.id", Operator::in([1,2,3,4,5]))
     ->where("t.id", Operator::in([1,2,3,4,5]))
@@ -49,8 +45,8 @@ $command->execute();
 
 
 $mapper->mapEntity(User::class, function (EntityMapper $entity) {
-    $entity->mapProperty("FirstName")->string();
-    $entity->mapProperty("LastName")->string();
+    $entity->FirstName->string();
+    $entity->LastName->string();
     $entity->mapProperty("Email")->string();
     $entity->mapProperty("Comment")->toType(Comment::class);
     $entity->mapProperty("Comments")->toArrayOf(Comment::class);
@@ -69,10 +65,6 @@ class User
         $this->first_name = $data['first_name'] ?? "";
         $this->last_name  = $data['last_name'] ?? "";
         $this->email      = $data['email'] ?? "";
-    }
-
-    public function decoder()
-    {
     }
 }
 
