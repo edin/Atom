@@ -1,7 +1,6 @@
 <?php
 
-namespace Atom\Database;
+namespace Atom\Database\Query;
 
 final class InsertQuery extends Query
-{
-}
+{ }

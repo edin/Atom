@@ -2,6 +2,8 @@
 
 namespace Atom\Database\Query;
 
+use Atom\Database\Query\Ast\Table;
+
 abstract class Query
 {
     private $table = null;
@@ -16,7 +18,7 @@ abstract class Query
 
     public function show()
     {
-        var_dump($this);
+        print_r($this);
     }
 
     public static function select(): SelectQuery

@@ -59,18 +59,6 @@ class Application extends \Atom\Application
             return $view;
         });
 
-        $container->bind(\Atom\View\View::class)
-        ->withName("View")
-        ->asShared()
-        ->toFactory(function () use ($container) {
-            $view = new \Atom\View\View($container);
-            $view->setViewsDir(dirname(__FILE__) . "/Views");
-            $view->setEngines([
-                ".php" => "ViewEngine",
-            ]);
-            return $view;
-        });
-
         $container->UserRepository    = \App\Models\UserRepository::class;
         $container->HomeController    = \App\Controllers\HomeController::class;
         $container->AccountController = \App\Controllers\AccountController::class;

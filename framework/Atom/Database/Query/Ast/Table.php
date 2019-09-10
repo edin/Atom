@@ -1,6 +1,6 @@
 <?php
 
-namespace Atom\Database\Query;
+namespace Atom\Database\Query\Ast;
 
 final class Table
 {
