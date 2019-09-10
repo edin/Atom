@@ -94,6 +94,12 @@ final class Container
 
         $properties = $this->dependencyResolver->getProperties(get_class($instance));
 
+        foreach ($properties as $propertyDependency) {
+            if ($propertyDependency->defaultValue === null) {
+                $instance->{$propertyDependency->name} = $this->get($propertyDependency->name);
+            }
+        }
+
         return $instance;
     }
 

@@ -15,6 +15,7 @@ final class DependencyResolver
     {
         $reflection = new \ReflectionClass($className);
         $classProperties =  $reflection->getProperties(\ReflectionMethod::IS_PUBLIC);
+        $defaultProperties = $reflection->getDefaultProperties();
 
         $properties = [];
 
@@ -22,7 +23,9 @@ final class DependencyResolver
             $info = new DependencyInfo;
             $info->name = $prop->getName();
             $info->position = null;
-            $info->defaultValue = null;
+            $info->defaultValue = $defaultProperties[$info->name] ?? null;
+
+            // NOTE: Requires PHP 7.4
             $info->typeName = null;
 
             $properties[$info->name] = $info;
