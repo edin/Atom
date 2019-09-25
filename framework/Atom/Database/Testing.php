@@ -79,14 +79,21 @@ include "../../../vendor/autoload.php";
 
 
 $query = Query::select()
-    ->from("users")
+    ->from("users u")
     ->columns([
-        "id",
-        "first_name",
-        "last_name",
-        "email",
-        "somethingElse" => Query::select()->from("users")
+        "u.id id",
+        "u.first_name firstName",
+        "u.last_name lastName",
+        "u.email email",
+        "userCount" => Query::select()->from("users")->count()
     ])
-    ->join("comments c", function ($join) { });
+    ->join("comments c", function ($join) {
+        $join->on("users.c", "=", "x.c");
+        $join->on("users.c", "=", "x.c");
+        $join->on("users.c", "=", "x.c");
+        $join->on("users.c", "=", "x.c");
+        $join->on("users.c", "=", "x.c");
+        $join->on("users.c", "=", "x.c");
+    });
 
 $query->show();
