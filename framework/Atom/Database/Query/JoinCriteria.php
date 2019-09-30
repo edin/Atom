@@ -2,13 +2,28 @@
 
 namespace Atom\Database\Query;
 
+use Atom\Database\Query\Ast\BinaryExpression;
+use Atom\Database\Query\Ast\UnaryExpression;
+
 class JoinCriteria
 {
     private $expression = null;
 
     private function combineExpression($operator, $column, $value, $isValue)
     {
-        //TODO: Combine expressions
+        $exp = new BinaryExpression();
+        $exp->leftNode = $column;
+        $exp->rightNode = $value;
+
+        if ($this->expression == null) {
+            $this->expression = $exp;
+        } else {
+            $node = new BinaryExpression();
+            $node->operator = $operator;
+            $node->leftNode = $this->expression;
+            $node->rightNode = $exp;
+            $this->expression = $node;
+        }
     }
 
     public function on(string $column, $value): self

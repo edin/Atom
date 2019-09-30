@@ -107,6 +107,13 @@ $criteria = new JoinCriteria();
 $criteria
     ->on("user.type_id", "status.id")
     ->on("comment.type_id", "status.id")
-;
+    ->on("comment.type_id", "status.id")
+    ->on("comment.type_id", "status.id")
+    ->on("comment.type_id", "status.id")
+    ->on("comment.type_id", "status.id")
+    ->on("comment.type_id", "status.id")
+    ->on("comment.type_id", "status.id")
+
+    ;
 
 print_r($criteria);
