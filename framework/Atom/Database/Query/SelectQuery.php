@@ -7,14 +7,6 @@ use Atom\Database\Query\Ast\Join;
 
 final class SelectQuery extends Query
 {
-    private $isDistinct = null;
-    private $isExists = null;
-    private $limit = null;
-    private $offset = null;
-    private $columns = [];
-    private $unions = [];
-    private $joins = [];
-
     public function distinct(): self
     {
         $this->isDistinct = true;
@@ -48,7 +40,6 @@ final class SelectQuery extends Query
     public function columns(array $columns): self
     {
         foreach ($columns as $key => $value) {
-
             if (is_int($key)) {
                 $this->columns[] = Column::fromValue($value);
             } else {

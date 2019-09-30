@@ -6,9 +6,18 @@ use Atom\Database\Query\Ast\Table;
 
 abstract class Query
 {
-    private $table = null;
-    private $joins = [];
-    private $where = [];
+    protected $table = null;
+    protected $isDistinct = null;
+    protected $isExists = null;
+    protected $limit = null;
+    protected $offset = null;
+    protected $columns = [];
+    protected $unions = [];
+    protected $joins = [];
+    protected $where = [];
+    protected $having = [];
+    protected $orderBy = [];
+    protected $groupBy = [];
 
     public function from(string $table): self
     {

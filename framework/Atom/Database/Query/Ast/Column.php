@@ -7,6 +7,7 @@ final class Column
     public $table = null;
     public $name = null;
     public $alias = null;
+    public $expression = null;
 
     /**
      * Parses table reference, field name and alias from string like "table.field alias" or "field alias" or "field"
