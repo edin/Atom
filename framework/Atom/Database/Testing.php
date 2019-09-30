@@ -1,5 +1,6 @@
 <?php
 
+use Atom\Database\Query\JoinCriteria;
 use Atom\Database\Query\Query;
 
 include "../../../vendor/autoload.php";
@@ -77,23 +78,35 @@ include "../../../vendor/autoload.php";
 //     'first_name' => "edin",
 // ]);
 
+// $query = Query::select()
+//     ->from("users u")
+//     ->columns([
+//         "u.id id",
+//         "u.first_name firstName",
+//         "u.last_name lastName",
+//         "u.email email",
+//         "userCount" => Query::select()->from("users")->count()
+//     ])
+//     ->join("comments c", function (JoinCriteria $join) {
+//         $join->on("users.c", "x.c");
+//         $join->on("users.c", "x.c");
+//         $join->on("users.c", "x.c");
+//         $join->on("users.c", "x.c");
+//     })
+//     ->join("comments c", function (JoinCriteria $join) {
+//         $join->on("users.c", "x.c");
+//         $join->on("users.c", "x.c");
+//         $join->on("users.c", "x.c");
+//         $join->on("users.c", "x.c");
+//     });
+//     ;
 
-$query = Query::select()
-    ->from("users u")
-    ->columns([
-        "u.id id",
-        "u.first_name firstName",
-        "u.last_name lastName",
-        "u.email email",
-        "userCount" => Query::select()->from("users")->count()
-    ])
-    ->join("comments c", function ($join) {
-        $join->on("users.c", "=", "x.c");
-        $join->on("users.c", "=", "x.c");
-        $join->on("users.c", "=", "x.c");
-        $join->on("users.c", "=", "x.c");
-        $join->on("users.c", "=", "x.c");
-        $join->on("users.c", "=", "x.c");
-    });
+//     $query->show();
 
-$query->show();
+$criteria = new JoinCriteria();
+$criteria
+    ->on("user.type_id", "status.id")
+    ->on("comment.type_id", "status.id")
+;
+
+print_r($criteria);

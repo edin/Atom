@@ -37,6 +37,12 @@ final class SelectQuery extends Query
         return $this;
     }
 
+    public function count(string $column = "*"): self
+    {
+        $this->count = $column;
+        return $this;
+    }
+
     public function columns(array $columns): self
     {
         foreach ($columns as $key => $value) {

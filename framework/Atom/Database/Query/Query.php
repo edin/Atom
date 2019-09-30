@@ -7,6 +7,7 @@ use Atom\Database\Query\Ast\Table;
 abstract class Query
 {
     protected $table = null;
+    protected $count = null;
     protected $isDistinct = null;
     protected $isExists = null;
     protected $limit = null;

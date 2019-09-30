@@ -26,21 +26,25 @@ class Connection
         return $db;
     }
 
-    public function queryAll(string $sql, array $params = []): array
+    private function prepare(string $sql, array $params)
     {
-        //TODO: Set parameters
         $db = $this->getDb();
         $command = $db->prepare($sql);
-        $command->execute();
+
+        //TODO: Set parameters
+
+        return $command;
+    }
+
+    public function queryAll(string $sql, array $params = []): array
+    {
+        $command = $this->prepare($sql, $params);
         return $command->fetchAll();
     }
 
     public function queryScalar(string $sql, array $params = [])
     {
-        //TODO: Set parameters
-        $db = $this->getDb();
-        $command = $db->prepare($sql);
-        $command->execute();
+        $command = $this->prepare($sql, $params);
         return $command->fetchColumn();
     }
 }
