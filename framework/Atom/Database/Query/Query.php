@@ -19,6 +19,7 @@ abstract class Query
     protected $having = [];
     protected $orderBy = [];
     protected $groupBy = [];
+    protected $values = null;
 
     public function from(string $table): self
     {
