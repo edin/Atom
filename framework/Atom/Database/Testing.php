@@ -1,5 +1,6 @@
 <?php
 
+use Atom\Database\Query\Criteria;
 use Atom\Database\Query\JoinCriteria;
 use Atom\Database\Query\Query;
 
@@ -106,14 +107,12 @@ include "../../../vendor/autoload.php";
 $criteria = new JoinCriteria();
 $criteria
     ->on("user.type_id", "status.id")
-    ->on("comment.type_id", "status.id")
-    ->on("comment.type_id", "status.id")
-    ->on("comment.type_id", "status.id")
-    ->on("comment.type_id", "status.id")
-    ->on("comment.type_id", "status.id")
-    ->on("comment.type_id", "status.id")
-    ->on("comment.type_id", "status.id")
-
+    ->orGroup(function (Criteria $c) {
+        $c->on("a", "b");
+        $c->on("a", "b");
+        $c->on("a", "b");
+        $c->on("a", "b");
+    })
     ;
 
 print_r($criteria);

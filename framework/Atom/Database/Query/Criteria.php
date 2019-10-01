@@ -49,6 +49,43 @@ class Criteria
 
     public function orGroup(callable $callable): self
     {
+        $criteria = new static();
+        $callable($criteria);
+
+        $expression = $criteria->getExpression();
+        $params = $criteria->getParameters();
+
+        if ($expression !== null) {
+            foreach ($params as $key => $value) {
+                $this->addParameter($key, $value);
+            }
+
+            if ($this->expression === null) {
+                $this->expression = $expression;
+            } else {
+                $orExpression = new BinaryExpression();
+                $orExpression->operator = "OR";
+                $orExpression->leftNode = $this->expression;
+                $orExpression->rightNode = $expression;
+                $this->expression = $orExpression;
+            }
+        }
         return $this;
+    }
+
+    public function addParameter(string $name, $value): self
+    {
+        $this->params[$name] = $value;
+        return $this;
+    }
+
+    public function getParameters(): array
+    {
+        return $this->params;
+    }
+
+    public function getExpression()
+    {
+        return $this->expression;
     }
 }

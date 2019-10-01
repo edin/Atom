@@ -68,6 +68,11 @@ final class Operator
         return new static("IN", $value);
     }
 
+    public static function like($value): self
+    {
+        return new static("LIKE", $value);
+    }
+
     public static function or($value): self
     {
         return new static("OR", $value);
