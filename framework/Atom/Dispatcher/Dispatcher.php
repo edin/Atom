@@ -11,7 +11,11 @@ use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
-use function strlen, rtrim, substr, pathinfo, rawurldecode;
+use function strlen;
+use function rtrim;
+use function substr;
+use function pathinfo;
+use function rawurldecode;
 
 final class Dispatcher implements RequestHandlerInterface
 {
@@ -57,7 +61,7 @@ final class Dispatcher implements RequestHandlerInterface
         $uriPath = rawurldecode($uriPath);
         if ($uriPath == "") {
             $uriPath = "/";
-        } else if ($uriPath[0] !== "/") {
+        } elseif ($uriPath[0] !== "/") {
             $uriPath = "/" . $uriPath;
         }
 
@@ -75,6 +79,8 @@ final class Dispatcher implements RequestHandlerInterface
                 $route = $routeInfo[1];
                 $routeParams = $routeInfo[2];
 
+                //TODO: Attach routeParams to route
+
                 $middlewares = $this->resolveMiddlewares($route);
                 $queueHandler = new RequestHandler(new RouteHandler($this->container, $route, $routeParams));
                 $queueHandler->addMiddlewares($middlewares);
@@ -89,6 +95,7 @@ final class Dispatcher implements RequestHandlerInterface
 
         foreach ($middlewares as $middleware) {
             if (is_string($middleware)) {
+                //TODO: Use DI to create middleware
                 $results[] = new $middleware;
             } elseif (is_object($middleware)) {
                 $results[] = $middleware;

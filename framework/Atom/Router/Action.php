@@ -11,6 +11,21 @@ final class Action
     private $handler;
     private $parameters;
 
+    public function __construct(Route $route)
+    {
+        $this->route = $route;
+        $this->parameters = $route->getParameters();
+
+        $handlerDefinition = $route->getHandler();
+
+        if (is_array($handlerDefinition)) {
+            // first element is class
+            // second element is method name
+        } elseif (is_string($handlerDefinition)) {
+            $parts = explode("@", $handlerDefinition);
+        }
+    }
+
     public function getRoute(): Route
     {
         return $this->route;

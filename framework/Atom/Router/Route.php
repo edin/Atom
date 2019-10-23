@@ -51,7 +51,8 @@ final class Route
         return $this->group;
     }
 
-    public function getOwnMiddlewares(): array {
+    public function getOwnMiddlewares(): array
+    {
         return $this->middlewares;
     }
 
@@ -60,26 +61,31 @@ final class Route
         return \array_merge($this->getGroup()->getMiddlewares(), $this->middlewares);
     }
 
-    public function getName(): ?string {
+    public function getName(): ?string
+    {
         return $this->name;
     }
 
-    public function getMethod(): string {
+    public function getMethod(): string
+    {
         return $this->method;
     }
 
-    public function getPath(): string {
+    public function getPath(): string
+    {
         return $this->path;
     }
 
-    public function getHandler() {
+    public function getHandler()
+    {
         return $this->handler;
     }
 
-    public function getAction(): Action {
-
-        // TODO: Construct action from handler
-
-        return new Action();
+    public function getAction(): Action
+    {
+        if ($this->handler instanceof Action) {
+            return $this->handler;
+        }
+        return new Action($this);
     }
 }
