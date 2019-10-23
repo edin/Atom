@@ -22,6 +22,10 @@ final class Operator
 
     public static function fromValue($value): self
     {
+        if ($value instanceof Operator) {
+            return $value;
+        }
+
         if (is_array($value)) {
             return static::in($value);
         }

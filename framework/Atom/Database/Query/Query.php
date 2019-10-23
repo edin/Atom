@@ -21,6 +21,11 @@ abstract class Query
     protected $groupBy = [];
     protected $values = null;
 
+    public function getJoins()
+    {
+        return $this->joins;
+    }
+
     public function from(string $table): self
     {
         $this->table = Table::fromValue($table);

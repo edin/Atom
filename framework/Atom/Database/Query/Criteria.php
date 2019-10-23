@@ -11,9 +11,12 @@ class Criteria
 
     private function combineExpression($operator, $column, $value, $isValue): self
     {
+        $valueExpression = Operator::fromValue($value);
+
         $exp = new BinaryExpression();
         $exp->leftNode = $column;
         $exp->rightNode = $value;
+        $exp->operator = $valueExpression->getOperator();
 
         if ($this->expression == null) {
             $this->expression = $exp;

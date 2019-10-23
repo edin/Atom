@@ -65,19 +65,26 @@ final class SelectQuery extends Query
 
     public function join(string $table, callable $join): self
     {
-        $this->joins[] = Join::create(Join::Join, $table, $join);
+        $this->joins[] = Join::create(Join::Join, $table, $this->buildJoinCriteria($join));
         return $this;
     }
 
     public function leftJoin(string $table, callable $join): self
     {
-        $this->joins[] = Join::create(Join::LeftJoin, $table, $join);
+        $this->joins[] = Join::create(Join::LeftJoin, $table, $this->buildJoinCriteria($join));
         return $this;
     }
 
     public function rightJoin(string $table, callable $join): self
     {
-        $this->joins[] = Join::create(Join::RightJoin, $table, $join);
+        $this->joins[] = Join::create(Join::RightJoin, $table, $this->buildJoinCriteria($join));
         return $this;
+    }
+
+    private function buildJoinCriteria(callable $joinBuilder): JoinCriteria
+    {
+        $criteria = new JoinCriteria();
+        $joinBuilder($criteria);
+        return $criteria;
     }
 }

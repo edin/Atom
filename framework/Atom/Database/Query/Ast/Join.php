@@ -18,6 +18,22 @@ final class Join
         $join->joinType = $type;
         $join->table = Table::fromValue($table);
         $join->joinCondition = $joinCondition;
+
         return $join;
+    }
+
+    public function getJoinType()
+    {
+        return $this->joinType;
+    }
+
+    public function getTable()
+    {
+        return $this->table;
+    }
+
+    public function getJoinCondition()
+    {
+        return $this->joinCondition;
     }
 }

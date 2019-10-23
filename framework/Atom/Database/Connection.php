@@ -7,6 +7,7 @@ use PDO;
 class Connection
 {
     public const MySQL = "mysql";
+    public const SqLite = "sqlite";
 
     public function __construct(string $driver, string $host, string $user, string $password, string $database)
     {
@@ -31,7 +32,9 @@ class Connection
         $db = $this->getDb();
         $command = $db->prepare($sql);
 
-        //TODO: Set parameters
+        foreach ($params as $key => $value) {
+            $command->bindValue($key, $value);
+        }
 
         return $command;
     }
