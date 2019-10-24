@@ -7,7 +7,6 @@ use Atom\Dispatcher\ResultHandler\ArrayResultHandler;
 use Atom\Dispatcher\ResultHandler\StringResultHandler;
 use Atom\Dispatcher\ResultHandler\ViewInfoResultHandler;
 use Psr\Http\Message\ResponseInterface;
-use Atom\Interfaces\IResultHandler;
 
 class ResultHandler
 {
@@ -29,6 +28,7 @@ class ResultHandler
             return $result;
         }
 
+        // TODO: Provide registry for result handlers
         $resultHandlers = [
             new ViewInfoResultHandler($this->container),
             new StringResultHandler($this->container),
@@ -42,7 +42,6 @@ class ResultHandler
         }
 
         // Default result handler
-
         $response = $this->getResponse();
         $response->getBody()->write((string) $result);
         return $response;

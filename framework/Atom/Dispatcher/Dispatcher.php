@@ -79,12 +79,14 @@ final class Dispatcher implements RequestHandlerInterface
                 $route = $routeInfo[1];
                 $routeParams = $routeInfo[2];
 
-                //TODO: Attach routeParams to route
+                $route->setParams($routeParams);
 
-                $middlewares = $this->resolveMiddlewares($route);
-                $queueHandler = new RequestHandler(new RouteHandler($this->container, $route, $routeParams));
-                $queueHandler->addMiddlewares($middlewares);
-                return $queueHandler->handle($request);
+                if ($route instanceof Route) {
+                    $middlewares = $this->resolveMiddlewares($route);
+                    $queueHandler = new RequestHandler(new RouteHandler($this->container, $route, $routeParams));
+                    $queueHandler->addMiddlewares($middlewares);
+                    return $queueHandler->handle($request);
+                }
         }
     }
 
@@ -92,6 +94,8 @@ final class Dispatcher implements RequestHandlerInterface
     {
         $middlewares = $route->getMiddlewares();
         $results = [];
+
+        // TODO: Resolve all middlewares in same resolution scope, should also resolve controller and action using same scope
 
         foreach ($middlewares as $middleware) {
             if (is_string($middleware)) {

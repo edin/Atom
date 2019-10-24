@@ -13,20 +13,18 @@ class RouteHandler implements RequestHandlerInterface
 {
     private $container;
     private $route;
-    private $routeParams;
 
-    public function __construct(Container $container, Route $route, array $routeParams)
+    public function __construct(Container $container, Route $route)
     {
         $this->container = $container;
         $this->route = $route;
-        $this->routeParams = $routeParams;
     }
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
         $actionFactory = new ActionFactory();
 
-        $action = $actionFactory->createAction($this->container, $request, $this->route, $this->routeParams);
+        $action = $actionFactory->createAction($this->container, $request, $this->route);
 
         $result = $action->execute([]);
 
@@ -40,17 +38,16 @@ class ActionFactory
     public function createAction(
         Container $container,
         ServerRequestInterface $request,
-        Route $route,
-        array $routeParams
+        Route $route
     ): Action {
         $handler = $route->getHandler();
         if ($handler instanceof \Closure) {
             $method = new \ReflectionFunction($handler);
-            return new ClosureAction($container, $route, $method, $routeParams);
+            return new ClosureAction($container, $route, $method);
         }
 
         if (is_string($handler)) {
-            return new ControllerAction($container, $route, $routeParams);
+            return new ControllerAction($container, $route);
         }
 
         throw new \Exception("Unsuported handler definition.");
@@ -70,18 +67,16 @@ class ClosureAction extends Action
     public function __construct(
         Container $container,
         Route $route,
-        ReflectionFunction $method,
-        array $routeParams
+        ReflectionFunction $method
     ) {
         $this->container = $container;
         $this->route = $route;
         $this->method = $method;
-        $this->routeParams = $routeParams;
     }
 
     public function execute(array $parameters = [])
     {
-        $parameters = $this->container->resolveMethodParameters($this->method, $this->routeParams);
+        $parameters = $this->container->resolveMethodParameters($this->method, $this->route->getParams());
         return $this->method->invokeArgs($parameters);
     }
 }
@@ -90,16 +85,13 @@ class ControllerAction extends Action
 {
     private $container;
     private $method;
-    private $routeParams;
 
     public function __construct(
         Container $container,
-        Route $route,
-        array $routeParams
+        Route $route
     ) {
         $this->container = $container;
         $this->route = $route;
-        $this->routeParams = $routeParams;
 
         $handler = $route->getHandler();
 
@@ -118,7 +110,7 @@ class ControllerAction extends Action
 
     public function execute()
     {
-        $parameters = $this->container->resolveMethodParameters($this->method, $this->routeParams);
+        $parameters = $this->container->resolveMethodParameters($this->method, $this->route->getParams());
         return $this->method->invokeArgs($this->controller, $parameters);
     }
 }
