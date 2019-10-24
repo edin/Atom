@@ -9,21 +9,12 @@ final class Action
     private $route;
     private $controller;
     private $handler;
-    private $parameters;
 
-    public function __construct(Route $route)
+    public function __construct(Route $route, ?object $controller, \ReflectionFunctionAbstract $handler)
     {
         $this->route = $route;
-        $this->parameters = $route->getParameters();
-
-        $handlerDefinition = $route->getHandler();
-
-        if (is_array($handlerDefinition)) {
-            // first element is class
-            // second element is method name
-        } elseif (is_string($handlerDefinition)) {
-            $parts = explode("@", $handlerDefinition);
-        }
+        $this->controller = $controller;
+        $this->handler = $handler;
     }
 
     public function getRoute(): Route
@@ -41,13 +32,17 @@ final class Action
         return $this->handler;
     }
 
-    public function getParameters(): array
+    public function getParams(): array
     {
-        return $this->parameters;
+        return $this->route->getParams();
     }
 
     public function execute()
     {
-        return $this->handler->invokeArgs($this->controller, $this->parameters);
+        if ($this->handler instanceof \ReflectionMethod) {
+            return $this->handler->invokeArgs($this->controller, $this->getParams());
+        }
+
+        return $this->handler->invokeArgs($this->getParams());
     }
 }

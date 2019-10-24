@@ -91,13 +91,4 @@ final class Route
     {
         return $this->handler;
     }
-
-    //
-    public function getAction(): Action
-    {
-        if ($this->handler instanceof Action) {
-            return $this->handler;
-        }
-        return new Action($this);
-    }
 }

@@ -22,9 +22,10 @@ class RouteHandler implements RequestHandlerInterface
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
+        // TODO Resolve action factory using container
         $actionFactory = new ActionFactory();
 
-        $action = $actionFactory->createAction($this->container, $request, $this->route);
+        $action = $actionFactory->createAction($this->container, $this->route);
 
         $result = $action->execute([]);
 
@@ -35,12 +36,10 @@ class RouteHandler implements RequestHandlerInterface
 
 class ActionFactory
 {
-    public function createAction(
-        Container $container,
-        ServerRequestInterface $request,
-        Route $route
-    ): Action {
+    public function createAction(Container $container, Route $route): Action
+    {
         $handler = $route->getHandler();
+
         if ($handler instanceof \Closure) {
             $method = new \ReflectionFunction($handler);
             return new ClosureAction($container, $route, $method);
@@ -54,21 +53,18 @@ class ActionFactory
     }
 }
 
-class Action
+abstract class Action
 {
+    abstract public function execute();
 }
 
 class ClosureAction extends Action
 {
     private $container;
     private $method;
-    private $routeParams;
 
-    public function __construct(
-        Container $container,
-        Route $route,
-        ReflectionFunction $method
-    ) {
+    public function __construct(Container $container, Route $route, ReflectionFunction $method)
+    {
         $this->container = $container;
         $this->route = $route;
         $this->method = $method;
@@ -86,10 +82,8 @@ class ControllerAction extends Action
     private $container;
     private $method;
 
-    public function __construct(
-        Container $container,
-        Route $route
-    ) {
+    public function __construct(Container $container, Route $route)
+    {
         $this->container = $container;
         $this->route = $route;
 
