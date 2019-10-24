@@ -52,33 +52,22 @@ abstract class Application
     {
         $di = $this->getContainer();
 
-
         $di->Router = Router::class;
         $di->Application = $this;
+
         $di->bind(Container::class)->toInstance($di)->withName("Container");
 
-        $di->Request = function () {
+        $di->bind(RequestInterface::class)->toFactory(function () {
             $factory = new \Nyholm\Psr7\Factory\Psr17Factory();
             $creator = new \Nyholm\Psr7Server\ServerRequestCreator($factory, $factory, $factory, $factory);
             $serverRequest = $creator->fromGlobals();
             return $serverRequest;
-        };
+        })->withName("Request");
 
-        $di->Response = function () {
+        $di->bind(ResponseInterface::class)->toFactory(function () {
             $factory = new Psr17Factory();
             return $factory->createResponse();
-        };
-
-        $di->ViewEngine = \Atom\View\ViewEngine::class;
-
-        $di->{"Psr\Http\Message\RequestInterface"} = function () use ($di) {
-            return $di->Request;
-        };
-
-
-        $di->{"Psr\Http\Message\ResponseInterface"} = function () use ($di) {
-            return $di->Response;
-        };
+        })->withName("Response");
 
         $di->ViewEngine = \Atom\View\ViewEngine::class;
         $di->Dispatcher = \Atom\Dispatcher\Dispatcher::class;
