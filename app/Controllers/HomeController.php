@@ -10,6 +10,37 @@ use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Atom\Database\Connection;
 
+class FormPost
+{
+    public $firstName = "";
+    public $lastName = "";
+}
+
+class TypeFactory
+{
+    public function __construct(Container $container, RequestInterface $request)
+    {
+        $this->container = $container;
+        $this->request = $request;
+    }
+
+    public function create(string $typeName)
+    {
+        return $this->container->resolve($typeName);
+    }
+}
+
+class TypeFactoryRegistry
+{
+    public function registerFactory(string $className)
+    {
+    }
+}
+
+$registry = new TypeFactoryRegistry();
+$registry->registerFactory(TypeFactoryRegistry::class);
+
+
 final class HomeController
 {
     private $UserRepository;
@@ -32,9 +63,15 @@ final class HomeController
         $this->Container = $container;
     }
 
-    final public function index($id = 0, UserRepository $repository, \App\Application $app)
+    final public function index($id = 0, FormPost $post)
     {
-        return new ViewInfo('home/index', ['items' => $this->UserRepository->findAll() ]);
+        return new ViewInfo(
+            'home/index',
+            [
+                'items' => $this->UserRepository->findAll(),
+                'post' => $post
+            ]
+        );
     }
 
     final public function json(UserRepository $repository)

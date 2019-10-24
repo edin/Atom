@@ -5,9 +5,11 @@ namespace Atom\Dispatcher;
 use Atom\Router\Route;
 use Atom\Container\Container;
 use Atom\Router\Action;
+use Exception;
 use Psr\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use ReflectionClass;
 use ReflectionFunction;
 
 class RouteHandler implements RequestHandlerInterface
@@ -35,7 +37,7 @@ class RouteHandler implements RequestHandlerInterface
         $handler = $route->getHandler();
 
         if ($handler instanceof \Closure) {
-            $method = new \ReflectionFunction($handler);
+            $method = new ReflectionFunction($handler);
             return new Action($this->container, $route, null, $method);
         } elseif (is_string($handler)) {
             $parts = \explode("@", $handler);
@@ -43,17 +45,17 @@ class RouteHandler implements RequestHandlerInterface
             $methodName = $parts[1] ?? "index";
 
             $controller = $this->container->Application->resolveController($controllerName);
-            $reflectionClass = new \ReflectionClass($controller);
+            $reflectionClass = new ReflectionClass($controller);
             $method = $reflectionClass->getMethod($methodName);
 
             if ($method == null) {
-                throw new \Exception("Class {$reflectionClass->getName()} does not contain method {$methodName}.");
+                throw new Exception("Class {$reflectionClass->getName()} does not contain method {$methodName}.");
             }
 
             return new Action($this->container, $route, $controller, $method);
         }
 
         $typeName = gettype($handler);
-        throw new \Exception("Unsuported handler format, expected string or closure but got ${$typeName}");
+        throw new Exception("Unsuported handler format, expected string or closure but got ${$typeName}");
     }
 }
