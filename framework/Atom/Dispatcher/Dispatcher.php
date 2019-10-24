@@ -6,7 +6,7 @@ use Atom\Router\Route;
 use Atom\Dispatcher\RequestHandler;
 use Atom\Dispatcher\RouteHandler;
 use Atom\Container\Container;
-
+use Atom\Container\ResolutionContext;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -79,9 +79,9 @@ final class Dispatcher implements RequestHandlerInterface
                 $route = $routeInfo[1];
                 $routeParams = $routeInfo[2];
 
-                $route->setParams($routeParams);
-
                 if ($route instanceof Route) {
+                    $route->setParams($routeParams);
+
                     $middlewares = $this->resolveMiddlewares($route);
                     $queueHandler = new RequestHandler(new RouteHandler($this->container, $route, $routeParams));
                     $queueHandler->addMiddlewares($middlewares);
@@ -95,12 +95,11 @@ final class Dispatcher implements RequestHandlerInterface
         $middlewares = $route->getMiddlewares();
         $results = [];
 
-        // TODO: Resolve all middlewares in same resolution scope, should also resolve controller and action using same scope
+        $context = new ResolutionContext();
 
         foreach ($middlewares as $middleware) {
             if (is_string($middleware)) {
-                //TODO: Use DI to create middleware
-                $results[] = new $middleware;
+                $results[] = $this->container->resolveInContext($context, $middleware);
             } elseif (is_object($middleware)) {
                 $results[] = $middleware;
             } else {
