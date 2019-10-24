@@ -10,6 +10,7 @@ final class Route
     private $path;
     private $handler;
     private $middlewares = [];
+    private $params = [];
 
     public function __construct(RouteGroup $group, string  $method, string $path, $handler)
     {
@@ -23,6 +24,16 @@ final class Route
     {
         $this->name = $name;
         return $this;
+    }
+
+    public function setParams(array $params): void
+    {
+        $this->params = $params;
+    }
+
+    public function getParams(): array
+    {
+        return $this->params;
     }
 
     public function getFullPath(): string
@@ -81,6 +92,7 @@ final class Route
         return $this->handler;
     }
 
+    //
     public function getAction(): Action
     {
         if ($this->handler instanceof Action) {

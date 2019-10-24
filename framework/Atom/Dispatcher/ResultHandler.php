@@ -3,25 +3,11 @@
 namespace Atom\Dispatcher;
 
 use Atom\Container\Container;
+use Atom\Dispatcher\ResultHandler\ArrayResultHandler;
+use Atom\Dispatcher\ResultHandler\StringResultHandler;
+use Atom\Dispatcher\ResultHandler\ViewInfoResultHandler;
 use Psr\Http\Message\ResponseInterface;
 use Atom\Interfaces\IResultHandler;
-
-trait ResultHandlerTrait {
-    private $container;
-
-    public function __construct(Container $container) {
-        $this->container = $container;
-    }
-
-    protected function getContainer() {
-        return $this->container;
-    }
-
-    protected function getResponse() {
-        return $this->container->Response;
-    }
-}
-
 
 class ResultHandler
 {
@@ -32,11 +18,8 @@ class ResultHandler
         $this->container = $container;
     }
 
-    private function getContainer() {
-        return $this->container;
-    }
-
-    private function getResponse() {
+    private function getResponse()
+    {
         return $this->container->Response;
     }
 
@@ -46,81 +29,22 @@ class ResultHandler
             return $result;
         }
 
-        //TODO: Use IResultHandler registry
+        $resultHandlers = [
+            new ViewInfoResultHandler($this->container),
+            new StringResultHandler($this->container),
+            new ArrayResultHandler($this->container),
+        ];
 
-        if ($result instanceof \Atom\Interfaces\IViewInfo) {
-            $view = $this->getContainer()->View;
-            $content = $view->render($result);
-
-            $response = $this->getResponse();
-            $response->getBody()->write($content);
-            return $response;
+        foreach ($resultHandlers as $resultHandler) {
+            if ($resultHandler->isMatch($result)) {
+                return $resultHandler->process($result);
+            }
         }
 
-        if (is_string($result)) {
-            $response = $this->getResponse();
-            $response->getBody()->write($result);
-            return $response;
-        }
-
-        if (is_array($result) || is_object($result)) {
-            $response = $response = $this->getResponse()->withAddedHeader("Content-Type", "application/json");
-            $response->getBody()->write(json_encode($result));
-            return $response;
-        }
+        // Default result handler
 
         $response = $this->getResponse();
         $response->getBody()->write((string) $result);
-        return $response;
-    }
-}
-
-
-class StringResultHandler implements IResultHandler
-{
-    use ResultHandlerTrait;
-
-    public function isMatch($result): bool {
-        return is_string($result);
-    }
-
-    public function process($result): ResponseInterface {
-        $response = $this->getResponse();
-        $response->getBody()->write($result);
-        return $response;
-    }
-}
-
-class ArrayResultHandler implements IResultHandler
-{
-    use ResultHandlerTrait;
-
-    public function isMatch($result): bool {
-        return is_array($result) || is_object($result);
-    }
-
-    public function process($result): ResponseInterface {
-        $response = $this->getResponse()->withAddedHeader("Content-Type", "application/json");
-        $response->getBody()->write(json_encode($result));
-        return $response;
-    }
-}
-
-
-class ViewInfoResultHandler implements IResultHandler
-{
-    use ResultHandlerTrait;
-
-    public function isMatch($result): bool {
-        return $result instanceof \Atom\Interfaces\IViewInfo;
-    }
-
-    public function process($result): ResponseInterface {
-        $view = $this->getContainer()->View;
-        $content = $view->render($result);
-
-        $response = $this->getResponse();
-        $response->getBody()->write($content);
         return $response;
     }
 }
