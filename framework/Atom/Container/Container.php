@@ -3,6 +3,7 @@
 namespace Atom\Container;
 
 use Atom\Container\Resolver\IDependencyResolver;
+use ReflectionClass;
 
 final class Container
 {
@@ -25,6 +26,33 @@ final class Container
     public function getDefinition($name): ComponentRegistration
     {
         return $this->registry[$name];
+    }
+
+    public function createType(string $targetType): object {
+
+        $context = new ResolutionContext();
+
+        $reflectionClass = new ReflectionClass($targetType);
+        if (!$reflectionClass->isInstantiable()) {
+            throw new \Exception("Class {$targetType} is not instantiable.");
+        }
+
+        $args = [];
+        $dependencies = $this->dependencyResolver->getConstructorDependencies($targetType);
+        foreach ($dependencies as $index => $parameter) {
+            //$value = $params[$parameter->name] ?? null;
+            if ($parameter->resolvedType) {
+                $args[$index] = $this->getResolver($parameter->resolvedType)->resolve($context, []);
+            } elseif ($parameter->typeName && !$parameter->isBuiltinType) {
+                $args[$index] = $this->getResolver($parameter->typeName)->resolve($context, []);
+            } else {
+                $args[$index] = /*$value ??*/ $parameter->defaultValue;
+            }
+        }
+
+        $instance = $reflectionClass->newInstanceArgs($args);
+
+        return $instance;
     }
 
     public function getResolver($typeName): IDependencyResolver

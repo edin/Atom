@@ -71,7 +71,6 @@ final class ClassResolver implements IDependencyResolver
             }
         }
 
-
         $context->set($sourceType, $instance);
         return $instance;
     }

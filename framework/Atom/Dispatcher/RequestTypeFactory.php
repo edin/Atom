@@ -15,12 +15,12 @@ class RequestTypeFactory
 
     public function create(string $typeName)
     {
-        // TODO: Inject dependencies - add method to container that directly creates type without resolvers
-        $instance = new $typeName;
+        $instance = $this->container->createType($typeName);
 
-        // Assign values from query parameters
         $reflection = new \ReflectionClass($instance);
         $params = $this->request->getQueryParams();
+        ///$postParams = $this->request->get
+
         foreach($reflection->getProperties() as $prop) {
             $instance->{$prop->name} = $params[$prop->name] ?? "";
         }
