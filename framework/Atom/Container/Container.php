@@ -29,6 +29,8 @@ final class Container
 
     public function getResolver($typeName): IDependencyResolver
     {
+        //TODO: Refactor getResolver to return only single resolver
+
         if (isset($this->alias[$typeName])) {
             $typeName = $this->alias[$typeName];
         }
@@ -43,9 +45,18 @@ final class Container
         }
 
         if (!isset($this->resolvers[$typeName]) && !isset($this->registry[$typeName])) {
-            $registration = $this->bind($typeName)->toSelf();
-            foreach ($registration->getResolvers() as $key => $value) {
-                $this->resolvers[$key] = $value;
+            $typeFactory = $this->get("TypeFactory");
+
+            if ($typeFactory->canCreateType($typeName)) {
+                $registration = $this->bind($typeName)->toSelf()->toTypeFactory($typeFactory);
+                foreach ($registration->getResolvers() as $key => $value) {
+                    $this->resolvers[$key] = $value;
+                }
+            } else {
+                $registration = $this->bind($typeName)->toSelf();
+                foreach ($registration->getResolvers() as $key => $value) {
+                    $this->resolvers[$key] = $value;
+                }
             }
         }
 

@@ -50,28 +50,29 @@ abstract class Application
 
     public function registerDefaultServices()
     {
-        $di = $this->getContainer();
+        $container = $this->getContainer();
 
-        $di->Router = Router::class;
-        $di->Application = $this;
+        $container->Router = Router::class;
+        $container->Application = $this;
 
-        $di->bind(Container::class)->toInstance($di)->withName("Container");
+        $container->bind(Container::class)->toInstance($container)->withName("Container");
 
-        $di->bind(ServerRequestInterface::class)->toFactory(function () {
+        // TODO: Remove dependency from this file third party libraries
+        $container->bind(ServerRequestInterface::class)->toFactory(function () {
             $factory = new \Nyholm\Psr7\Factory\Psr17Factory();
             $creator = new \Nyholm\Psr7Server\ServerRequestCreator($factory, $factory, $factory, $factory);
             $serverRequest = $creator->fromGlobals();
             return $serverRequest;
         })->withName("Request");
 
-        $di->bind(ResponseInterface::class)->toFactory(function () {
+        $container->bind(ResponseInterface::class)->toFactory(function () {
             $factory = new Psr17Factory();
             return $factory->createResponse();
         })->withName("Response");
 
-        $di->ViewEngine = \Atom\View\ViewEngine::class;
-        $di->Dispatcher = \Atom\Dispatcher\Dispatcher::class;
-        $di->ResultHandler = \Atom\Dispatcher\ResultHandler::class;
+        $container->ViewEngine = \Atom\View\ViewEngine::class;
+        $container->Dispatcher = \Atom\Dispatcher\Dispatcher::class;
+        $container->ResultHandler = \Atom\Dispatcher\ResultHandler::class;
     }
 
     abstract public function registerRoutes(Router $router);

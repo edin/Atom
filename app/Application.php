@@ -6,6 +6,9 @@ use Atom\Router\Router;
 use Atom\Router\RouteGroup;
 use Atom\Container\Container;
 use App\Models\UserRepository;
+use Atom\Container\TypeFactory\TypeFactoryRegistry;
+use Atom\Container\TypeInfo;
+use Atom\Dispatcher\RequestTypeFactory;
 
 class Application extends \Atom\Application
 {
@@ -58,6 +61,18 @@ class Application extends \Atom\Application
             ]);
             return $view;
         });
+
+        $container->bind(TypeFactoryRegistry::class)->toFactory(function () {
+
+            $registry = new TypeFactoryRegistry();
+
+            $registry->registerFactory(RequestTypeFactory::class, function(TypeInfo $type) {
+                return $type->inNamespace("App\Messages");
+            });
+
+            return $registry;
+
+        })->withName("TypeFactory");
 
         $container->UserRepository    = \App\Models\UserRepository::class;
         $container->HomeController    = \App\Controllers\HomeController::class;

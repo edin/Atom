@@ -9,7 +9,7 @@ final class TypeFactoryRegistry
 {
     private $registry = [];
 
-    public function registerFactory($typeFactory, $typeMatcher)
+    public function registerFactory($typeFactory, $typeMatcher): void
     {
         if ($typeMatcher instanceof \Closure) {
             $typeMatcher = new TypeMatcher($typeMatcher);
@@ -17,7 +17,19 @@ final class TypeFactoryRegistry
         $this->registry[] = [$typeMatcher, $typeFactory];
     }
 
-    public function createType(Container $container, string $typeName) {
+    public function canCreateType(string $typeName) {
+        $typeInfo = new TypeInfo($typeName);
+
+        foreach($this->registry as $item) {
+            $matcher = $item[0];
+            if ($matcher->matches($typeInfo)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public function createType(Container $container, string $typeName): ?object {
         $typeInfo = new TypeInfo($typeName);
         foreach($this->registry as $item) {
             $matcher = $item[0];

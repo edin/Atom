@@ -2,61 +2,13 @@
 
 namespace App\Controllers;
 
+use App\Messages\FormPostMessage;
 use App\Models\UserRepository;
 use Atom\View\ViewInfo;
 use Atom\View\View;
 use Atom\Container\Container;
-use Atom\Container\TypeFactory\TypeFactoryRegistry;
-use Atom\Container\TypeInfo;
 use Atom\Database\Connection;
 use Psr\Http\Message\ServerRequestInterface;
-
-interface IPostModel {}
-interface IQueryModel {}
-
-class FormPost implements IPostModel
-{
-    public $firstName = "";
-    public $lastName = "";
-}
-
-class PostTypeFactory
-{
-    public function __construct(Container $container, ServerRequestInterface $request)
-    {
-        $this->container = $container;
-        $this->request = $request;
-    }
-
-    public function create(string $typeName)
-    {
-        $instance = $this->container->resolve($typeName);
-        $reflection = new \ReflectionClass($instance);
-        $params = $this->request->getQueryParams();
-        foreach($reflection->getProperties() as $prop) {
-            $instance->{$prop->name} = $params[$prop->name] ?? "";
-        }
-        return $instance;
-    }
-}
-
-class QueryTypeFactory
-{
-    public function __construct(Container $container, ServerRequestInterface $request)
-    {
-        $this->container = $container;
-        $this->request = $request;
-    }
-
-    public function create(string $typeName)
-    {
-        $instance = $this->container->resolve($typeName);
-
-        $reflection = new \ReflectionClass($instance);
-
-        return $reflection;
-    }
-}
 
 final class HomeController
 {
@@ -77,21 +29,13 @@ final class HomeController
         $this->Container = $container;
     }
 
-    final public function index($id = 0, FormPost $post)
+    final public function index($id = 0, FormPostMessage $post)
     {
-        $registry = new TypeFactoryRegistry();
-        $registry->registerFactory(PostTypeFactory::class, function(TypeInfo $type) {
-                return $type->isSubclassOf(IPostModel::class);
-        });
-
-        $instance = $registry->createType($this->Container,  FormPost::class);
-
-
         return new ViewInfo(
             'home/index',
             [
                 'items' => $this->UserRepository->findAll(),
-                'post' => $instance
+                'post' => $post
             ]
         );
     }

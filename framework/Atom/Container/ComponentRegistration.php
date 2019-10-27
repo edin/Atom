@@ -2,19 +2,20 @@
 
 namespace Atom\Container;
 
-use Atom\Container\Resolver\AliasResolver;
 use Atom\Container\Resolver\InstanceResolver;
 use Atom\Container\Resolver\FactoryResolver;
 use Atom\Container\Resolver\ClassResolver;
+use Atom\Container\Resolver\TypeFactoryResolver;
 
 final class ComponentRegistration
 {
     public const CLASS_NAME = 1;
     public const FACTORY_METHOD = 2;
     public const INSTANCE = 3;
+    public const TYPE_FACTORY = 4;
 
     public $type;
-    //public $name;
+    public $name;
     public $factory;
     public $sourceType;
     public $targetType;
@@ -64,6 +65,13 @@ final class ComponentRegistration
         return $this;
     }
 
+    public function toTypeFactory(object $factory): self
+    {
+        $this->type = self::TYPE_FACTORY;
+        $this->factory = $factory;
+        return $this;
+    }
+
     public function withConstructorArguments(array $constructorArguments): self
     {
         $this->constructorArguments = $constructorArguments;
@@ -72,7 +80,7 @@ final class ComponentRegistration
 
     public function withName(string $name): self
     {
-        //$this->name = $name;
+        $this->name = $name;
         $this->container->alias($name, $this->sourceType);
         return $this;
     }
@@ -93,10 +101,6 @@ final class ComponentRegistration
     {
         $resolvers = [];
 
-        // if ($this->name) {
-        //     $resolvers[$this->name] = new AliasResolver($this);
-        // }
-
         switch ($this->type) {
             case self::INSTANCE: {
                 $resolvers[$this->sourceType] = new InstanceResolver($this);
@@ -108,6 +112,10 @@ final class ComponentRegistration
             }
             case self::CLASS_NAME: {
                 $resolvers[$this->sourceType] = new ClassResolver($this);
+                break;
+            }
+            case self::TYPE_FACTORY: {
+                $resolvers[$this->sourceType] = new TypeFactoryResolver($this);
                 break;
             }
             default: {

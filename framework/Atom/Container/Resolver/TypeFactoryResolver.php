@@ -5,22 +5,16 @@ namespace Atom\Container\Resolver;
 use Atom\Container\ResolutionContext;
 use Atom\Container\ComponentRegistration;
 
-final class AliasResolver implements IDependencyResolver
+final class TypeFactoryResolver implements IDependencyResolver
 {
-    private $registration;
-    private $container;
-    private $target;
-
     public function __construct(ComponentRegistration $registration)
     {
         $this->registration = $registration;
-        $this->container = $registration->container;
-        $this->target = $registration->targetType;
     }
 
     public function resolve(ResolutionContext $context, array $params = [])
     {
-        return $this->container->resolveInContext($context, $this->target, $params);
+        return $this->registration->factory->createType($this->registration->getContainer(), $this->registration->targetType);
     }
 
     public function getRegistration(): ComponentRegistration
@@ -30,11 +24,11 @@ final class AliasResolver implements IDependencyResolver
 
     public function getDependencies(): array
     {
-        return $this->container->getResolver($this->target)->getDependencies();
+        return [];
     }
 
     public function resolveType(): ?string
     {
-        return $this->container->getResolver($this->target)->resolveType();
+        return $this->registration->targetType;
     }
 }
