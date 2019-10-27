@@ -5,8 +5,8 @@ namespace Atom;
 use Atom\Container\Container;
 use Atom\Router\Router;
 use Nyholm\Psr7\Factory\Psr17Factory;
-use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
 
 abstract class Application
@@ -33,7 +33,7 @@ abstract class Application
         return $this->getContainer()->Router;
     }
 
-    final public function getRequest(): RequestInterface
+    final public function getRequest(): ServerRequestInterface
     {
         return $this->getContainer()->Request;
     }
@@ -57,7 +57,7 @@ abstract class Application
 
         $di->bind(Container::class)->toInstance($di)->withName("Container");
 
-        $di->bind(RequestInterface::class)->toFactory(function () {
+        $di->bind(ServerRequestInterface::class)->toFactory(function () {
             $factory = new \Nyholm\Psr7\Factory\Psr17Factory();
             $creator = new \Nyholm\Psr7Server\ServerRequestCreator($factory, $factory, $factory, $factory);
             $serverRequest = $creator->fromGlobals();
