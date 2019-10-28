@@ -3,13 +3,93 @@
 interface IValidator
 {
     public function setErrorMessage(string $errorMessage): void;
+    public function validate($value): ValidationResult;
+}
+
+class ValidationResult
+{
+    private $errorMessage = "";
+    private $isValid;
+
+    private function __construct(string $errorMessage, bool $isValid)
+    {
+        $this->errorMessage = $errorMessage;
+        $this->isValid = $isValid;
+    }
+
+    public static function success(): self
+    {
+        return new static("", true);
+    }
+
+    public static function failure(string $errorMessage): self
+    {
+        return new static($errorMessage, false);
+    }
+
+    public function getErrorMessage(): string
+    {
+        return $this->errorMessage;
+    }
+
+    public function isSuccess(): bool
+    {
+        return $this->isValid;
+    }
+
+    public function isFailure(): bool
+    {
+        return !$this->isValid;
+    }
+}
+
+abstract class AbstractValidator implements IValidator
+{
+    protected $errorMessage;
+
+    public function setErrorMessage(string $errorMessage): void
+    {
+        $this->errorMessage = $errorMessage;
+    }
+}
+
+class MinValidator extends AbstractValidator
+{
+    public function validate($value): ValidationResult
+    {
+        return ValidationResult::failure("Error");
+    }
+}
+
+class RequiredValidator extends AbstractValidator
+{
+    public function validate($value): ValidationResult
+    {
+        return ValidationResult::failure("Error");
+    }
+}
+
+class EmailValidator extends AbstractValidator
+{
+    public function validate($value): ValidationResult
+    {
+        return ValidationResult::failure("Error");
+    }
+}
+
+class NullableValidator extends AbstractValidator
+{
+    public function validate($value): ValidationResult
+    {
+        return ValidationResult::failure("Error");
+    }
 }
 
 class Rule
 {
     private $validators = [];
 
-    public function addValidator($validator): self
+    public function addRule($validator): self
     {
         $this->validators[] = $validator;
         return $this;
@@ -22,27 +102,27 @@ class Rule
 
     public function required(): self
     {
-        return $this->addRule(RequiredValidator());
+        return $this->addRule(new RequiredValidator());
     }
 
     public function nullable(): self
     {
-        return $this->addRule(NullableValidator());
+        return $this->addRule(new NullableValidator());
     }
 
     public function min($min): self
     {
-        return $this->addRule(MinValidator($min));
+        return $this->addRule(new MinValidator($min));
     }
 
     public function max($max): self
     {
-        return $this->addRule(MaxValidator($max));
+        return $this->addRule(new MaxValidator($max));
     }
 
     public function email(): self
     {
-        return $this->addRule(EmailValidator());
+        return $this->addRule(new EmailValidator());
     }
 
     public function withErrorMessage(string $errorMessage)
@@ -72,6 +152,11 @@ class Validation
         $builder($v->builder);
         return $v;
     }
+
+    public function validate($model)
+    {
+        print_r($this);
+    }
 }
 
 class Customer
@@ -82,9 +167,17 @@ class Customer
 }
 
 $validation = Validation::create(function (RuleBuilder $rule) {
-    $rule->FieldName->required();
+    $rule->FirstName->required();
     $rule->LastName->required();
     $rule->Email->email()->nullable();
+
+    // $rule->Elements->asArray(function(RuleBuilder $rule) {
+    // });
+
+    // $rule->Elements->asObject(function(RuleBuilder $rule) {
+    // });
+
+    // $rule->Elements->asType(Type::class);
 });
 
 $result = $validation->validate(new Customer());
