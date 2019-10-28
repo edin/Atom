@@ -19,9 +19,9 @@ class RequestTypeFactory
 
         $reflection = new \ReflectionClass($instance);
         $params = $this->request->getQueryParams();
-        ///$postParams = $this->request->get
 
-        foreach($reflection->getProperties() as $prop) {
+
+        foreach ($reflection->getProperties() as $prop) {
             $instance->{$prop->name} = $params[$prop->name] ?? "";
         }
         return $instance;
