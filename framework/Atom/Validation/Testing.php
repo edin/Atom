@@ -2,6 +2,10 @@
 
 namespace Atom\Validation;
 
+spl_autoload_register(function ($className) {
+    include "D:\\Devserver\\www\\Atom\\framework\\{$className}.php";
+});
+
 class Customer
 {
     public $FirstName;
@@ -11,14 +15,14 @@ class Customer
     public $Address;
 }
 
-$validation = Validation::create(function (RuleBuilder $rule) {
+$validation = Validation::create(function (ValidationBuilder $rule) {
     $rule->FirstName->required();
     $rule->LastName->required();
     $rule->Email->email()->nullable();
 
-    $rule->Phones->asArray(function (RuleBuilder $rule) {
+    $rule->Phones->asArray(function (ValidationBuilder $rule) {
     });
-    $rule->Address->asObject(function (RuleBuilder $rule) {
+    $rule->Address->asObject(function (ValidationBuilder $rule) {
     });
 });
 

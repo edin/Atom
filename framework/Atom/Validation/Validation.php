@@ -7,7 +7,7 @@ class Validation
     public static function create(callable $builder)
     {
         $v = new static;
-        $v->builder = new RuleBuilder();
+        $v->builder = new ValidationBuilder();
         $builder($v->builder);
         return $v;
     }
@@ -16,8 +16,8 @@ class Validation
     {
         $result = [];
 
-        foreach ($this->builder->rules as $rule) {
-            $result[] = $rule->validate($model->{$rule->getFieldName()});
+        foreach ($this->builder->getValidators() as $validator) {
+            $result[] = $validator->validate($model->{$validator->getFieldName()});
         }
         return $result;
     }
