@@ -4,6 +4,8 @@ namespace Atom\Validation;
 
 class Validation
 {
+    private static $localisation;
+
     public static function create(callable $builder)
     {
         $v = new static;
@@ -20,5 +22,15 @@ class Validation
             $result[] = $validator->validate($model->{$validator->getFieldName()});
         }
         return $result;
+    }
+
+    public static function setLocalisation(ILocalisation $localisation): void
+    {
+        self::$localisation = $localisation;
+    }
+
+    public static function getLocalisation(): ILocalisation
+    {
+        return self::$localisation;
     }
 }

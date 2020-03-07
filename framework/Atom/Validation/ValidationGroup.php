@@ -64,11 +64,13 @@ class ValidationGroup
 
     public function asArray(callable $callable): self
     {
+        //TODO: Add array validator
         return $this;
     }
 
     public function asObject(callable $callable): self
     {
+        //TODO: Add object validator
         return $this;
     }
 

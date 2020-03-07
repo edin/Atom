@@ -1,10 +1,11 @@
 {
-    "name": "Atom/Framework",
+    "name": "atom/framework",
     "description": "Atom Framework",
     "keywords": [
         "framework",
         "Atom"
     ],
+    "minimum-stability": "dev",
     "license": "MIT",
     "require": {
         "php": "^7.1.0",
