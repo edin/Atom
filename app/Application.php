@@ -48,6 +48,10 @@ class Application extends \Atom\Application
                 return $users->findAll();
             });
         });
+
+        //$router->attach(new ControllerRoutes());
+        //$router->attach(new ControllerRoutes());
+        //$router->attach(new ControllerRoutes());
     }
 
     public function registerServices(Container $container)

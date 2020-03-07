@@ -4,29 +4,28 @@ namespace Atom\Router;
 
 class RouteGroup
 {
-    private $groups = [];
-    private $middlewares = [];
+    use RouteTrait;
     private $routes = [];
-    private $path = "";
-    private $parent = null;
 
-    private function setParent(RouteGroup $parent) {
-        $this->parent = $parent;
+    private function setGroup(RouteGroup $group)
+    {
+        $this->group = $group;
     }
 
-    public function getParent(): ?RouteGroup {
-        return $this->parent;
+    public function getGroup(): ?RouteGroup
+    {
+        return $this->group;
     }
 
-    public function addGroup(string $path = "", callable $routes = null): RouteGroup
+    public function addGroup(string $path = "", callable $routeBuilder = null): RouteGroup
     {
         $group = new RouteGroup();
         $group->setPrefixPath($path);
-        $group->setParent($this);
+        $group->setGroup($this);
         $this->groups[] = $group;
 
-        if ($routes !== null) {
-            $routes($group);
+        if ($routeBuilder !== null) {
+            $routeBuilder($group);
         }
         return $group;
     }
@@ -34,12 +33,6 @@ class RouteGroup
     public function getGroups(): array
     {
         return $this->groups;
-    }
-
-    public function addMiddleware($middleware): self
-    {
-        $this->middlewares[] = $middleware;
-        return $this;
     }
 
     public function addRoute(string $method, string $path, $handler): Route
@@ -64,15 +57,16 @@ class RouteGroup
         return $this->routes;
     }
 
-    public function getOwnMidlewares(): array {
-        return $this->middlewares;
+    public function attach(IRouteBuilder $builder): RouteGroup
+    {
+        $builder->build($this);
+        return $this;
     }
 
-    public function getMiddlewares(): array
+    public function attachTo(string $path, IRouteBuilder $builder): RouteGroup
     {
-        if ($this->parent) {
-            return \array_merge($this->parent->getMiddlewares(), $this->middlewares);
-        }
-        return $this->middlewares;
+        $group = $this->addGroup($path);
+        $builder->build($group);
+        return $group;
     }
 }
