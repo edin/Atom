@@ -17,6 +17,8 @@ final class Route
         $this->group = $group;
         $this->method = $method;
         $this->path = $path;
+
+        //TODO: Convert to RouteHandler
         $this->handler = $handler;
     }
 

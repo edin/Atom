@@ -78,6 +78,11 @@ abstract class Application
     abstract public function registerRoutes(Router $router);
     abstract public function registerServices(Container $container);
 
+    public function use($plugin): void
+    {
+        //TODO: Use plugin somehow
+    }
+
     public function getBaseUrl(): string
     {
         return $this->baseUrl;
