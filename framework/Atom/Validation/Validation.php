@@ -4,6 +4,14 @@ namespace Atom\Validation;
 
 class Validation
 {
+    protected $errorMessage = "maxValueError";
+    protected $maxValue = 0;
+
+    public function __construct(float $maxValue)
+    {
+        $this->maxValue = $maxValue;
+    }
+
     public static function create(callable $builder)
     {
         $v = new static;
