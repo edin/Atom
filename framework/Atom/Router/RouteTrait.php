@@ -8,9 +8,10 @@ trait RouteTrait
     private $title;
     private $description;
     private $path;
+    private $group;
     private $middlewares = [];
     private $metadata = [];
-    private $group;
+    private $actionFilters = [];
 
     public function withName(string $name): self
     {
@@ -104,5 +105,24 @@ trait RouteTrait
             return \array_merge($this->group->getMiddlewares(), $this->middlewares);
         }
         return $this->middlewares;
+    }
+
+    public function addActionFilter($actionFilter): self
+    {
+        $this->actionFilters[] = $actionFilter;
+        return $this;
+    }
+
+    public function getOwnActionFilters(): array
+    {
+        return $this->actionFilters;
+    }
+
+    public function getActionFilters(): array
+    {
+        if ($this->group) {
+            return \array_merge($this->group->getActionFilters(), $this->actionFilters);
+        }
+        return $this->actionFilters;
     }
 }
