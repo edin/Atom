@@ -3,18 +3,17 @@
 namespace Atom\Dispatcher;
 
 use Atom\Container\Container;
-use Atom\Dispatcher\ResultHandler\ArrayResultHandler;
-use Atom\Dispatcher\ResultHandler\StringResultHandler;
-use Atom\Dispatcher\ResultHandler\ViewInfoResultHandler;
 use Psr\Http\Message\ResponseInterface;
 
 class ResultHandler
 {
     private $container;
+    private $resultHandlerRegistry;
 
-    public function __construct(Container $container)
+    public function __construct(Container $container, ResultHandlerRegistry $resultHandlerRegistry)
     {
         $this->container = $container;
+        $this->resultHandlerRegistry = $resultHandlerRegistry;
     }
 
     private function getResponse()
@@ -28,17 +27,10 @@ class ResultHandler
             return $result;
         }
 
-        // TODO: Provide registry for result handlers
-        $resultHandlers = [
-            new ViewInfoResultHandler($this->container),
-            new StringResultHandler($this->container),
-            new ArrayResultHandler($this->container),
-        ];
+        $handler = $this->resultHandlerRegistry->getHandler($result);
 
-        foreach ($resultHandlers as $resultHandler) {
-            if ($resultHandler->isMatch($result)) {
-                return $resultHandler->process($result);
-            }
+        if ($handler != null) {
+            return $handler->process($result);
         }
 
         // Default result handler
