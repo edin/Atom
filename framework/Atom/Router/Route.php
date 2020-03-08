@@ -51,6 +51,12 @@ final class Route
         return $result;
     }
 
+    public function addActionFilter($actionFilter): self
+    {
+        $this->actionFilters[] = $actionFilter;
+        return $this;
+    }
+
     public function addMiddleware($middleware): self
     {
         $this->middlewares[] = $middleware;

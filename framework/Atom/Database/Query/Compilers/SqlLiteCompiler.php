@@ -13,4 +13,9 @@ class SqLiteCompiler extends AbstractCompiler
     {
         return "`$name`";
     }
+
+    public function quoteValue(string $value): string
+    {
+        return "`$value`";
+    }
 }

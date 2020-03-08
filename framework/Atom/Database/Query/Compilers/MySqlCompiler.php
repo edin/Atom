@@ -14,8 +14,8 @@ class MySqlCompiler extends AbstractCompiler
         return "`$name`";
     }
 
-    public function quoteValue(string $name): string
+    public function quoteValue(string $value): string
     {
-        return "`$name`";
+        return "`$value`";
     }
 }

@@ -6,12 +6,22 @@ final class Router extends RouteGroup
 {
     public function getAllRoutes(): array
     {
-        //TODO: Collect child route groups
-
+        $stack = new \SplStack;
         $result = [];
+
         foreach ($this->getGroups() as $group) {
+            $stack->push($group);
+        }
+
+        while (!$stack->isEmpty()) {
+            $group = $stack->pop();
+
             foreach ($group->getRoutes() as $route) {
                 $result[] = $route;
+            }
+
+            foreach ($group->getGroups() as $group) {
+                $stack->push($group);
             }
         }
         return $result;
