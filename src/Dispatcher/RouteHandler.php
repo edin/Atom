@@ -2,15 +2,15 @@
 
 namespace Atom\Dispatcher;
 
-use Atom\Router\Route;
-use Atom\Container\Container;
-use Atom\Router\Action;
 use Exception;
-use Psr\Http\Server\RequestHandlerInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\ResponseInterface;
 use ReflectionClass;
+use Atom\Router\Route;
+use Atom\Router\Action;
 use ReflectionFunction;
+use Atom\Container\Container;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+use Psr\Http\Server\RequestHandlerInterface;
 
 class RouteHandler implements RequestHandlerInterface
 {

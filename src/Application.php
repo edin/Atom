@@ -2,8 +2,10 @@
 
 namespace Atom;
 
-use Atom\Container\Container;
 use Atom\Router\Router;
+use Atom\View\ViewServices;
+use Atom\Container\Container;
+use Atom\Dispatcher\DispatcherServices;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -59,15 +61,15 @@ abstract class Application
         $container = $this->getContainer();
         $container->Application = $this;
         $container->Router = Router::class;
-        $container->bind(Container::class)->toSelf()->toInstance($container)->withName("Container");
+        $container->bind(Container::class)
+            ->withName("Container")
+            ->toInstance($container);
 
-        $container->ViewEngine = \Atom\View\ViewEngine::class;
-        $container->Dispatcher = \Atom\Dispatcher\Dispatcher::class;
-        $container->ResultHandler = \Atom\Dispatcher\ResultHandler::class;
-        $container->ResponseEmitter = \Atom\Dispatcher\ResponseEmitter::class;
+        $this->use(DispatcherServices::class);
+        $this->use(ViewServices::class);
     }
 
-    public abstract function configure();
+    abstract public function configure();
 
     public function use($plugin): void
     {

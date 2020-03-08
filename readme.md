@@ -1,22 +1,23 @@
 # Atom Framework
 
-Elementar PHP framework delivered within project. Clone and custimize.
+Simple PHP Framework
 
 ```
-    git clone https://github.com/edin/Atom.git
-    composer install
+    git clone https://github.com/edin/AtomApp.git
+    composer update
     php -S localhost:3000
     http://localhost:3000/public
 ```
 
 # Project goals
 
-- Simple php framework for building rest apis and simple apps
+- Simple php framework
 - Simple routing
 - Simple dependency injection container
+- Simple templates
+- Simple validation
 - PSR-7 HTTP Message interfaces
 - PSR-15 Middleware support
-- Simple php based templates
 
 # Basic concepts
 
@@ -40,43 +41,42 @@ Elementar PHP framework delivered within project. Clone and custimize.
 <?php
 
 namespace App;
-use App\Models\UserRepository;
 
 class Application extends \Atom\Application
 {
-    public function registerRoutes()
+    public function configure()
     {
-        $router = $this->getRouter();
-        $group = $router->addGroup("/");
-        $group->addRoute("GET", "/", "HomeController@index");
-    }
-
-    public function registerServices()
-    {
-        $di = $this->getContainer();
-
-        $di->View = function ($di) {
-            $view = new \Atom\View\View($di);
-            $view->setViewsDir(dirname(__FILE__) . "/Views");
-            $view->setEngines([
-                ".php" => "ViewEngine",
-            ]);
-            return $view;
-        };
-
-        $di->UserRepository = function ($di) {
-            return new \App\Models\UserRepository();
-        };
-
-        $di->HomeController = \App\Controllers\HomeController::class;
-    }
-
-    public function resolveController($name)
-    {
-        return $this->getContainer()->get($name);
+        $this->use(DispatcherServices::class);
+        $this->use(ViewServices::class);
+        $this->use(Routes::class);
     }
 }
 ```
+
+## Routes configuration
+
+```php
+<?php
+
+namespace App;
+
+class Routes
+{
+    public function configureServices(Container $di)
+    {
+        $di->UserRepository = \App\Models\UserRepository::class;
+        $di->HomeController = \App\Controllers\HomeController::class;
+    }
+
+    public function configure(Router $router)
+    {
+        $router->addGroup("/", function(RouteGroup $group) {
+            $group->addRoute("GET", "/", "HomeController@index");
+        });
+    }
+}
+```
+
 
 ## Controllers
 
@@ -85,22 +85,13 @@ class Application extends \Atom\Application
 
 namespace App\Controllers;
 
-use App\Application;
 use App\Models\UserRepository;
 use Atom\View\ViewInfo;
 
 final class HomeController
 {
-    // Public fields are resolved by DI using field name
-    // e.g. $container->get("UserRepository")
-    public $UserRepository;
-    public $View;
-    public $Response;
-    public $Request;
-    public $Container;
-
-    // Parameters are resolved by type name or by name
-    public function index($id = 0, UserRepository $repository, Application $app)
+    // Parameters are resolved from container or from route parameters
+    public function index($id = 0, UserRepository $repository)
     {
         return new ViewInfo('home/index', ['items' => $repository->findAll()]);
     }
@@ -133,9 +124,6 @@ class UserRepository
 ```html
 <!doctype html>
 <html lang="en">
-    <head>
-    </head>
-
     <body>
         <main role="main" class="container">
             <?= $content ?>
@@ -159,7 +147,9 @@ class UserRepository
         <td><?= $item->email ?></td>
         <td>
             <div class="float-right">
-                <a class="btn btn-sm btn-primary" href="<?= $baseUrl ?>item">Detail</a>
+                <a class="btn btn-sm btn-primary" href="<?= $baseUrl ?>item">
+                    Detail
+                </a>
             </div>
         </td>
     </tr>

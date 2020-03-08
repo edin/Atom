@@ -26,9 +26,9 @@ final class View
         return "";
     }
 
-    public function setViewsDir(string $viewDir)
+    public function setViewsDir(string $viewsDir)
     {
-        $this->viewsDir = $viewDir;
+        $this->viewsDir = $viewsDir;
     }
 
     public function getViewsDir(): string

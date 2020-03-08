@@ -3,6 +3,8 @@
 namespace Atom\Dispatcher;
 
 use Atom\Container\Container;
+use Nyholm\Psr7\Factory\Psr17Factory;
+use Nyholm\Psr7Server\ServerRequestCreator;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
@@ -10,19 +12,28 @@ final class DispatcherServices
 {
     public function configureServices(Container $container)
     {
-        // $container->bind(ServerRequestInterface::class)->toFactory(function () {
-        //     $factory = new \Nyholm\Psr7\Factory\Psr17Factory();
-        //     $creator = new \Nyholm\Psr7Server\ServerRequestCreator($factory, $factory, $factory, $factory);
-        //     $serverRequest = $creator->fromGlobals();
-        //     return $serverRequest;
-        // })->withName("Request");
+        $container->bind(ServerRequestInterface::class)
+            ->withName("Request")
+            ->toFactory(function () {
+                $factory = new Psr17Factory();
+                $creator = new ServerRequestCreator($factory, $factory, $factory, $factory);
+                $serverRequest = $creator->fromGlobals();
+                return $serverRequest;
+            });
 
-        // $container->bind(ResponseInterface::class)->toFactory(function () {
-        //     $factory = new Psr17Factory();
-        //     return $factory->createResponse();
-        // })->withName("Response");
+        $container->bind(ResponseInterface::class)
+            ->withName("Response")
+            ->toFactory(function () {
+                $factory = new Psr17Factory();
+                return $factory->createResponse();
+            });
 
+        $container->bind(IResponseEmitter::class)
+            ->withName("ResponseEmitter")
+            ->to(ResponseEmitter::class)
+            ->asShared();
 
-
+        $container->Dispatcher = Dispatcher::class;
+        $container->ResultHandler = ResultHandler::class;
     }
 }
