@@ -32,14 +32,8 @@ final class Route
     {
         $prefixPath = ($this->group) ? $this->group->getPrefixPath() : "";
         $prefixPath = rtrim($prefixPath, " /");
-
-        if ($prefixPath != "") {
-            $routePath = ltrim($this->path, " /");
-            $result = $prefixPath . "/" . $routePath;
-        } else {
-            $result = $this->path;
-        }
-
+        $routePath  = "/" . ltrim($this->path, " /");
+        $result = $prefixPath . $routePath;
         return $result;
     }
 

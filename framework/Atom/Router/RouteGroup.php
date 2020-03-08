@@ -6,6 +6,7 @@ class RouteGroup
 {
     use RouteTrait;
     private $routes = [];
+    private $groups = [];
 
     private function setGroup(RouteGroup $group)
     {
