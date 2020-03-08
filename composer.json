@@ -1,9 +1,12 @@
 {
-    "name": "Atom",
+    "name": "atom/framework",
     "description": "Atom Framework",
-    "keywords": ["framework", "Atom"],
+    "keywords": [
+        "framework",
+        "Atom"
+    ],
     "license": "MIT",
-
+    "minimum-stability": "dev",
     "require": {
         "php": "^7.1.0",
         "nikic/fast-route": "^1.3",
