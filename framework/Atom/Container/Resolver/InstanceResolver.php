@@ -30,6 +30,6 @@ final class InstanceResolver implements IDependencyResolver
 
     public function resolveType(): ?string
     {
-        return null;
+        return get_class($this->instance);
     }
 }
