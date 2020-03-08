@@ -69,7 +69,7 @@ abstract class Application
 
     public abstract function configure();
 
-    public function use(string $plugin): void
+    public function use($plugin): void
     {
         $this->plugins[] = $plugin;
     }
@@ -94,7 +94,6 @@ abstract class Application
             $this->pluginInstances[] =  $container->createType($pluginType);
         }
 
-        // Run optional configureServices method
         foreach ($this->pluginInstances as $plugin) {
             $reflection = new \ReflectionClass($plugin);
             if ($reflection->hasMethod("configureServices")) {
@@ -104,7 +103,6 @@ abstract class Application
             }
         }
 
-        // Run optional configure method
         foreach ($this->pluginInstances as $plugin) {
             $reflection = new \ReflectionClass($plugin);
             if ($reflection->hasMethod("configure")) {
