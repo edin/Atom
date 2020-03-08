@@ -5,22 +5,29 @@ namespace Atom\Validation;
 class ValidationResult
 {
     private $errorMessage = "";
+    private $attributes = [];
     private $isValid;
 
-    private function __construct(string $errorMessage, bool $isValid)
+    private function __construct(string $errorMessage, array $attributes, bool $isValid)
     {
         $this->errorMessage = $errorMessage;
+        $this->attributes = $attributes;
         $this->isValid = $isValid;
     }
 
     public static function success(): self
     {
-        return new static("", true);
+        return new static("", [], true);
     }
 
-    public static function failure(string $errorMessage): self
+    public static function failure(string $errorMessage, array $attributes = []): self
     {
-        return new static($errorMessage, false);
+        return new static($errorMessage, $attributes, false);
+    }
+
+    public function getAttributes(): array
+    {
+        return $this->attributes;
     }
 
     public function getErrorMessage(): string

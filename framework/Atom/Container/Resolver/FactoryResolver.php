@@ -18,18 +18,16 @@ final class FactoryResolver implements IDependencyResolver
     public function resolve(ResolutionContext $context = null, array $params = [])
     {
         $args = [];
-
         foreach ($this->dependencies as $parameter) {
             $args[$parameter->index] = $params[$parameter->name] ?? $parameter->defaultValue;
 
             if ($parameter->typeName && !$parameter->isBuiltinType) {
                 $resolver = $this->registration->getContainer()->getResolver($parameter->typeName);
-
                 $args[$parameter->index] = $resolver->resolve($context, $params);
             }
         }
-
-        return $this->reflectionFunction->invokeArgs($args);
+        $result = $this->reflectionFunction->invokeArgs($args);
+        return $result;
     }
 
     public function getRegistration(): ComponentRegistration

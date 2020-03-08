@@ -4,9 +4,17 @@ namespace Atom\Database\Query;
 
 use Atom\Database\Query\Ast\Column;
 use Atom\Database\Query\Ast\Join;
+use Atom\Database\Query\Ast\SortOrder;
+use Atom\Database\Query\Ast\Table;
 
 final class SelectQuery extends Query
 {
+    public function from(string $table): self
+    {
+        $this->table = Table::fromValue($table);
+        return $this;
+    }
+
     public function distinct(): self
     {
         $this->isDistinct = true;
@@ -86,5 +94,31 @@ final class SelectQuery extends Query
         $criteria = new JoinCriteria();
         $joinBuilder($criteria);
         return $criteria;
+    }
+
+    private function having(callable $criteriaBuilder): self
+    {
+        $criteria = new JoinCriteria();
+        $criteriaBuilder($criteria);
+        $this->having[] = $criteria;
+        return $this;
+    }
+
+    private function orderBy(string $field, string $order = SortOrder::ASC): self
+    {
+        $this->orderBy[] = SortOrder::fromColumn($field, SortOrder::ASC);
+        return $this;
+    }
+
+    private function orderByAsc(string $field): self
+    {
+        $this->orderBy[] = SortOrder::fromColumn($field, SortOrder::ASC);
+        return $this;
+    }
+
+    private function orderByDesc(string $field): self
+    {
+        $this->orderBy[] = SortOrder::fromColumn($field, SortOrder::DESC);
+        return $this;
     }
 }

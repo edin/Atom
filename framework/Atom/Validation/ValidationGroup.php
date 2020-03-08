@@ -6,7 +6,6 @@ use Atom\Validation\IValidator;
 use Atom\Validation\Validators\EmailValidator;
 use Atom\Validation\Validators\MaxValidator;
 use Atom\Validation\Validators\MinValidator;
-use Atom\Validation\Validators\NullableValidator;
 use Atom\Validation\Validators\RequiredValidator;
 
 class ValidationGroup
@@ -42,10 +41,10 @@ class ValidationGroup
         return $this->addRule(new RequiredValidator());
     }
 
-    public function nullable(): self
-    {
-        return $this->addRule(new NullableValidator());
-    }
+    // public function nullable(): self
+    // {
+    //     return $this->addRule(new NullableValidator());
+    // }
 
     public function min($min): self
     {

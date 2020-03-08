@@ -4,12 +4,9 @@ namespace Atom\Router;
 
 final class Route
 {
-    private $name;
-    private $group;
+    use RouteTrait;
     private $method;
-    private $path;
     private $handler;
-    private $middlewares = [];
     private $params = [];
 
     public function __construct(RouteGroup $group, string  $method, string $path, $handler)
@@ -17,13 +14,8 @@ final class Route
         $this->group = $group;
         $this->method = $method;
         $this->path = $path;
+        //TODO: Convert to RouteHandler
         $this->handler = $handler;
-    }
-
-    public function withName(string $name): Route
-    {
-        $this->name = $name;
-        return $this;
     }
 
     public function setParams(array $params): void
@@ -57,40 +49,9 @@ final class Route
         return $this;
     }
 
-    public function addMiddleware($middleware): self
-    {
-        $this->middlewares[] = $middleware;
-        return $this;
-    }
-
-    public function getGroup(): RouteGroup
-    {
-        return $this->group;
-    }
-
-    public function getOwnMiddlewares(): array
-    {
-        return $this->middlewares;
-    }
-
-    public function getMiddlewares(): array
-    {
-        return \array_merge($this->getGroup()->getMiddlewares(), $this->middlewares);
-    }
-
-    public function getName(): ?string
-    {
-        return $this->name;
-    }
-
     public function getMethod(): string
     {
         return $this->method;
-    }
-
-    public function getPath(): string
-    {
-        return $this->path;
     }
 
     public function getHandler()

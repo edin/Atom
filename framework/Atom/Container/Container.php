@@ -28,7 +28,13 @@ final class Container
         return $this->registry[$name];
     }
 
-    public function createType(string $targetType): object {
+    public function getRegistry()
+    {
+        return $this->registry;
+    }
+
+    public function createType(string $targetType): object
+    {
 
         $context = new ResolutionContext();
 
@@ -73,9 +79,14 @@ final class Container
         }
 
         if (!isset($this->resolvers[$typeName]) && !isset($this->registry[$typeName])) {
-            $typeFactory = $this->get("TypeFactory");
 
-            if ($typeFactory->canCreateType($typeName)) {
+            $typeFactory = null;
+
+            if ($this->has("TypeFactory")) {
+                $typeFactory = $this->get("TypeFactory");
+            }
+
+            if ($typeFactory && $typeFactory->canCreateType($typeName)) {
                 $registration = $this->bind($typeName)->toSelf()->toTypeFactory($typeFactory);
                 foreach ($registration->getResolvers() as $key => $value) {
                     $this->resolvers[$key] = $value;
@@ -109,7 +120,8 @@ final class Container
 
     public function resolveType(string $typeName)
     {
-        return $this->getResolver($typeName)->resolveType();
+        $resolver = $this->getResolver($typeName);
+        return $resolver->resolveType();
     }
 
     public function resolve(string $typeName, $params = [])
@@ -164,6 +176,8 @@ final class Container
         return $result;
     }
 
+    private static $count = 0;
+
     public function resolveInContext(ResolutionContext $context, string $typeName, array $params = [])
     {
         if (isset($this->alias[$typeName])) {
@@ -176,7 +190,6 @@ final class Container
 
         $resolver = $this->getResolver($typeName);
         $registration = $resolver->getRegistration();
-
 
         $instance = $resolver->resolve($context, $params);
 

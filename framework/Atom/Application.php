@@ -4,7 +4,6 @@ namespace Atom;
 
 use Atom\Container\Container;
 use Atom\Router\Router;
-use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -14,8 +13,10 @@ abstract class Application
     public static $app = null;
     private $container = null;
     protected $baseUrl = "";
+    private $plugins = [];
+    private $pluginInstances = [];
 
-    public function __construct($configuration = [])
+    public function __construct()
     {
         self::$app = $this;
     }
@@ -48,35 +49,30 @@ abstract class Application
         return $this->getContainer()->Dispatcher;
     }
 
+    final public function getResponseEmitter()
+    {
+        return $this->getContainer()->ResponseEmitter;
+    }
+
     public function registerDefaultServices()
     {
         $container = $this->getContainer();
-
-        $container->Router = Router::class;
         $container->Application = $this;
-
-        $container->bind(Container::class)->toInstance($container)->withName("Container");
-
-        // TODO: Remove dependency from this file third party libraries
-        $container->bind(ServerRequestInterface::class)->toFactory(function () {
-            $factory = new \Nyholm\Psr7\Factory\Psr17Factory();
-            $creator = new \Nyholm\Psr7Server\ServerRequestCreator($factory, $factory, $factory, $factory);
-            $serverRequest = $creator->fromGlobals();
-            return $serverRequest;
-        })->withName("Request");
-
-        $container->bind(ResponseInterface::class)->toFactory(function () {
-            $factory = new Psr17Factory();
-            return $factory->createResponse();
-        })->withName("Response");
+        $container->Router = Router::class;
+        $container->bind(Container::class)->toSelf()->toInstance($container)->withName("Container");
 
         $container->ViewEngine = \Atom\View\ViewEngine::class;
         $container->Dispatcher = \Atom\Dispatcher\Dispatcher::class;
         $container->ResultHandler = \Atom\Dispatcher\ResultHandler::class;
+        $container->ResponseEmitter = \Atom\Dispatcher\ResponseEmitter::class;
     }
 
-    abstract public function registerRoutes(Router $router);
-    abstract public function registerServices(Container $container);
+    public abstract function configure();
+
+    public function use($plugin): void
+    {
+        $this->plugins[] = $plugin;
+    }
 
     public function getBaseUrl(): string
     {
@@ -90,37 +86,37 @@ abstract class Application
 
     public function initialize()
     {
+        $container = $this->getContainer();
         $this->registerDefaultServices();
-        $this->registerServices($this->getContainer());
-        $this->registerRoutes($this->getRouter());
+        $this->configure();
+
+        foreach ($this->plugins as $pluginType) {
+            $this->pluginInstances[] =  $container->createType($pluginType);
+        }
+
+        foreach ($this->pluginInstances as $plugin) {
+            $reflection = new \ReflectionClass($plugin);
+            if ($reflection->hasMethod("configureServices")) {
+                $configureServices = $reflection->getMethod("configureServices");
+                $parameters =  $container->resolveMethodParameters($configureServices);
+                $configureServices->invokeArgs($plugin, $parameters);
+            }
+        }
+
+        foreach ($this->pluginInstances as $plugin) {
+            $reflection = new \ReflectionClass($plugin);
+            if ($reflection->hasMethod("configure")) {
+                $configure = $reflection->getMethod("configure");
+                $parameters =  $this->container->resolveMethodParameters($configure);
+                $configure->invokeArgs($plugin, $parameters);
+            }
+        }
     }
 
     public function run()
     {
         $this->initialize();
-        $this->sendResponse($this->getDispatcher()->handle($this->getRequest()));
-    }
-
-    public function sendResponse(ResponseInterface $response)
-    {
-        $http_line = sprintf(
-            'HTTP/%s %s %s',
-            $response->getProtocolVersion(),
-            $response->getStatusCode(),
-            $response->getReasonPhrase()
-        );
-        header($http_line, true, $response->getStatusCode());
-        foreach ($response->getHeaders() as $name => $values) {
-            foreach ($values as $value) {
-                header("$name: $value", false);
-            }
-        }
-        $stream = $response->getBody();
-        if ($stream->isSeekable()) {
-            $stream->rewind();
-        }
-        while (!$stream->eof()) {
-            echo $stream->read(1024 * 8);
-        }
+        $response = $this->getDispatcher()->handle($this->getRequest());
+        $this->getResponseEmitter()->emit($response);
     }
 }
