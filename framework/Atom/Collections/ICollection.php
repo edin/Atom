@@ -34,28 +34,9 @@ interface ISet extends ICollection
     public function except(iterable $set);
 }
 
-interface IStack extends ICollection
+interface IStack extends IReadOnlyCollection
 {
     public function push($value);
     public function pop();
     public function peek();
-}
-
-class Collection implements ICollection
-{
-    private $items = [];
-
-    public function add($value)
-    {
-        $this->items[] = $value;
-    }
-
-    public function remove($value)
-    {
-    }
-
-    public function clear()
-    {
-        $this->items = [];
-    }
 }

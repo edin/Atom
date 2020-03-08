@@ -3,6 +3,7 @@
 namespace Atom\Database\Query;
 
 use Atom\Database\Query\Ast\BinaryExpression;
+use Atom\Database\Query\Ast\GroupExpression;
 
 class Criteria
 {
@@ -50,7 +51,7 @@ class Criteria
         return $this->combineExpression("OR", $column, $value, true);
     }
 
-    public function orGroup(callable $callable): self
+    private function combineGroupExpression($operator, callable $callable)
     {
         $criteria = new static();
         $callable($criteria);
@@ -59,6 +60,8 @@ class Criteria
         $params = $criteria->getParameters();
 
         if ($expression !== null) {
+            $expression = new GroupExpression($expression);
+
             foreach ($params as $key => $value) {
                 $this->addParameter($key, $value);
             }
@@ -67,13 +70,23 @@ class Criteria
                 $this->expression = $expression;
             } else {
                 $orExpression = new BinaryExpression();
-                $orExpression->operator = "OR";
+                $orExpression->operator = $operator;
                 $orExpression->leftNode = $this->expression;
                 $orExpression->rightNode = $expression;
                 $this->expression = $orExpression;
             }
         }
         return $this;
+    }
+
+    public function orGroup(callable $callable): self
+    {
+        return $this->combineGroupExpression("OR", $callable);
+    }
+
+    public function group(callable $callable): self
+    {
+        return $this->combineGroupExpression("AND", $callable);
     }
 
     public function addParameter(string $name, $value): self

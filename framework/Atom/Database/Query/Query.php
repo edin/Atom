@@ -2,8 +2,6 @@
 
 namespace Atom\Database\Query;
 
-use Atom\Database\Query\Ast\Table;
-
 abstract class Query
 {
     protected $table = null;
@@ -24,12 +22,6 @@ abstract class Query
     public function getJoins()
     {
         return $this->joins;
-    }
-
-    public function from(string $table): self
-    {
-        $this->table = Table::fromValue($table);
-        return $this;
     }
 
     public function show()

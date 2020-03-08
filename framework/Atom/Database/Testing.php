@@ -1,6 +1,7 @@
 <?php
 
 use Atom\Database\Query\Ast\BinaryExpression;
+use Atom\Database\Query\Ast\GroupExpression;
 use Atom\Database\Query\Criteria;
 use Atom\Database\Query\JoinCriteria;
 use Atom\Database\Query\Operator;
@@ -119,36 +120,82 @@ include "../../../vendor/autoload.php";
 //     })
 //     ;
 
-$query = Query::select()->from("users u")
-        ->columns([
-            "u.first_name x"
-        ])
-        ->join("comments c", function (JoinCriteria $join) {
-            $join->on("u.comment_id", Operator::less(1));
-            $join->on("u.comment_id", "c.id");
-            $join->orOn("u.comment_id", "c.id");
-            $join->on("u.comment_id", "c.id");
+$query = Query::select()
+    ->from("users u")
+    ->columns(["u.first_name x"])
+    ->join("comments c", function (JoinCriteria $join) {
+        $join->group(function (JoinCriteria $group) {
+            $group->on("u.comment_id", Operator::less(1));
+            $group->on("u.comment_id", "c.id");
+            $group->orOn("u.comment_id", "c.id");
+            $group->on("u.comment_id", "c.id");
         });
+
+        $join->group(function (JoinCriteria $group) {
+            $group->on("a", Operator::equal(1));
+            $group->on("a", Operator::equal(1));
+            $group->on("a", Operator::equal(1));
+            $group->on("a", Operator::equal(1));
+        });
+
+        $join->orGroup(function (JoinCriteria $group) {
+            $group->on("a", Operator::equal(1));
+            $group->on("a", Operator::equal(1));
+            $group->on("a", Operator::equal(1));
+            $group->on("a", Operator::equal(1));
+        });
+
+        $join->orGroup(function (JoinCriteria $group) {
+            $group->on("a", Operator::equal(1));
+            $group->on("a", Operator::equal(1));
+            $group->on("a", Operator::equal(1));
+            $group->on("a", Operator::equal(1));
+        });
+
+        $join->orGroup(function (JoinCriteria $group) {
+            $group->on("a", Operator::equal(1));
+            $group->on("a", Operator::equal(1));
+            $group->on("a", Operator::equal(1));
+            $group->on("a", Operator::equal(1));
+        });
+
+        $join->orGroup(function (JoinCriteria $group) {
+            $group->on("a", Operator::equal(1));
+            $group->on("a", Operator::in([1, 2, 3, 4, 5]));
+            $group->on("a", Operator::equal(1));
+            $group->on("a", Operator::equal(1));
+        });
+    });
 
 $join = $query->getJoins();
 
 function buildCriteria($node)
 {
     if ($node instanceof BinaryExpression) {
-        $result = buildCriteria($node->leftNode) . " {$node->operator} " . buildCriteria($node->rightNode);
+
+        $newLine = "";
+        if ($node->rightNode instanceof GroupExpression) {
+            $newLine = "\n";
+        }
+
+        $result = buildCriteria($node->leftNode) . " {$node->operator} $newLine" . buildCriteria($node->rightNode);
         if ($node->operator === "AND" || $node->operator === "OR") {
-            $result = "({$result})";
+            $result = "{$result}";
         }
         return $result;
+    } elseif ($node instanceof GroupExpression) {
+        $result = buildCriteria($node->node);
+        return "($result)";
     } elseif ($node instanceof Operator) {
         return $node->getValue();
     } elseif (is_object($node)) {
         return get_class($node);
     } else {
-        return (string)$node;
+        return (string) $node;
     }
 }
 
 //print_r($join[0]->getJoinCondition()->getExpression());
-
+echo "\n";
 echo buildCriteria($join[0]->getJoinCondition()->getExpression());
+echo "\n";
