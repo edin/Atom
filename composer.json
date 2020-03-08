@@ -16,14 +16,12 @@
         "psr/http-server-handler": "^1.0"
     },
     "require-dev": {
-        "filp/whoops": "^2.3",
         "phpunit/phpunit": "8"
     },
     "autoload": {
         "psr-4": {
-            "App\\": "app/",
-            "Atom\\": "framework/Atom/",
-            "Atom\\Tests\\": "framework/Tests"
+            "Atom\\": "src/",
+            "Atom\\Tests\\": "tests/"
         }
     }
 }
