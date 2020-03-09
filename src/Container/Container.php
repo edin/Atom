@@ -35,7 +35,6 @@ final class Container
 
     public function createType(string $targetType): object
     {
-
         $context = new ResolutionContext();
 
         $reflectionClass = new ReflectionClass($targetType);
@@ -79,7 +78,6 @@ final class Container
         }
 
         if (!isset($this->resolvers[$typeName]) && !isset($this->registry[$typeName])) {
-
             $typeFactory = null;
 
             if ($this->has("TypeFactory")) {
@@ -201,7 +199,8 @@ final class Container
 
     public function has($name): bool
     {
-        return isset($this->registry[$name]);
+        return isset($this->registry[$name]) ||
+               isset($this->alias[$name]);
     }
 
     public function get($name)
