@@ -14,7 +14,7 @@ class MethodRouteBuilder implements IRouteBuilder
         $this->controllerType = $controllerType;
     }
 
-    public function build(RouteGroup $group)
+    public function build(Router $group)
     {
         $classType = new ReflectionClass($this->controllerType);
         $methods = $classType->getMethods(ReflectionMethod::IS_PUBLIC);

@@ -2,8 +2,8 @@
 
 namespace Atom\Dispatcher;
 
-use Exception;
 use ReflectionClass;
+use RuntimeException;
 use Atom\Router\Route;
 use Atom\Router\Action;
 use ReflectionFunction;
@@ -34,28 +34,23 @@ class RouteHandler implements RequestHandlerInterface
 
     private function createAction(Route $route): Action
     {
-        $handler = $route->getHandler();
+        $actionHandler = $route->getActionHandler();
 
-        if ($handler instanceof \Closure) {
-            $method = new ReflectionFunction($handler);
+        if ($actionHandler->isClosure()) {
+            $method = new ReflectionFunction($actionHandler->getClosure());
             return new Action($this->container, $route, null, $method);
-        } elseif (is_string($handler)) {
-            $parts = \explode("@", $handler);
-            $controllerName = $parts[0] ?? "";
-            $methodName = $parts[1] ?? "index";
-
-            $controller = $this->container->Application->resolveController($controllerName);
-            $reflectionClass = new ReflectionClass($controller);
-            $method = $reflectionClass->getMethod($methodName);
-
-            if ($method == null) {
-                throw new Exception("Class {$reflectionClass->getName()} does not contain method {$methodName}.");
-            }
-
-            return new Action($this->container, $route, $controller, $method);
         }
 
-        $typeName = gettype($handler);
-        throw new Exception("Unsuported handler format, expected string or closure but got ${$typeName}");
+        //TODO: Controller needs to be resolved using Request scope
+        $methodName = $actionHandler->getMethodName();
+        $controller = $this->container->resolve($actionHandler->getController());
+        $reflection = new ReflectionClass($controller);
+        $method = $reflection->getMethod($methodName);
+
+        if ($method == null) {
+            throw new RuntimeException("Class {$reflection->getName()} does not contain method {$methodName}.");
+        }
+
+        return new Action($this->container, $route, $controller, $method);
     }
 }

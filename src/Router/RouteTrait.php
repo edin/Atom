@@ -8,7 +8,7 @@ trait RouteTrait
     private $title;
     private $description;
     private $path;
-    private $group;
+    private $group = null;
     private $middlewares = [];
     private $metadata = [];
     private $actionFilters = [];
@@ -56,9 +56,34 @@ trait RouteTrait
         $this->path = $path;
     }
 
+    public function getFullPath(): string
+    {
+        $prefixPath = ($this->group) ? $this->group->getPath() : "";
+        $prefixPath = rtrim($prefixPath, " /");
+        $routePath  = "/" . ltrim($this->path, " /");
+        $result = $prefixPath . $routePath;
+        return $result;
+    }
+
+    public function getGroup(): ?Router
+    {
+        return $this->group;
+    }
+
+    public function setGroup(Router $group): void
+    {
+        $this->group = $group;
+    }
+
     public function addMiddleware($middleware): self
     {
         $this->middlewares[] = $middleware;
+        return $this;
+    }
+
+    public function addMetadata(object $instance): self
+    {
+        $this->metadata[] = $instance;
         return $this;
     }
 
@@ -79,34 +104,15 @@ trait RouteTrait
 
     public function getMetadataArrayOfType(string $typeName)
     {
-        $result = [];
-        foreach ($this->metadata as $meta) {
-            if (get_class($meta) === $typeName) {
-                $result[] = $meta;
-            }
-        }
-        return $result;
-    }
-
-    public function addMetadata(object $instance): self
-    {
-        $this->metadata[] = $instance;
-        return $this;
+        $result = array_filter($this->metadata, function ($item) use ($typeName) {
+            return get_class($item) === $typeName;
+        });
+        return array_values($result);
     }
 
     public function getOwnMiddlewares(): array
     {
         return $this->middlewares;
-    }
-
-    public function setGroup(RouteGroup $group)
-    {
-        $this->group = $group;
-    }
-
-    public function getGroup(): ?RouteGroup
-    {
-        return $this->group;
     }
 
     public function getMiddlewares(): array

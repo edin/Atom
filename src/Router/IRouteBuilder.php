@@ -4,5 +4,5 @@ namespace Atom\Router;
 
 interface IRouteBuilder
 {
-    public function build(RouteGroup $group);
+    public function build(Router $group);
 }

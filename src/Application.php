@@ -81,10 +81,10 @@ abstract class Application
         return $this->baseUrl;
     }
 
-    public function resolveController($name)
-    {
-        return $this->getContainer()->get($name);
-    }
+    // public function resolveController($name)
+    // {
+    //     return $this->getContainer()->get($name);
+    // }
 
     public function initialize()
     {

@@ -6,17 +6,16 @@ final class Route
 {
     use RouteTrait;
     private $method;
-    private $controllerType;
-    private $actionName;
-    private $handler;
+    /** @var ActionHandler */
+    private $actionHandler;
     private $params = [];
 
-    public function __construct(RouteGroup $group, string  $method, string $path, $handler)
+    public function __construct(Router $group, string  $method, string $path, ActionHandler $actionHandler)
     {
         $this->group = $group;
         $this->method = $method;
         $this->path = $path;
-        $this->handler = $handler;
+        $this->actionHandler = $actionHandler;
     }
 
     public function setParams(array $params): void
@@ -29,36 +28,15 @@ final class Route
         return $this->params;
     }
 
-    public function getFullPath(): string
+    public function toController(string $controllerType, string $actionName): self
     {
-        $prefixPath = ($this->group) ? $this->group->getPath() : "";
-        $prefixPath = rtrim($prefixPath, " /");
-        $routePath  = "/" . ltrim($this->path, " /");
-        $result = $prefixPath . $routePath;
-        return $result;
-    }
-
-    public function addActionFilter($actionFilter): self
-    {
-        $this->actionFilters[] = $actionFilter;
+        $this->actionHandler->setController($controllerType, $actionName);
         return $this;
     }
 
-    public function toController(string $controllerType): self
+    public function toClosure(callable $closure): self
     {
-        $this->controllerType = $controllerType;
-        return $this;
-    }
-
-    public function toAction(string $actionName): self
-    {
-        $this->actionName = $actionName;
-        return $this;
-    }
-
-    public function toClosure(callable $handler): self
-    {
-        $this->handler = $handler;
+        $this->actionHandler->setClosure($closure);
         return $this;
     }
 
@@ -67,8 +45,8 @@ final class Route
         return $this->method;
     }
 
-    public function getHandler()
+    public function getActionHandler()
     {
-        return $this->handler;
+        return $this->actionHandler;
     }
 }

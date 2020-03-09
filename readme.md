@@ -70,7 +70,7 @@ class Routes
 
     public function configure(Router $router)
     {
-        $router->addGroup("/", function(RouteGroup $group) {
+        $router->addGroup("/", function(Router $group) {
             $group->addRoute("GET", "/", "HomeController@index");
         });
     }
