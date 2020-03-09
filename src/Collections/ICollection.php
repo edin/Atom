@@ -20,7 +20,7 @@ interface ICollection extends IReadOnlyCollection
     public function clear($value): void;
 }
 
-interface IQueue extends ICollection
+interface IQueue extends IReadOnlyCollection
 {
     public function enqueue($value): void;
     public function dequeue();
@@ -29,14 +29,14 @@ interface IQueue extends ICollection
 
 interface ISet extends ICollection
 {
-    public function union(iterable $set);
-    public function intersect(iterable $set);
-    public function except(iterable $set);
+    public function union(iterable $set): ISet;
+    public function intersect(iterable $set): ISet;
+    public function except(iterable $set): ISet;
 }
 
 interface IStack extends IReadOnlyCollection
 {
-    public function push($value);
+    public function push($value): void;
     public function pop();
     public function peek();
 }
