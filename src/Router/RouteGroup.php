@@ -56,6 +56,36 @@ class RouteGroup
         return $route;
     }
 
+    public function get(string $path, $controllerOrCallable, $action = null): Route
+    {
+        return $this->addRoute("GET", $path, $controllerOrCallable, $action);
+    }
+
+    public function post(string $path, $controllerOrCallable, $action = null): Route
+    {
+        return $this->addRoute("POST", $path, $controllerOrCallable, $action);
+    }
+
+    public function put(string $path, $controllerOrCallable, $action = null): Route
+    {
+        return $this->addRoute("PUT", $path, $controllerOrCallable, $action);
+    }
+
+    public function patch(string $path, $controllerOrCallable, $action = null): Route
+    {
+        return $this->addRoute("PATCH", $path, $controllerOrCallable, $action);
+    }
+
+    public function delete(string $path, $controllerOrCallable, $action = null): Route
+    {
+        return $this->addRoute("DELETE", $path, $controllerOrCallable, $action);
+    }
+
+    public function options(string $path, $controllerOrCallable, $action = null): Route
+    {
+        return $this->addRoute("OPTIONS", $path, $controllerOrCallable, $action);
+    }
+
     public function getRoutes(): array
     {
         return $this->routes;

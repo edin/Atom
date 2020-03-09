@@ -6,6 +6,8 @@ final class Route
 {
     use RouteTrait;
     private $method;
+    private $controllerType;
+    private $actionName;
     private $handler;
     private $params = [];
 
@@ -14,7 +16,6 @@ final class Route
         $this->group = $group;
         $this->method = $method;
         $this->path = $path;
-        //TODO: Convert to RouteHandler
         $this->handler = $handler;
     }
 
@@ -40,6 +41,24 @@ final class Route
     public function addActionFilter($actionFilter): self
     {
         $this->actionFilters[] = $actionFilter;
+        return $this;
+    }
+
+    public function toController(string $controllerType): self
+    {
+        $this->controllerType = $controllerType;
+        return $this;
+    }
+
+    public function toAction(string $actionName): self
+    {
+        $this->actionName = $actionName;
+        return $this;
+    }
+
+    public function toClosure(callable $handler): self
+    {
+        $this->handler = $handler;
         return $this;
     }
 
