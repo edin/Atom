@@ -8,21 +8,34 @@ class RouteGroup
     private $routes = [];
     private $groups = [];
 
-    private function setGroup(RouteGroup $group)
+    public function getAllRoutes(): array
     {
-        $this->group = $group;
-    }
+        $stack = new \SplStack;
+        $result = [];
 
-    public function getGroup(): ?RouteGroup
-    {
-        return $this->group;
+        foreach ($this->getGroups() as $group) {
+            $stack->push($group);
+        }
+
+        while (!$stack->isEmpty()) {
+            $group = $stack->pop();
+
+            foreach ($group->getRoutes() as $route) {
+                $result[] = $route;
+            }
+
+            foreach ($group->getGroups() as $group) {
+                $stack->push($group);
+            }
+        }
+        return $result;
     }
 
     public function addGroup(string $path = "", callable $routeBuilder = null): RouteGroup
     {
         $group = new RouteGroup();
-        $group->setPrefixPath($path);
         $group->setGroup($this);
+        $group->setPath($path);
         $this->groups[] = $group;
 
         if ($routeBuilder !== null) {
@@ -41,16 +54,6 @@ class RouteGroup
         $route = new Route($this, $method, $path, $handler);
         $this->routes[] = $route;
         return $route;
-    }
-
-    public function setPrefixPath(string $path)
-    {
-        $this->path = $path;
-    }
-
-    public function getPrefixPath()
-    {
-        return $this->path;
     }
 
     public function getRoutes(): array

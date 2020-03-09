@@ -30,7 +30,7 @@ final class Route
 
     public function getFullPath(): string
     {
-        $prefixPath = ($this->group) ? $this->group->getPrefixPath() : "";
+        $prefixPath = ($this->group) ? $this->group->getPath() : "";
         $prefixPath = rtrim($prefixPath, " /");
         $routePath  = "/" . ltrim($this->path, " /");
         $result = $prefixPath . $routePath;

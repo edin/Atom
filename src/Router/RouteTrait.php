@@ -51,6 +51,11 @@ trait RouteTrait
         return $this->path;
     }
 
+    public function setPath(string $path): void
+    {
+        $this->path = $path;
+    }
+
     public function addMiddleware($middleware): self
     {
         $this->middlewares[] = $middleware;
@@ -94,7 +99,12 @@ trait RouteTrait
         return $this->middlewares;
     }
 
-    public function getGroup(): RouteGroup
+    public function setGroup(RouteGroup $group)
+    {
+        $this->group = $group;
+    }
+
+    public function getGroup(): ?RouteGroup
     {
         return $this->group;
     }
