@@ -9,6 +9,12 @@ class Connection
     public const MySQL = "mysql";
     public const SqLite = "sqlite";
 
+    private $driver;
+    private $host;
+    private $user;
+    private $password;
+    private $database;
+
     public function __construct(string $driver, string $host, string $user, string $password, string $database)
     {
         $this->driver = $driver;

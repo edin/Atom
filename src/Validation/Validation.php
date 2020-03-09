@@ -2,9 +2,10 @@
 
 namespace Atom\Validation;
 
-class Validation
+final class Validation
 {
     private static $localisation;
+    private $builder;
 
     public static function create(callable $builder)
     {

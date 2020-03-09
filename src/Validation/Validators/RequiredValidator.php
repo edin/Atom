@@ -2,22 +2,22 @@
 
 namespace Atom\Validation\Validators;
 
-use Atom\Validation\ValidationResult;
+use Atom\Validation\ValidatorResult;
 
 final class RequiredValidator extends AbstractValidator
 {
     protected $errorMessage = "requiredError";
 
-    public function validate($value): ValidationResult
+    public function validate($value): ValidatorResult
     {
         $result = $value;
 
         if (!$this->hasValue($value)) {
-            return ValidationResult::failure($this->getErrorMessage(), [
+            return ValidatorResult::failure($this->getErrorMessage(), [
                 "value" => $value,
             ]);
         }
 
-        return ValidationResult::success($result);
+        return ValidatorResult::success($result);
     }
 }

@@ -19,9 +19,9 @@ final class LengthValidator extends AbstractValidator
     public function getAttributes($value): array
     {
         return [
-            "value"    => $value,
+            "value" => $value,
             "minValue" => $this->minValue,
-            "maxValue" => $this->maxValue
+            "maxValue" => $this->maxValue,
         ];
     }
 

@@ -2,11 +2,14 @@
 
 namespace Atom\Container\Resolver;
 
-use Atom\Container\ResolutionContext;
 use Atom\Container\ComponentRegistration;
+use Atom\Container\ResolutionContext;
 
 final class InstanceResolver implements IDependencyResolver
 {
+    private $registration;
+    private $instance;
+
     public function __construct(ComponentRegistration $registration)
     {
         $this->registration = $registration;

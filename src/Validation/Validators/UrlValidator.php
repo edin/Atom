@@ -11,7 +11,7 @@ final class UrlValidator extends AbstractValidator
     public function getAttributes($value)
     {
         return [
-            "value" => $value
+            "value" => $value,
         ];
     }
 

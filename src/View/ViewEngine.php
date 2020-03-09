@@ -9,6 +9,7 @@ final class ViewEngine implements \Atom\Interfaces\IViewEngine
     private $sectionStack;
     private $view;
     private $params = [];
+    private $currentTemplate;
 
     public function __construct(View $view)
     {
@@ -16,11 +17,13 @@ final class ViewEngine implements \Atom\Interfaces\IViewEngine
         $this->sectionStack = new \SplStack();
     }
 
-    public function getParams(): array {
+    public function getParams(): array
+    {
         return $this->params;
     }
 
-    public function setParams(array $params): void {
+    public function setParams(array $params): void
+    {
         $this->params = $params;
     }
 

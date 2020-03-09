@@ -80,7 +80,7 @@ trait RouteTrait
     public function getMetadataArrayOfType(string $typeName)
     {
         $result = [];
-        foreach ($this->meta as $meta) {
+        foreach ($this->metadata as $meta) {
             if (get_class($meta) === $typeName) {
                 $result[] = $meta;
             }

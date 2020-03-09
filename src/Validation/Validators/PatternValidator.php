@@ -2,7 +2,7 @@
 
 namespace Atom\Validation\Validators;
 
-use Atom\Validation\ValidationResult;
+use Atom\Validation\ValidatorResult;
 
 final class PatternValidator extends AbstractValidator
 {
@@ -17,18 +17,18 @@ final class PatternValidator extends AbstractValidator
     public function getAttributes($value): array
     {
         return [
-            "value" => $value
+            "value" => $value,
         ];
     }
 
-    public function validate($value): ValidationResult
+    public function validate($value): ValidatorResult
     {
         $result = $value;
         if (!$this->hasValue($value)) {
             if (preg_match($this->pattern, $value) !== 1) {
-                return ValidationResult::failure($this->getErrorMessage(), $this->getAttributes($value));
+                return ValidatorResult::failure($this->getErrorMessage(), $this->getAttributes($value));
             }
         }
-        return ValidationResult::success($result);
+        return ValidatorResult::success($result);
     }
 }

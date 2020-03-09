@@ -7,6 +7,7 @@ use Atom\Router\Route;
 
 final class Action
 {
+    private $container;
     private $route;
     private $controller;
     private $handler;

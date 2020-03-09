@@ -2,7 +2,7 @@
 
 namespace Atom\Validation\Validators;
 
-use Atom\Validation\ValidationResult;
+use Atom\Validation\ValidatorResult;
 
 final class MinValidator extends AbstractValidator
 {
@@ -14,18 +14,18 @@ final class MinValidator extends AbstractValidator
         $this->minValue = $minValue;
     }
 
-    public function validate($value): ValidationResult
+    public function validate($value): ValidatorResult
     {
         $result = $value;
         if ($this->hasValue($result)) {
             $result = (float) $value;
             if ($result < $this->minValue) {
-                return ValidationResult::failure($this->getErrorMessage(), [
+                return ValidatorResult::failure($this->getErrorMessage(), [
                     "value" => $value,
-                    "minValue" => $this->minValue
+                    "minValue" => $this->minValue,
                 ]);
             }
         }
-        return ValidationResult::success($result);
+        return ValidatorResult::success($result);
     }
 }

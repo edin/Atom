@@ -2,25 +2,20 @@
 
 namespace Atom\Dispatcher;
 
-use Atom\Router\Route;
-use Atom\Dispatcher\RequestHandler;
-use Atom\Dispatcher\RouteHandler;
 use Atom\Container\Container;
 use Atom\Container\ResolutionContext;
-use Psr\Http\Message\ServerRequestInterface;
+use Atom\Dispatcher\RequestHandler;
+use Atom\Dispatcher\RouteHandler;
+use Atom\Router\Route;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
-
-use function strlen;
-use function rtrim;
-use function substr;
-use function pathinfo;
-use function rawurldecode;
 
 final class Dispatcher implements RequestHandlerInterface
 {
     private $container;
     private $router;
+    private $baseUrl;
 
     public function __construct(Container $container)
     {
@@ -88,6 +83,7 @@ final class Dispatcher implements RequestHandlerInterface
                     return $queueHandler->handle($request);
                 }
         }
+        throw new \Exception("Failed to handle request to '$uriPath' path.");
     }
 
     private function resolveMiddlewares(Route $route): array

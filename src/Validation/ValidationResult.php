@@ -2,7 +2,7 @@
 
 namespace Atom\Validation;
 
-class ValidationResult
+final class ValidationResult
 {
     private $errorMessage = "";
     private $attributes = [];

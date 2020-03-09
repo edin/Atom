@@ -2,7 +2,7 @@
 
 namespace Atom\Validation\Validators;
 
-use Atom\Validation\ValidationResult;
+use Atom\Validation\ValidatorResult;
 
 final class MaxValidator extends AbstractValidator
 {
@@ -14,18 +14,18 @@ final class MaxValidator extends AbstractValidator
         $this->maxValue = $maxValue;
     }
 
-    public function validate($value): ValidationResult
+    public function validate($value): ValidatorResult
     {
         $result = $value;
         if ($this->hasValue($result)) {
             $result = (float) $value;
             if ($result > $this->maxValue) {
-                return ValidationResult::failure($this->getErrorMessage(), [
+                return ValidatorResult::failure($this->getErrorMessage(), [
                     "value" => $value,
-                    "maxValue" => $this->maxValue
+                    "maxValue" => $this->maxValue,
                 ]);
             }
         }
-        return ValidationResult::success($result);
+        return ValidatorResult::success($result);
     }
 }

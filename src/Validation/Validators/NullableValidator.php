@@ -2,14 +2,14 @@
 
 namespace Atom\Validation\Validators;
 
-use Atom\Validation\ValidationResult;
+use Atom\Validation\ValidatorResult;
 
 class NullableValidator extends AbstractValidator
 {
     protected $errorMessage = "minValueError";
 
-    public function validate($value): ValidationResult
+    public function validate($value): ValidatorResult
     {
-        return ValidationResult::failure("Error");
+        return ValidatorResult::failure("Error");
     }
 }

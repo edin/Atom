@@ -13,6 +13,7 @@ final class ClassResolver implements IDependencyResolver
     private $reflectionClass;
     private $dependencies;
     private $container;
+    private $dependencyResolver;
 
     public function __construct(ComponentRegistration $registration)
     {

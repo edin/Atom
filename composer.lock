@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2caee147f441c26884415b770f5bba45",
+    "content-hash": "a517e71eb899e85a28f277916c4a3666",
     "packages": [
         {
             "name": "nikic/fast-route",
@@ -215,6 +215,45 @@
                 "uri"
             ],
             "time": "2018-12-06T18:41:41+00:00"
+        },
+        {
+            "name": "phpstan/phpstan",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/phpstan/phpstan.git",
+                "reference": "e6cd7ec98db7fbbaf6b389a6c3e7028a28c7e056"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/e6cd7ec98db7fbbaf6b389a6c3e7028a28c7e056",
+                "reference": "e6cd7ec98db7fbbaf6b389a6c3e7028a28c7e056",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.1"
+            },
+            "bin": [
+                "phpstan",
+                "phpstan.phar"
+            ],
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "0.12-dev"
+                }
+            },
+            "autoload": {
+                "files": [
+                    "bootstrap.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "PHPStan - PHP Static Analysis Tool",
+            "time": "2020-03-08T20:48:17+00:00"
         },
         {
             "name": "psr/http-factory",
@@ -1902,7 +1941,9 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": [],
+    "stability-flags": {
+        "phpstan/phpstan": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

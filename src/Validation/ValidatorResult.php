@@ -2,7 +2,7 @@
 
 namespace Atom\Validation;
 
-class ValidatorResult
+final class ValidatorResult
 {
     private const Success = 1;
     private const Failure = 2;

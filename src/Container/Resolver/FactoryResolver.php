@@ -7,6 +7,11 @@ use Atom\Container\ResolutionContext;
 
 final class FactoryResolver implements IDependencyResolver
 {
+    private $registration;
+    private $factory;
+    private $reflectionFunction;
+    private $dependencies;
+
     public function __construct(ComponentRegistration $registration)
     {
         $this->registration = $registration;

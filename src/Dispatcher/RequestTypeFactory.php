@@ -7,6 +7,9 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class RequestTypeFactory
 {
+    private $container;
+    private $request;
+
     public function __construct(Container $container, ServerRequestInterface $request)
     {
         $this->container = $container;
@@ -19,7 +22,6 @@ class RequestTypeFactory
 
         $reflection = new \ReflectionClass($instance);
         $params = $this->request->getQueryParams();
-
 
         foreach ($reflection->getProperties() as $prop) {
             $instance->{$prop->name} = $params[$prop->name] ?? "";
