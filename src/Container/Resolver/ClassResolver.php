@@ -40,6 +40,17 @@ final class ClassResolver implements IDependencyResolver
         }
     }
 
+    public function getFactory(ResolutionContext $context, array $params): ClassTypeFactory
+    {
+        return new ClassTypeFactory(
+            $this->registration,
+            $context,
+            $params,
+            $this->dependencies,
+            $this->reflectionClass
+        );
+    }
+
     public function resolve(ResolutionContext $context = null, array $params = [])
     {
         $sourceType = $this->registration->sourceType;

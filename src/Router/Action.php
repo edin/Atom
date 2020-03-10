@@ -3,6 +3,8 @@
 namespace Atom\Router;
 
 use Atom\Container\Container;
+use Atom\Container\ResolutionContext;
+use Atom\Container\Resolver\ClassResolver;
 use Atom\Router\Route;
 use ReflectionClass;
 use ReflectionFunction;
@@ -14,7 +16,8 @@ final class Action
     private $route;
     private $controller;
     private $handler;
-    private $actionParameters;
+    private $actionParameters = [];
+    private $properties = [];
 
     public function __construct(Container $container, Route $route)
     {
@@ -28,14 +31,27 @@ final class Action
         } else {
             $controllerType = $actionHandler->getController();
             $methodName = $actionHandler->getMethodName();
+            $this->ensureMethodExists($controllerType, $methodName);
 
-            $this->controller = $container->resolve($controllerType);
-            $reflection = new ReflectionClass($this->controller);
+            $resolver = $container->getResolver($controllerType);
 
-            if (!$reflection->hasMethod($methodName)) {
-                throw new RuntimeException("Controller {$reflection->getName()} does not have method {$methodName}.");
+            if ($resolver instanceof ClassResolver) {
+                $factory = $resolver->getFactory(new ResolutionContext(), $this->route->getParams());
+                $this->controller = $factory->createInstance();
+            } else {
+                $this->controller =   $container->resolve($controllerType);
             }
+            $reflection = new ReflectionClass($this->controller);
             $this->handler = $reflection->getMethod($methodName);
+        }
+        $this->actionParameters = $this->container->resolveMethodParameters($this->handler, $this->route->getParams());
+    }
+
+    private function ensureMethodExists($controller, string $methodName)
+    {
+        $reflection = new ReflectionClass($controller);
+        if (!$reflection->hasMethod($methodName)) {
+            throw new RuntimeException("Controller {$reflection->getName()} does not have method {$methodName}.");
         }
     }
 
@@ -54,27 +70,16 @@ final class Action
         return $this->handler;
     }
 
-    public function getParams(): array
-    {
-        return $this->route->getParams();
-    }
-
     public function getActionParams(): array
     {
-        if ($this->actionParameters === null) {
-            $this->actionParameters = $this->container->resolveMethodParameters($this->handler, $this->getParams());
-        }
         return $this->actionParameters;
     }
 
     public function execute()
     {
-        $actionParams = $this->getActionParams();
-
         if ($this->handler instanceof \ReflectionMethod) {
-            return $this->handler->invokeArgs($this->controller, $actionParams);
+            return $this->handler->invokeArgs($this->controller, $this->actionParameters);
         }
-
-        return $this->handler->invokeArgs($actionParams);
+        return $this->handler->invokeArgs($this->actionParameters);
     }
 }
