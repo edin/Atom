@@ -2,6 +2,7 @@
 
 namespace Atom;
 
+use Atom\Router\Route;
 use Atom\Router\Router;
 use Atom\View\ViewServices;
 use Atom\Container\Container;
@@ -14,9 +15,9 @@ abstract class Application
 {
     public static $app = null;
     private $container = null;
-    protected $baseUrl = "";
     private $plugins = [];
     private $pluginInstances = [];
+    private $baseUrl = "";
 
     public function __construct()
     {
@@ -34,6 +35,11 @@ abstract class Application
     final public function getRouter(): Router
     {
         return $this->getContainer()->Router;
+    }
+
+    final public function getCurrentRoute(): ?Route
+    {
+        return $this->getContainer()->CurrentRoute;
     }
 
     final public function getRequest(): ServerRequestInterface
@@ -59,8 +65,16 @@ abstract class Application
     public function registerDefaultServices()
     {
         $container = $this->getContainer();
-        $container->Application = $this;
-        $container->Router = Router::class;
+
+        $container->bind(Router::class)
+            ->withName("Router")
+            ->toSelf()
+            ->asShared();
+
+        $container->bind(Application::class)
+            ->withName("Application")
+            ->toInstance($this);
+
         $container->bind(Container::class)
             ->withName("Container")
             ->toInstance($container);
@@ -80,11 +94,6 @@ abstract class Application
     {
         return $this->baseUrl;
     }
-
-    // public function resolveController($name)
-    // {
-    //     return $this->getContainer()->get($name);
-    // }
 
     public function initialize()
     {

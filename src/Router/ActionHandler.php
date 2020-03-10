@@ -2,9 +2,6 @@
 
 namespace Atom\Router;
 
-use phpDocumentor\Reflection\Types\Boolean;
-use ReflectionFunctionAbstract;
-
 final class ActionHandler
 {
     /** @var ?string */
@@ -41,12 +38,12 @@ final class ActionHandler
         return new ActionHandler($controller, $action, null);
     }
 
-    public static function fromMethod(string $controller, string $methodName): ActionHandler
+    public static function fromMethod(string $controller, string $methodName): self
     {
         return new ActionHandler($controller, $methodName, null);
     }
 
-    public static function fromClosure(callable $closure): ActionHandler
+    public static function fromClosure(callable $closure): self
     {
         return new ActionHandler(null, null, $closure);
     }
@@ -73,7 +70,7 @@ final class ActionHandler
         $this->closure = $closure;
     }
 
-    public function getClosure(): ?ReflectionFunctionAbstract
+    public function getClosure(): ?callable
     {
         return $this->closure;
     }

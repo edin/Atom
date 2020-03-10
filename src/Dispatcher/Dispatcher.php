@@ -77,6 +77,8 @@ final class Dispatcher implements RequestHandlerInterface
                 if ($route instanceof Route) {
                     $route->setParams($routeParams);
 
+                    $this->container->bind(get_class($route))->toInstance($route);
+
                     $middlewares = $this->resolveMiddlewares($route);
                     $queueHandler = new RequestHandler(new RouteHandler($this->container, $route, $routeParams));
                     $queueHandler->addMiddlewares($middlewares);

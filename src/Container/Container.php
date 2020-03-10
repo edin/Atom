@@ -174,8 +174,6 @@ final class Container
         return $result;
     }
 
-    private static $count = 0;
-
     public function resolveInContext(ResolutionContext $context, string $typeName, array $params = [])
     {
         if (isset($this->alias[$typeName])) {

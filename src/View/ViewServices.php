@@ -2,18 +2,15 @@
 
 namespace Atom\View;
 
+use Atom\Application;
 use Atom\Container\Container;
 use ReflectionClass;
 use function dirname;
 
 class ViewServices
 {
-    public function configureServices(Container $container)
+    public function configureServices(Container $container, Application $app)
     {
-        if (!$container->has("Application")) {
-            throw new \RuntimeException("Missing  Application");
-        }
-
         // TODO: Use configuration to resolve views directory or add getViewsDirectory() virtual method to application
         $reflection = new ReflectionClass($container->Application);
         $viewsDir = dirname($reflection->getFileName()) . "/Views";
