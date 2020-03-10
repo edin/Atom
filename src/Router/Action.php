@@ -23,6 +23,7 @@ final class Action
     {
         $this->container = $container;
         $this->route = $route;
+        $this->resolutionContext = new ResolutionContext();
 
         $actionHandler = $this->route->getActionHandler();
 
@@ -36,13 +37,13 @@ final class Action
             $resolver = $container->getResolver($controllerType);
 
             if ($resolver instanceof ClassResolver) {
-                $factory = $resolver->getFactory(new ResolutionContext(), $this->route->getParams());
-                $this->controller = $factory->createInstance();
+                $this->controllerFactory = $resolver->getFactory($this->resolutionContext, $this->route->getParams());
+                $this->handler = $this->controllerFactory->getMethod($methodName);
             } else {
-                $this->controller =   $container->resolve($controllerType);
+                $this->controller =  $resolver->resolve($this->resolutionContext, $this->route->getParams());
+                $reflection = new ReflectionClass($this->controller);
+                $this->handler = $reflection->getMethod($methodName);
             }
-            $reflection = new ReflectionClass($this->controller);
-            $this->handler = $reflection->getMethod($methodName);
         }
         $this->actionParameters = $this->container->resolveMethodParameters($this->handler, $this->route->getParams());
     }
@@ -62,6 +63,9 @@ final class Action
 
     public function getController(): ?object
     {
+        if ($this->controller == null) {
+            $this->controller = $this->controllerFactory->createInstance();
+        }
         return $this->controller;
     }
 
@@ -75,10 +79,20 @@ final class Action
         return $this->actionParameters;
     }
 
+    public function getProperties(): array
+    {
+        return $this->properties;
+    }
+
+    public function getConstructorArguments(): array
+    {
+        return $this->properties;
+    }
+
     public function execute()
     {
         if ($this->handler instanceof \ReflectionMethod) {
-            return $this->handler->invokeArgs($this->controller, $this->actionParameters);
+            return $this->handler->invokeArgs($this->getController(), $this->actionParameters);
         }
         return $this->handler->invokeArgs($this->actionParameters);
     }

@@ -6,6 +6,7 @@ use Atom\Container\ComponentRegistration;
 use Atom\Container\Instance;
 use Atom\Container\ResolutionContext;
 use ReflectionClass;
+use ReflectionMethod;
 
 class ClassTypeFactory
 {
@@ -14,6 +15,8 @@ class ClassTypeFactory
     private $dependencies;
     private $arguments = [];
     private $properties = [];
+    /** @var ReflectionClass */
+    private $reflectionClass;
 
     public function __construct(ComponentRegistration $registration, ResolutionContext $context, array $params, $dependencies, ReflectionClass $reflectionClass)
     {
@@ -40,6 +43,11 @@ class ClassTypeFactory
                 $this->properties[$key] = $value;
             }
         }
+    }
+
+    public function getMethod(string $name): ReflectionMethod
+    {
+        return $this->reflectionClass->getMethod($name);
     }
 
     public function getArguments(): array

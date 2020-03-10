@@ -151,9 +151,11 @@ final class Container
         return $instance;
     }
 
-    public function resolveMethodParameters(?\ReflectionFunctionAbstract $method, array $params = []): array
+    public function resolveMethodParameters(?\ReflectionFunctionAbstract $method, array $params = [], ?ResolutionContext $context = null): array
     {
-        $context = new ResolutionContext();
+        if ($context == null) {
+            $context = new ResolutionContext();
+        }
 
         $result = [];
         $parameters = $this->dependencyResolver->getFunctionDependencies($method);
