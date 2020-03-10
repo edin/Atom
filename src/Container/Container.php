@@ -60,20 +60,23 @@ final class Container
         return $instance;
     }
 
+    private function registerResolver(ComponentRegistration $registration): void
+    {
+        $resolver = $registration->getResolver();
+        $this->resolvers[$registration->sourceType] = $resolver;
+    }
+
     public function getResolver($typeName): IDependencyResolver
     {
-        //TODO: Refactor getResolver to return only single resolver
-
         if (isset($this->alias[$typeName])) {
             $typeName = $this->alias[$typeName];
         }
 
         if (!isset($this->resolvers[$typeName])) {
             $registration  = $this->registry[$typeName] ?? null;
+
             if ($registration !== null) {
-                foreach ($registration->getResolvers() as $key => $value) {
-                    $this->resolvers[$key] = $value;
-                }
+                $this->registerResolver($registration);
             }
         }
 
@@ -86,14 +89,10 @@ final class Container
 
             if ($typeFactory && $typeFactory->canCreateType($typeName)) {
                 $registration = $this->bind($typeName)->toSelf()->toTypeFactory($typeFactory);
-                foreach ($registration->getResolvers() as $key => $value) {
-                    $this->resolvers[$key] = $value;
-                }
+                $this->registerResolver($registration);
             } else {
                 $registration = $this->bind($typeName)->toSelf();
-                foreach ($registration->getResolvers() as $key => $value) {
-                    $this->resolvers[$key] = $value;
-                }
+                $this->registerResolver($registration);
             }
         }
 

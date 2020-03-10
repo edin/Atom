@@ -5,6 +5,7 @@ namespace Atom\Container;
 use Atom\Container\Resolver\InstanceResolver;
 use Atom\Container\Resolver\FactoryResolver;
 use Atom\Container\Resolver\ClassResolver;
+use Atom\Container\Resolver\IDependencyResolver;
 use Atom\Container\Resolver\TypeFactoryResolver;
 
 final class ComponentRegistration
@@ -97,32 +98,22 @@ final class ComponentRegistration
         return $this;
     }
 
-    public function getResolvers(): array
+    public function getResolver(): IDependencyResolver
     {
-        $resolvers = [];
-
         switch ($this->type) {
             case self::INSTANCE: {
-                $resolvers[$this->sourceType] = new InstanceResolver($this);
-                break;
+                return new InstanceResolver($this);
             }
             case self::FACTORY_METHOD: {
-                $resolvers[$this->sourceType] = new FactoryResolver($this);
-                break;
+                return new FactoryResolver($this);
             }
             case self::CLASS_NAME: {
-                $resolvers[$this->sourceType] = new ClassResolver($this);
-                break;
+                return  new ClassResolver($this);
             }
             case self::TYPE_FACTORY: {
-                $resolvers[$this->sourceType] = new TypeFactoryResolver($this);
-                break;
-            }
-            default: {
-                throw new \Exception("Invalid component registration");
+                return new TypeFactoryResolver($this);
             }
         }
-
-        return $resolvers;
+        throw new \RuntimeException("Invalid component registration");
     }
 }
