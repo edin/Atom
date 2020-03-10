@@ -50,7 +50,7 @@ class ClassTypeFactory
         return $this->reflectionClass->getMethod($name);
     }
 
-    public function getArguments(): array
+    public function getConstructorArguments(): array
     {
         return $this->arguments;
     }
@@ -62,7 +62,7 @@ class ClassTypeFactory
 
     public function createInstance()
     {
-        $arguments = $this->getArguments();
+        $arguments = $this->getConstructorArguments();
         $properties = $this->getProperties();
         $instance = $this->reflectionClass->newInstanceArgs($arguments);
 

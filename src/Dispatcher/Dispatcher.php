@@ -2,11 +2,10 @@
 
 namespace Atom\Dispatcher;
 
-use Atom\Container\Container;
-use Atom\Container\ResolutionContext;
-use Atom\Dispatcher\RequestHandler;
-use Atom\Dispatcher\RouteHandler;
 use Atom\Router\Route;
+use Atom\Container\Container;
+use Atom\Dispatcher\RouteHandler;
+use Atom\Dispatcher\RequestHandler;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -15,7 +14,6 @@ final class Dispatcher implements RequestHandlerInterface
 {
     private $container;
     private $router;
-    private $baseUrl;
 
     public function __construct(Container $container)
     {
@@ -43,8 +41,6 @@ final class Dispatcher implements RequestHandlerInterface
         $scriptName = $serverParams['SCRIPT_NAME'] ?? "";
         $scriptDir = pathinfo($scriptName, \PATHINFO_DIRNAME);
 
-        $this->baseUrl = rtrim($scriptDir, " /") . "/";
-
         $uriPath = $uri->getPath();
 
         if (false !== $pos = strpos($uriPath, '?')) {
@@ -65,11 +61,11 @@ final class Dispatcher implements RequestHandlerInterface
 
         switch ($routeInfo[0]) {
             case \FastRoute\Dispatcher::NOT_FOUND:
-                throw new \Exception("Route '$uriPath' was not found.");
+                throw new \RuntimeException("Route '$uriPath' was not found.");
             case \FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
                 $allowedMethods = $routeInfo[1];
                 $allowedMethodsStr = implode(", ", $allowedMethods);
-                throw new \Exception("Method $method is not allowed. Allowed methods are $allowedMethodsStr.");
+                throw new \RuntimeException("Method $method is not allowed. Allowed methods are $allowedMethodsStr.");
             case \FastRoute\Dispatcher::FOUND:
                 $route = $routeInfo[1];
                 $routeParams = $routeInfo[2];
@@ -85,15 +81,14 @@ final class Dispatcher implements RequestHandlerInterface
                     return $queueHandler->handle($request);
                 }
         }
-        throw new \Exception("Failed to handle request to '$uriPath' path.");
+        throw new \RuntimeException("Failed to handle request to '$uriPath' path.");
     }
 
     private function resolveMiddlewares(Route $route): array
     {
+        $context = $this->container->RequestScope;
         $middlewares = $route->getMiddlewares();
         $results = [];
-
-        $context = new ResolutionContext();
 
         foreach ($middlewares as $middleware) {
             if (is_string($middleware)) {
@@ -101,7 +96,7 @@ final class Dispatcher implements RequestHandlerInterface
             } elseif (is_object($middleware)) {
                 $results[] = $middleware;
             } else {
-                throw new \Exception("Can't initialize middleware, unsupported definition.");
+                throw new \RuntimeException("Can't initialize middleware, unsupported definition.");
             }
         }
 

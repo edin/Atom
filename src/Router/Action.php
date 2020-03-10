@@ -16,7 +16,8 @@ final class Action
     private $route;
     private $controller;
     private $handler;
-    private $actionParameters = [];
+    private $actionArguments = [];
+    private $constructorArguments = [];
     private $properties = [];
 
     public function __construct(Container $container, Route $route)
@@ -39,16 +40,18 @@ final class Action
             if ($resolver instanceof ClassResolver) {
                 $this->controllerFactory = $resolver->getFactory($this->resolutionContext, $this->route->getParams());
                 $this->handler = $this->controllerFactory->getMethod($methodName);
+                $this->constructorArguments = $this->controllerFactory->getConstructorArguments();
+                $this->properties = $this->controllerFactory->getProperties();
             } else {
                 $this->controller =  $resolver->resolve($this->resolutionContext, $this->route->getParams());
                 $reflection = new ReflectionClass($this->controller);
                 $this->handler = $reflection->getMethod($methodName);
             }
         }
-        $this->actionParameters = $this->container->resolveMethodParameters($this->handler, $this->route->getParams());
+        $this->actionArguments = $this->container->resolveMethodParameters($this->handler, $this->route->getParams());
     }
 
-    private function ensureMethodExists($controller, string $methodName)
+    private function ensureMethodExists($controller, string $methodName): void
     {
         $reflection = new ReflectionClass($controller);
         if (!$reflection->hasMethod($methodName)) {
@@ -74,9 +77,9 @@ final class Action
         return $this->handler;
     }
 
-    public function getActionParams(): array
+    public function getActionArguments(): array
     {
-        return $this->actionParameters;
+        return $this->actionArguments;
     }
 
     public function getProperties(): array
@@ -86,14 +89,14 @@ final class Action
 
     public function getConstructorArguments(): array
     {
-        return $this->properties;
+        return $this->constructorArguments;
     }
 
     public function execute()
     {
         if ($this->handler instanceof \ReflectionMethod) {
-            return $this->handler->invokeArgs($this->getController(), $this->actionParameters);
+            return $this->handler->invokeArgs($this->getController(), $this->actionArguments);
         }
-        return $this->handler->invokeArgs($this->actionParameters);
+        return $this->handler->invokeArgs($this->actionArguments);
     }
 }

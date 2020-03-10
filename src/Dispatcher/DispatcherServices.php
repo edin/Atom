@@ -3,6 +3,7 @@
 namespace Atom\Dispatcher;
 
 use Atom\Container\Container;
+use Atom\Container\ResolutionContext;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Nyholm\Psr7Server\ServerRequestCreator;
 use Psr\Http\Message\ServerRequestInterface;
@@ -31,6 +32,11 @@ final class DispatcherServices
         $container->bind(IResponseEmitter::class)
             ->withName("ResponseEmitter")
             ->to(ResponseEmitter::class)
+            ->asShared();
+
+        $container->bind(ResolutionContext::class)
+            ->withName("RequestScope")
+            ->toSelf()
             ->asShared();
 
         $container->Dispatcher = Dispatcher::class;
