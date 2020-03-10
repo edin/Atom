@@ -12,7 +12,7 @@ class ViewServices
     public function configureServices(Container $container, Application $app)
     {
         // TODO: Use configuration to resolve views directory or add getViewsDirectory() virtual method to application
-        $reflection = new ReflectionClass($container->Application);
+        $reflection = new ReflectionClass($app);
         $viewsDir = dirname($reflection->getFileName()) . "/Views";
 
         $container->ViewEngine = ViewEngine::class;
