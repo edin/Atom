@@ -6,8 +6,10 @@ final class Email extends AbstractRule
 {
     protected $errorMessage = "emailError";
 
-    public function validateValue($value)
+    public function isValid($value): bool
     {
-        return filter_var($value, FILTER_VALIDATE_EMAIL);
+        $result = filter_var($value, FILTER_VALIDATE_EMAIL);
+        $this->setResultValue($result);
+        return $result !== false;
     }
 }

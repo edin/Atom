@@ -6,12 +6,7 @@ final class Required extends AbstractRule
 {
     protected $errorMessage = "requiredError";
 
-    protected function hasValue($value): bool
-    {
-        return true;
-    }
-
-    public function validatedValue($value)
+    public function isValid($value): bool
     {
         if (!empty($value)) {
             return $value;

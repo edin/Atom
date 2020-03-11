@@ -11,4 +11,9 @@ final class MinLength extends AbstractRule
     {
         $this->minValue = $minValue;
     }
+
+    public function isValid($value): bool
+    {
+        return true;
+    }
 }

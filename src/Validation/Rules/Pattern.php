@@ -19,7 +19,7 @@ final class Pattern extends AbstractRule
         ];
     }
 
-    public function validateValue($value)
+    public function isValid($value): bool
     {
         return filter_var($value, FILTER_VALIDATE_EMAIL);
     }

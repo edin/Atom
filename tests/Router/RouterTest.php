@@ -1,6 +1,6 @@
 <?php
 
-namespace Atom\Tests;
+namespace Atom\Tests\Router;
 
 use PHPUnit\Framework\TestCase;
 

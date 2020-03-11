@@ -47,11 +47,11 @@ final class RuleResult
 
     public function isSuccess(): bool
     {
-        return $this->status == self::Success;
+        return $this->status === self::Success;
     }
 
     public function isFailure(): bool
     {
-        return $this->status == self::Failure;
+        return $this->status === self::Failure;
     }
 }

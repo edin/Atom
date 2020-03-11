@@ -2,7 +2,7 @@
 
 namespace Atom\Validation\Rules;
 
-final class LengthValidator extends AbstractRule
+final class Length extends AbstractRule
 {
     protected $errorMessage = "lengthError";
     protected $minValue = 0;
@@ -14,11 +14,22 @@ final class LengthValidator extends AbstractRule
         $this->maxValue = $maxValue;
     }
 
-    public function getAttributes($value): array
+    public function getAttributes(): array
     {
         return [
-            "minValue" => $this->minValue,
-            "maxValue" => $this->maxValue,
+            "min" => $this->minValue,
+            "max" => $this->maxValue,
         ];
+    }
+
+    public function isValid($value): bool
+    {
+        if (!is_string($value)) {
+            return false;
+        }
+
+        $result = (int)$value;
+        $this->setResultValue($result);
+        return ($result >= $this->minValue) && ($result <= $this->maxValue);
     }
 }

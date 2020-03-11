@@ -12,8 +12,8 @@ final class MinValue extends AbstractRule
         $this->minValue = $minValue;
     }
 
-    public function validatedValue($value)
+    public function isValid($value): bool
     {
-        //Can't implement with this abstraction
+        return true;
     }
 }

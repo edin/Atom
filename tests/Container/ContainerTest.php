@@ -1,6 +1,6 @@
 <?php
 
-namespace Atom\Tests;
+namespace Atom\Tests\Container;
 
 use PHPUnit\Framework\TestCase;
 use Atom\Container\Container;

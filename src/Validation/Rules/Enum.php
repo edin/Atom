@@ -12,4 +12,9 @@ final class Enum extends AbstractRule
     {
         $this->enumValues = $enumValues;
     }
+
+    public function isValid($value): bool
+    {
+        return true;
+    }
 }

@@ -1,5 +1,5 @@
 <?php
-namespace Atom\Tests;
+namespace Atom\Tests\Database;
 
 use PHPUnit\Framework\TestCase;
 use Atom\Database\Query\Ast\Column;

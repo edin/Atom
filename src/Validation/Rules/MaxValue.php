@@ -2,7 +2,7 @@
 
 namespace Atom\Validation\Rules;
 
-final class MaxValidator extends AbstractRule
+final class MaxValue extends AbstractRule
 {
     protected $errorMessage = "maxValueError";
     protected $maxValue = 0;
@@ -10,5 +10,10 @@ final class MaxValidator extends AbstractRule
     public function __construct(float $maxValue)
     {
         $this->maxValue = $maxValue;
+    }
+
+    public function isValid($value): bool
+    {
+        return true;
     }
 }

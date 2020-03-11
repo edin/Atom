@@ -2,63 +2,58 @@
 
 namespace Atom\Validation;
 
-use Atom\Validation\IValidator;
-use Atom\Validation\Validators\EmailValidator;
-use Atom\Validation\Validators\MaxValidator;
-use Atom\Validation\Validators\MinValidator;
-use Atom\Validation\Validators\RequiredValidator;
+use Atom\Validation\IRule;
+use Atom\Validation\Rules\Email;
+use Atom\Validation\Rules\MaxValue;
+use Atom\Validation\Rules\MinValue;
+use Atom\Validation\Rules\Required;
 
 class ValidationGroup
 {
-    private $validators = [];
+    private $rules = [];
     private $lastAdded;
-    private $fieldName;
+    private $property;
 
-    public function __construct(string $fieldName)
+    public function __construct(string $property)
     {
-        $this->fieldName = $fieldName;
+        $this->property = $property;
     }
 
-    public function getFieldName(): string
+    public function getProperty(): string
     {
-        return $this->fieldName;
+        return $this->property;
     }
 
-    public function addRule(IValidator $validator): self
+    public function addRule(IRule $rule): self
     {
-        $this->lastAdded = $validator;
-        $this->validators[] = $validator;
+        $this->lastAdded = $rule;
+        $this->rules[] = $rule;
         return $this;
     }
 
-    public function getLastValidator(): IValidator
+    public function getLastRule(): IRule
     {
         return $this->lastAdded;
     }
 
     public function required(): self
     {
-        return $this->addRule(new RequiredValidator());
+        return $this->addRule(new Required());
     }
-
-    // public function nullable(): self
-    // {
-    //     return $this->addRule(new NullableValidator());
-    // }
 
     public function min($min): self
     {
-        return $this->addRule(new MinValidator($min));
+        return $this->addRule(new MinValue($min));
     }
 
     public function max($max): self
     {
-        return $this->addRule(new MaxValidator($max));
+        return $this->addRule(new MaxValue($max));
     }
 
     public function email(): self
     {
-        return $this->addRule(new EmailValidator());
+        return $this->addRule(new Email());
     }
 
     public function asArray(callable $callable): self
@@ -75,7 +70,7 @@ class ValidationGroup
 
     public function withErrorMessage(string $errorMessage): self
     {
-        $this->getLastValidator()->setErrorMessage($errorMessage);
+        $this->getLastRule()->setErrorMessage($errorMessage);
         return $this;
     }
 

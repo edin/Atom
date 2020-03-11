@@ -6,13 +6,8 @@ class Nullable extends AbstractRule
 {
     protected $errorMessage = "nullableError";
 
-    protected function hasValue($value): bool
+    public function isValid($value): bool
     {
-        return true;
-    }
-
-    public function validatedValue($value)
-    {
-        //Can't implement with this abstraction
+        return is_null($value);
     }
 }

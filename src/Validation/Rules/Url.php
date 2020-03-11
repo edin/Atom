@@ -6,8 +6,10 @@ final class Url extends AbstractRule
 {
     protected $errorMessage = "urlError";
 
-    public function validateValue($value)
+    public function isValid($value): bool
     {
-        return filter_var($value, FILTER_VALIDATE_EMAIL);
+        $result = filter_var($value, FILTER_VALIDATE_URL);
+        $this->setResultValue($result);
+        return $result !== false;
     }
 }
