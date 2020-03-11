@@ -3,7 +3,6 @@
 use Atom\Database\Query\Ast\BinaryExpression;
 use Atom\Database\Query\Ast\GroupExpression;
 use Atom\Database\Query\Criteria;
-use Atom\Database\Query\JoinCriteria;
 use Atom\Database\Query\Operator;
 use Atom\Database\Query\Query;
 
@@ -91,13 +90,13 @@ include "../../../vendor/autoload.php";
 //         "u.email email",
 //         "userCount" => Query::select()->from("users")->count()
 //     ])
-//     ->join("comments c", function (JoinCriteria $join) {
+//     ->join("comments c", function (Criteria $join) {
 //         $join->on("users.c", "x.c");
 //         $join->on("users.c", "x.c");
 //         $join->on("users.c", "x.c");
 //         $join->on("users.c", "x.c");
 //     })
-//     ->join("comments c", function (JoinCriteria $join) {
+//     ->join("comments c", function (Criteria $join) {
 //         $join->on("users.c", "x.c");
 //         $join->on("users.c", "x.c");
 //         $join->on("users.c", "x.c");
@@ -106,10 +105,10 @@ include "../../../vendor/autoload.php";
 //     ;
 //     $query->show();
 
-// $criteria = new JoinCriteria();
+// $criteria = new Criteria();
 // $criteria
 //     ->on("user.type_id", "status.id")
-//     // ->join("comments c", function (JoinCriteria $join) {
+//     // ->join("comments c", function (Criteria $join) {
 //     //     $join->on("user.comment_id", "c.id");
 //     // })
 //     ->orGroup(function (Criteria $c) {
@@ -123,43 +122,43 @@ include "../../../vendor/autoload.php";
 $query = Query::select()
     ->from("users u")
     ->columns(["u.first_name x"])
-    ->join("comments c", function (JoinCriteria $join) {
-        $join->group(function (JoinCriteria $group) {
+    ->join("comments c", function (Criteria $join) {
+        $join->group(function (Criteria $group) {
             $group->on("u.comment_id", Operator::less(1));
             $group->on("u.comment_id", "c.id");
             $group->orOn("u.comment_id", "c.id");
             $group->on("u.comment_id", "c.id");
         });
 
-        $join->group(function (JoinCriteria $group) {
+        $join->group(function (Criteria $group) {
             $group->on("a", Operator::equal(1));
             $group->on("a", Operator::equal(1));
             $group->on("a", Operator::equal(1));
             $group->on("a", Operator::equal(1));
         });
 
-        $join->orGroup(function (JoinCriteria $group) {
+        $join->orGroup(function (Criteria $group) {
             $group->on("a", Operator::equal(1));
             $group->on("a", Operator::equal(1));
             $group->on("a", Operator::equal(1));
             $group->on("a", Operator::equal(1));
         });
 
-        $join->orGroup(function (JoinCriteria $group) {
+        $join->orGroup(function (Criteria $group) {
             $group->on("a", Operator::equal(1));
             $group->on("a", Operator::equal(1));
             $group->on("a", Operator::equal(1));
             $group->on("a", Operator::equal(1));
         });
 
-        $join->orGroup(function (JoinCriteria $group) {
+        $join->orGroup(function (Criteria $group) {
             $group->on("a", Operator::equal(1));
             $group->on("a", Operator::equal(1));
             $group->on("a", Operator::equal(1));
             $group->on("a", Operator::equal(1));
         });
 
-        $join->orGroup(function (JoinCriteria $group) {
+        $join->orGroup(function (Criteria $group) {
             $group->on("a", Operator::equal(1));
             $group->on("a", Operator::in([1, 2, 3, 4, 5]));
             $group->on("a", Operator::equal(1));
@@ -172,7 +171,6 @@ $join = $query->getJoins();
 function buildCriteria($node)
 {
     if ($node instanceof BinaryExpression) {
-
         $newLine = "";
         if ($node->rightNode instanceof GroupExpression) {
             $newLine = "\n";

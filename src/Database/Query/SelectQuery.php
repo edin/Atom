@@ -89,34 +89,34 @@ final class SelectQuery extends Query
         return $this;
     }
 
-    private function buildJoinCriteria(callable $joinBuilder): JoinCriteria
+    private function buildJoinCriteria(callable $joinBuilder): Criteria
     {
-        $criteria = new JoinCriteria();
+        $criteria = new Criteria();
         $joinBuilder($criteria);
         return $criteria;
     }
 
-    private function having(callable $criteriaBuilder): self
+    public function having(callable $criteriaBuilder): self
     {
-        $criteria = new JoinCriteria();
+        $criteria = new Criteria();
         $criteriaBuilder($criteria);
         $this->having[] = $criteria;
         return $this;
     }
 
-    private function orderBy(string $field, string $order = SortOrder::ASC): self
+    public function orderBy(string $field, string $order = SortOrder::ASC): self
     {
         $this->orderBy[] = SortOrder::fromColumn($field, SortOrder::ASC);
         return $this;
     }
 
-    private function orderByAsc(string $field): self
+    public function orderByAsc(string $field): self
     {
         $this->orderBy[] = SortOrder::fromColumn($field, SortOrder::ASC);
         return $this;
     }
 
-    private function orderByDesc(string $field): self
+    public function orderByDesc(string $field): self
     {
         $this->orderBy[] = SortOrder::fromColumn($field, SortOrder::DESC);
         return $this;

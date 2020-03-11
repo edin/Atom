@@ -55,7 +55,7 @@ final class View
     {
         $viewEngine = $this->engines[$extension] ?? null;
         if ($viewEngine == null) {
-            throw new \Exception("Can't find view engine for file type '{$extension}'");
+            throw new \RuntimeException("Can't find view engine for file type '{$extension}'");
         }
         return $this->di->{$viewEngine};
     }
