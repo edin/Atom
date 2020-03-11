@@ -2,8 +2,8 @@
 
 namespace Atom\Validation;
 
-interface IValidator
+interface IRule
 {
     public function setErrorMessage(string $errorMessage): void;
-    public function validate($value): ValidatorResult;
+    public function validate($value): RuleResult;
 }
