@@ -4,8 +4,8 @@ namespace Atom\Validation\Rules;
 
 final class Pattern extends AbstractRule
 {
-    protected $errorMessage = "requiredError";
-    protected $pattern;
+    protected $errorMessage = "The field does not match to specified pattern";
+    private $pattern;
 
     public function __construct(string $pattern)
     {
@@ -21,6 +21,14 @@ final class Pattern extends AbstractRule
 
     public function isValid($value): bool
     {
-        return filter_var($value, FILTER_VALIDATE_EMAIL);
+        if (is_null($value)) {
+            return false;
+        }
+
+        if (is_scalar(($value))) {
+            $value = (string)$value;
+        }
+
+        return preg_match($this->pattern, $value) === 1;
     }
 }

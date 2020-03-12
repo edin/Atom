@@ -2,9 +2,9 @@
 
 namespace Atom\Validation\Rules;
 
-final class MinValue extends AbstractRule
+final class NumericMin extends AbstractRule
 {
-    protected $errorMessage = "minValueError";
+    protected $errorMessage = "The field value should be greater or equal to {minValue}";
     protected $minValue = 0;
 
     public function __construct(float $minValue)
@@ -14,6 +14,6 @@ final class MinValue extends AbstractRule
 
     public function isValid($value): bool
     {
-        return true;
+        return ($value >= $this->minValue);
     }
 }

@@ -7,7 +7,7 @@ use DateTimeInterface;
 
 final class Date extends AbstractRule
 {
-    protected $errorMessage = "dateError";
+    protected $errorMessage = "Value is not in valid date format";
     private $formats = [
         DateTime::ISO8601,
         'Y-m-d\TH:i:s.u\Z',

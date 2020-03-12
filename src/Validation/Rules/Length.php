@@ -4,7 +4,7 @@ namespace Atom\Validation\Rules;
 
 final class Length extends AbstractRule
 {
-    protected $errorMessage = "lengthError";
+    protected $errorMessage = "Length should be between {minValue} and {maxValue} chars";
     protected $minValue = 0;
     protected $maxValue = 0;
 
@@ -17,8 +17,8 @@ final class Length extends AbstractRule
     public function getAttributes(): array
     {
         return [
-            "min" => $this->minValue,
-            "max" => $this->maxValue,
+            "minValue" => $this->minValue,
+            "maxValue" => $this->maxValue,
         ];
     }
 
@@ -28,8 +28,12 @@ final class Length extends AbstractRule
             return false;
         }
 
-        $result = (int)$value;
-        $this->setResultValue($result);
+        if (function_exists("mb_strlen")) {
+            $result = mb_strlen($value);
+        } else {
+            $result = strlen($value);
+        }
+
         return ($result >= $this->minValue) && ($result <= $this->maxValue);
     }
 }

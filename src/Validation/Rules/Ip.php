@@ -2,13 +2,13 @@
 
 namespace Atom\Validation\Rules;
 
-final class Url extends AbstractRule
+final class Ip extends AbstractRule
 {
-    protected $errorMessage = "The field value should be valid url";
+    protected $errorMessage = "Value is not a valid IP address";
 
     public function isValid($value): bool
     {
-        $result = filter_var($value, FILTER_VALIDATE_URL);
+        $result = filter_var($value, FILTER_VALIDATE_IP);
         $this->setResultValue($result);
         return $result !== false;
     }

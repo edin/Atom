@@ -4,7 +4,7 @@ namespace Atom\Validation\Rules;
 
 final class Email extends AbstractRule
 {
-    protected $errorMessage = "emailError";
+    protected $errorMessage = "Value is not valid Email address";
 
     public function isValid($value): bool
     {

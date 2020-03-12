@@ -4,7 +4,7 @@ namespace Atom\Validation\Rules;
 
 final class Enum extends AbstractRule
 {
-    protected $errorMessage = "emailError";
+    protected $errorMessage = "Value is not one of the given values";
 
     protected $enumValues = 0;
 
@@ -15,6 +15,11 @@ final class Enum extends AbstractRule
 
     public function isValid($value): bool
     {
-        return true;
+        foreach ($this->enumValues as $enumValue) {
+            if ($value === $enumValue) {
+                return true;
+            }
+        }
+        return false;
     }
 }

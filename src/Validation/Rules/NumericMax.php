@@ -2,9 +2,9 @@
 
 namespace Atom\Validation\Rules;
 
-final class MaxValue extends AbstractRule
+final class NumericMax extends AbstractRule
 {
-    protected $errorMessage = "maxValueError";
+    protected $errorMessage = "The field value should be less or equal to {maxValue}";
     protected $maxValue = 0;
 
     public function __construct(float $maxValue)
@@ -14,6 +14,6 @@ final class MaxValue extends AbstractRule
 
     public function isValid($value): bool
     {
-        return true;
+        return ($value <= $this->maxValue);
     }
 }
