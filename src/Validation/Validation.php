@@ -2,37 +2,57 @@
 
 namespace Atom\Validation;
 
+use Closure;
+
 final class Validation
 {
     private static $localisation;
-    private $builder;
+    private $validators = [];
 
-    public static function create(callable $builder)
+    public function __get($name)
     {
-        $v = new static;
-        $v->builder = new ValidationBuilder();
-        $builder($v->builder);
-        return $v;
+        if (!isset($this->validators[$name])) {
+            $this->validators[$name] = new ValidationGroup($name);
+        }
+        return $this->validators[$name];
     }
 
-    public function validate($model): ValidationResult
+    public static function create(Closure $builder): self
     {
-        $result = new ValidationResult();
+        $validation = new self();
+        $builder($validation);
+        return $validation;
+    }
 
-        // foreach ($this->builder->getValidators() as $validator) {
-        //     $result[] = $validator->validate($model->{$validator->getFieldName()});
-        // }
-        // return $result;
+    public function validate($model): array
+    {
+        $result = []; //new ValidationResult();
+
+        foreach ($this->validators as $validator) {
+            $property = $validator->getProperty();
+            $value = is_array($model)
+                       ? $model[$property]
+                       : $model->{$property};
+
+            $errors = $validator->validate($value);
+            if (count($errors)) {
+                $errorList = array_map(function ($it) {
+                    return $it->getErrorMessage();
+                }, $errors);
+
+                $result[$property] =  $errorList[0];
+            }
+        }
 
         return $result;
     }
 
-    public static function setLocalisation(ILocalisation $localisation): void
+    public static function setLocalization(ILocalisation $localisation): void
     {
         self::$localisation = $localisation;
     }
 
-    public static function getLocalisation(): ILocalisation
+    public static function getLocalization(): ILocalisation
     {
         return self::$localisation;
     }

@@ -3,13 +3,18 @@
 namespace Atom\Validation;
 
 use Atom\Validation\IRule;
+use Atom\Validation\Rules\Boolean;
+use Atom\Validation\Rules\Date;
 use Atom\Validation\Rules\Length;
 use Atom\Validation\Rules\Email;
 use Atom\Validation\Rules\MaxLength;
 use Atom\Validation\Rules\MinLength;
 use Atom\Validation\Rules\NumericMax;
 use Atom\Validation\Rules\NumericMin;
+use Atom\Validation\Rules\Pattern;
 use Atom\Validation\Rules\Required;
+use Atom\Validation\Rules\Trim;
+use Closure;
 
 class ValidationGroup
 {
@@ -80,17 +85,37 @@ class ValidationGroup
         return $this->addRule(new Email());
     }
 
-    public function asArray(callable $callable): self
+    public function boolean(): self
+    {
+        return $this->addRule(new Boolean());
+    }
+
+    public function trim(): self
+    {
+        return $this->addRule(new Trim());
+    }
+
+    public function pattern(string $pattern): self
+    {
+        return $this->addRule(new Pattern($pattern));
+    }
+
+    public function date(): self
+    {
+        return $this->addRule(new Date());
+    }
+
+    public function asArray(Closure $builder): self
     {
         $this->validatorType = self::ValidateArray;
-        $this->validator = Validation::create($callable);
+        $this->validator = Validation::create($builder);
         return $this;
     }
 
-    public function asObject(callable $callable): self
+    public function asObject(Closure $builder): self
     {
         $this->validatorType = self::ValidateObject;
-        $this->validator = Validation::create($callable);
+        $this->validator = Validation::create($builder);
         return $this;
     }
 
@@ -102,16 +127,18 @@ class ValidationGroup
 
     public function validate($value): array
     {
-        if ($this->validatorType == self::ValidateScalar) {
-        } else if ($this->validatorType == self::ValidateArray) {
-        } else if ($this->validatorType == self::ValidateObject) {
-        }
+        // if ($this->validatorType == self::ValidateArray) {
+        // } elseif ($this->validatorType == self::ValidateObject) {
+        // }
 
-        $result = new ValidationResult;
-        $result = [];
-        foreach ($this->validators as $validator) {
-            $result[] = $validator->validate($value);
+        //$result = new ValidationResult;
+        $errors = [];
+        foreach ($this->rules as $rule) {
+            $result = $rule->validate($value);
+            if ($result->isFailure()) {
+                $errors[] = $result;
+            }
         }
-        return $result;
+        return $errors;
     }
 }

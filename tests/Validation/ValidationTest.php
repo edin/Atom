@@ -3,26 +3,17 @@
 namespace Atom\Tests\Validation;
 
 use Atom\Validation\Validation;
-use Atom\Validation\ValidationBuilder;
 use PHPUnit\Framework\TestCase;
-
-class Customer
-{
-    public $firstName;
-    public $lastName;
-    public $email;
-    public $address;
-}
 
 final class ValidationTest extends TestCase
 {
     public function testValidationBuilder(): void
     {
-        $validator = Validation::create(function (ValidationBuilder $rule) {
-            $rule->firstName->required()->trim()->length(4, 30);
-            $rule->lastName->required()->trim()->length(4, 30);
+        $validator = Validation::create(function (Validation $rule) {
+            $rule->firstName->required()->trim()->length(8, 30);
+            $rule->lastName->required()->trim()->length(14, 30);
             $rule->email->required()->email();
-            $rule->address->required()->boolean();
+            $rule->address->required();
         });
 
         $customer = new Customer;
@@ -31,5 +22,18 @@ final class ValidationTest extends TestCase
         $customer->email = "edin.omeragic@gmail.com";
 
         $validationResult = $validator->validate($customer);
+
+        print_r($validationResult);
+
+        //print_r($validationResult);
+        $this->assertEquals(1, 1);
     }
+}
+
+class Customer
+{
+    public $firstName;
+    public $lastName;
+    public $email;
+    public $address;
 }
