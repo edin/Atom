@@ -14,13 +14,13 @@ class MethodRouteBuilder implements IRouteBuilder
         $this->controllerType = $controllerType;
     }
 
-    public function build(Router $group)
+    public function build(Router $router)
     {
         $classType = new ReflectionClass($this->controllerType);
         $methods = $classType->getMethods(ReflectionMethod::IS_PUBLIC);
 
         foreach ($methods as $method) {
-            $group->addRoute("GET", $method->getName(), $this->controllerType . ":" . $method->getName());
+            $router->addRoute("GET", $method->getName(), $this->controllerType . ":" . $method->getName());
         }
     }
 }

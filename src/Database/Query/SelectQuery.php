@@ -106,7 +106,7 @@ final class SelectQuery extends Query
 
     public function orderBy(string $field, string $order = SortOrder::ASC): self
     {
-        $this->orderBy[] = SortOrder::fromColumn($field, SortOrder::ASC);
+        $this->orderBy[] = SortOrder::fromColumn($field, $order);
         return $this;
     }
 
@@ -119,6 +119,12 @@ final class SelectQuery extends Query
     public function orderByDesc(string $field): self
     {
         $this->orderBy[] = SortOrder::fromColumn($field, SortOrder::DESC);
+        return $this;
+    }
+
+    public function groupBy(string $field): self
+    {
+        $this->groupBy[] = Column::fromValue($field);
         return $this;
     }
 }

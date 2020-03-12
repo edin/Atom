@@ -10,6 +10,11 @@ abstract class AbstractCompiler
     abstract public function quoteColumnName(string $name): string;
     abstract public function quoteValue($value): string;
 
+
+    public function compileQuery()
+    {
+    }
+
     public function compileCriteria($criteria)
     {
         if ($criteria instanceof BinaryExpression) {

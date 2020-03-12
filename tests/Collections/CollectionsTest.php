@@ -8,46 +8,52 @@ use PHPUnit\Framework\TestCase;
 
 final class CollectionsTest extends TestCase
 {
-    public function testReadOnlyCollection()
+    private $collection;
+
+    protected function setUp(): void
     {
-        $collection = ReadOnlyCollection::from([1,2,3,4,5]);
+        $this->collection = ReadOnlyCollection::from([1, 2, 3, 4, 5]);
+    }
 
-        $this->assertInstanceOf(IReadOnlyCollection::class, $collection);
-        $this->assertInstanceOf(ReadOnlyCollection::class, $collection);
-        $this->assertCount(5, $collection);
-        $this->assertEquals(1, $collection->first());
-        $this->assertEquals(5, $collection->last());
+    public function testInstanceType()
+    {
+        $this->assertInstanceOf(IReadOnlyCollection::class, $this->collection);
+        $this->assertInstanceOf(ReadOnlyCollection::class, $this->collection);
+        $this->assertCount(5, $this->collection);
+    }
 
-        $this->assertTrue($collection->contains(1));
-        $this->assertTrue($collection->contains(2));
-        $this->assertTrue($collection->contains(3));
-        $this->assertTrue($collection->contains(4));
-        $this->assertTrue($collection->contains(5));
+    public function testFirstAndLast()
+    {
+        $this->assertEquals(1, $this->collection->first());
+        $this->assertEquals(5, $this->collection->last());
+    }
 
-        $this->assertFalse($collection->contains(0));
-        $this->assertFalse($collection->contains(true));
-        $this->assertFalse($collection->contains(false));
-        $this->assertFalse($collection->contains(6));
+    public function testContains()
+    {
+        $this->assertTrue($this->collection->contains(1));
+        $this->assertTrue($this->collection->contains(2));
+        $this->assertTrue($this->collection->contains(3));
+        $this->assertTrue($this->collection->contains(4));
+        $this->assertTrue($this->collection->contains(5));
+
+        $this->assertFalse($this->collection->contains(0));
+        $this->assertFalse($this->collection->contains(true));
+        $this->assertFalse($this->collection->contains(false));
+        $this->assertFalse($this->collection->contains(6));
     }
 
     public function testFilter()
     {
-        $collection = ReadOnlyCollection::from([1,2,3,4,5]);
-
-        $collection = $collection->filter(function ($x) {
+        $collection = $this->collection->filter(function ($x) {
             return $x > 1;
         });
-
         $this->assertCount(4, $collection);
         $this->assertFalse($collection->contains(1));
     }
 
-
     public function testMap()
     {
-        $collection = ReadOnlyCollection::from([1,2,3,4,5]);
-
-        $collection = $collection->map(function ($x) {
+        $collection = $this->collection->map(function ($x) {
             return $x * 2;
         });
 
@@ -59,9 +65,7 @@ final class CollectionsTest extends TestCase
 
     public function testFlatMap()
     {
-        $collection = ReadOnlyCollection::from([1,2,3,4,5]);
-
-        $collection = $collection->flatMap(function ($x) {
+        $collection = $this->collection->flatMap(function ($x) {
             return [$x, -$x];
         });
 
@@ -72,15 +76,24 @@ final class CollectionsTest extends TestCase
         $this->assertTrue($collection->contains(5));
     }
 
-
     public function testReduce()
     {
-        $collection = ReadOnlyCollection::from([1,2,3,4,5]);
-
-        $value = $collection->reduce(function ($a, $b) {
+        $value = $this->collection->reduce(function ($a, $b) {
             return $a + $b;
         });
 
         $this->assertEquals(15, $value);
+    }
+
+    public function testReverse()
+    {
+        $collection = $this->collection->reverse();
+        $this->assertEquals([5, 4, 3, 2, 1], $collection->toArray());
+    }
+
+    public function testConcat()
+    {
+        $collection = $this->collection->concat([6, 7]);
+        $this->assertEquals([1, 2, 3, 4, 5, 6, 7], $collection->toArray());
     }
 }

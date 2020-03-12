@@ -15,13 +15,15 @@ final class Validation
         return $v;
     }
 
-    public function validate($model)
+    public function validate($model): ValidationResult
     {
-        $result = [];
+        $result = new ValidationResult();
 
-        foreach ($this->builder->getValidators() as $validator) {
-            $result[] = $validator->validate($model->{$validator->getFieldName()});
-        }
+        // foreach ($this->builder->getValidators() as $validator) {
+        //     $result[] = $validator->validate($model->{$validator->getFieldName()});
+        // }
+        // return $result;
+
         return $result;
     }
 

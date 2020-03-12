@@ -4,7 +4,10 @@ namespace Atom\Collections;
 
 class Collection extends ReadOnlyCollection implements ICollection
 {
-    private $items = [];
+    public static function from(iterable $items): self
+    {
+        return new self($items);
+    }
 
     public function add($value): void
     {

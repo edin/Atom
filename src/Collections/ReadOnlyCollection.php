@@ -6,16 +6,16 @@ use ArrayIterator;
 
 class ReadOnlyCollection implements IReadOnlyCollection
 {
-    private $items = [];
+    protected $items = [];
 
-    public function __construct(array $items)
+    public function __construct(iterable $items)
     {
-        $this->items = $items;
+        $this->items = is_array($items) ? $items : iterator_to_array($items);
     }
 
-    public static function from(array $items): self
+    public static function from(iterable $items): self
     {
-        return new ReadOnlyCollection($items);
+        return new self($items);
     }
 
     public function contains($value): bool
@@ -46,7 +46,7 @@ class ReadOnlyCollection implements IReadOnlyCollection
     public function filter(callable $predicate): self
     {
         $items = array_filter($this->items, $predicate);
-        $items = array_values($items);
+        //$items = array_values($items);
         return new static($items);
     }
 
@@ -98,9 +98,9 @@ class ReadOnlyCollection implements IReadOnlyCollection
         return null;
     }
 
-    public function concat(iterable $list): IReadOnlyCollection
+    public function concat(iterable $list): self
     {
-        $items = iterator_to_array($list);
+        $items = is_array($list) ? $list : iterator_to_array($list);
         $items = array_merge($this->items, $items);
         return new self($items);
     }
@@ -108,5 +108,15 @@ class ReadOnlyCollection implements IReadOnlyCollection
     public function getIterator()
     {
         return new ArrayIterator($this->items);
+    }
+
+    public function keys(): array
+    {
+        return array_keys($this->items);
+    }
+
+    public function unique(): self
+    {
+        return new self(array_unique($this->items));
     }
 }

@@ -4,6 +4,9 @@ namespace Atom\Router;
 
 final class ActionHandler
 {
+    // private const ControllerMethod = 1;
+    // private const Closure = 2;
+
     /** @var ?string */
     private $controller;
     /** @var ?string */

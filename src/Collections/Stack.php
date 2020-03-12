@@ -2,20 +2,25 @@
 
 namespace Atom\Collections;
 
-class Stack extends Collection implements ISet
+class Stack extends ReadOnlyCollection implements IStack
 {
-    public function union(iterable $set): ISet
+    public static function from(iterable $items): self
     {
-        return $this;
+        return new self($items);
     }
 
-    public function intersect(iterable $set): ISet
+    public function push($value): void
     {
-        return $this;
+        $this->items[] = $value;
     }
 
-    public function except(iterable $set): ISet
+    public function pop()
     {
-        return $this;
+        return array_pop($this->items);
+    }
+
+    public function peek()
+    {
+        return $this->last();
     }
 }

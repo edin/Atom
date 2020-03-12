@@ -20,4 +20,8 @@ interface IReadOnlyCollection extends Countable, IteratorAggregate
     public function first();
     public function last();
     public function concat(iterable $list): IReadOnlyCollection;
+    public function keys(): array;
+
+    //public function castTo(string $typeName);
+    //public function chunkBy(int $size);
 }
