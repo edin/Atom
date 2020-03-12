@@ -77,7 +77,7 @@ class ReadOnlyCollection implements IReadOnlyCollection
         return array_reduce($this->items, $reducer, $intial);
     }
 
-    public function reverse(): self
+    public function reversed(): self
     {
         $items = array_reverse($this->items, false);
         return new static($items);
@@ -115,8 +115,39 @@ class ReadOnlyCollection implements IReadOnlyCollection
         return array_keys($this->items);
     }
 
+    public function values(): array
+    {
+        return array_values($this->items);
+    }
+
     public function unique(): self
     {
         return new self(array_unique($this->items));
+    }
+
+    public function implode(string $saprator): string
+    {
+        return implode($saprator, $this->items);
+    }
+
+    public function jsonSerialize()
+    {
+        return $this->items;
+    }
+
+    public function chunkBy(int $size): self
+    {
+        return new self(array_chunk($this->items, $size));
+    }
+
+    public function sorted(?callable $comaparator = null): self
+    {
+        $items = $this->items;
+        if ($comaparator === null) {
+            sort($items);
+        } else {
+            usort($items, $comaparator);
+        }
+        return new self($items);
     }
 }

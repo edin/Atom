@@ -87,7 +87,7 @@ final class CollectionsTest extends TestCase
 
     public function testReverse()
     {
-        $collection = $this->collection->reverse();
+        $collection = $this->collection->reversed();
         $this->assertEquals([5, 4, 3, 2, 1], $collection->toArray());
     }
 
@@ -95,5 +95,17 @@ final class CollectionsTest extends TestCase
     {
         $collection = $this->collection->concat([6, 7]);
         $this->assertEquals([1, 2, 3, 4, 5, 6, 7], $collection->toArray());
+    }
+
+    public function testImplode()
+    {
+        $this->assertEquals("1,2,3,4,5", $this->collection->implode(","));
+    }
+
+    public function testChunkBy()
+    {
+        $chunks = $this->collection->chunkBy(2);
+
+        $this->assertCount(3, $chunks);
     }
 }
