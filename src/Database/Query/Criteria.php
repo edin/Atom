@@ -5,7 +5,7 @@ namespace Atom\Database\Query;
 use Atom\Database\Query\Ast\BinaryExpression;
 use Atom\Database\Query\Ast\GroupExpression;
 
-class Criteria
+final class Criteria
 {
     private $params = [];
     private $expression = null;

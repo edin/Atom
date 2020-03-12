@@ -3,9 +3,9 @@
 namespace Atom\Collections;
 
 use Countable;
-use Iterator;
+use IteratorAggregate;
 
-interface IReadOnlyCollection extends Countable, Iterator
+interface IReadOnlyCollection extends Countable, IteratorAggregate
 {
     public function contains($value): bool;
     public function count(): int;
@@ -15,7 +15,7 @@ interface IReadOnlyCollection extends Countable, Iterator
     public function filter(callable $predicate): self;
     public function map(callable $mapper): self;
     public function flatMap(callable $mapper): self;
-    public function reduce(callable $reducer);
+    public function reduce(callable $reducer, $initial = null);
     public function reverse(): self;
     public function first();
     public function last();

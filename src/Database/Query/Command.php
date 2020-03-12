@@ -2,8 +2,9 @@
 
 namespace Atom\Database;
 
-class Command
+final class Command
 {
     public function execute()
-    { }
+    {
+    }
 }

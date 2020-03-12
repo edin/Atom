@@ -2,26 +2,26 @@
 
 namespace Atom\Collections;
 
-// class Collection implements ICollection
-// {
-//     private $items = [];
+class Collection extends ReadOnlyCollection implements ICollection
+{
+    private $items = [];
 
-//     public function add($value): void
-//     {
-//         $this->items[] = $value;
-//     }
+    public function add($value): void
+    {
+        $this->items[] = $value;
+    }
 
-//     public function remove($value): void
-//     {
-//     }
+    public function remove($value): void
+    {
+        $key = array_search($value, $this->items, true);
+        if ($key) {
+            unset($this->items[$key]);
+            $this->items = array_values($this->items);
+        }
+    }
 
-//     public function clear(): void
-//     {
-//         $this->items = [];
-//     }
-
-//     public function toArray(): array
-//     {
-//         return $this->items;
-//     }
-// }
+    public function clear(): void
+    {
+        $this->items = [];
+    }
+}
