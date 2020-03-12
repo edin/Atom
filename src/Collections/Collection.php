@@ -17,7 +17,7 @@ class Collection extends ReadOnlyCollection implements ICollection
     public function remove($value): void
     {
         $key = array_search($value, $this->items, true);
-        if ($key) {
+        if ($key !== false) {
             unset($this->items[$key]);
             $this->items = array_values($this->items);
         }
