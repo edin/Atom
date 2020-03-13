@@ -10,4 +10,4 @@ class Repository implements IRepository
     {
         $this->database = $database;
     }
-}
+} 

@@ -1,6 +1,6 @@
 <?php
 
-namespace Atom\Tests\Container;
+namespace Atom\Tests\Container\Types;
 
 class ProxyRepository implements IRepository
 {

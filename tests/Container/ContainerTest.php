@@ -121,5 +121,6 @@ final class ContainerTest extends TestCase
         $this->assertInstanceOf(Database::class, $result2);
 
         $this->assertNotSame($result1, $result2);
-    }
+    }  
 }
+ 
