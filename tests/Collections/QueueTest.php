@@ -2,7 +2,7 @@
 
 namespace Atom\Tests\Collections;
 
-use Atom\Collections\IQueue;
+use Atom\Collections\Interfaces\IQueue;
 use Atom\Collections\Queue;
 use PHPUnit\Framework\TestCase;
 

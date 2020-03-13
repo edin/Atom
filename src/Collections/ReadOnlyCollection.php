@@ -3,6 +3,7 @@
 namespace Atom\Collections;
 
 use ArrayIterator;
+use Atom\Collections\Interfaces\IReadOnlyCollection;
 
 class ReadOnlyCollection implements IReadOnlyCollection
 {
@@ -13,7 +14,10 @@ class ReadOnlyCollection implements IReadOnlyCollection
         $this->items = is_array($items) ? $items : iterator_to_array($items);
     }
 
-    public static function from(iterable $items): self
+    /**
+     * @return self
+     */
+    public static function from(iterable $items)
     {
         return new self($items);
     }
@@ -43,20 +47,20 @@ class ReadOnlyCollection implements IReadOnlyCollection
         return $this->items;
     }
 
-    public function filter(callable $predicate): self
+    public function filter(callable $predicate): IReadOnlyCollection
     {
         $items = array_filter($this->items, $predicate);
         //$items = array_values($items);
-        return new static($items);
+        return new self($items);
     }
 
-    public function map(callable $mapper): self
+    public function map(callable $mapper): IReadOnlyCollection
     {
         $items = array_map($mapper, $this->items);
-        return new static($items);
+        return new self($items);
     }
 
-    public function flatMap(callable $mapper): self
+    public function flatMap(callable $mapper): IReadOnlyCollection
     {
         $items = array_map($mapper, $this->items);
         $result = [];
@@ -69,7 +73,7 @@ class ReadOnlyCollection implements IReadOnlyCollection
                 $result[] = $item;
             }
         }
-        return new static($result);
+        return new self($result);
     }
 
     public function reduce(callable $reducer, $intial = null)
@@ -77,10 +81,10 @@ class ReadOnlyCollection implements IReadOnlyCollection
         return array_reduce($this->items, $reducer, $intial);
     }
 
-    public function reversed(): self
+    public function reversed(): IReadOnlyCollection
     {
         $items = array_reverse($this->items, false);
-        return new static($items);
+        return new self($items);
     }
 
     public function first()
@@ -98,7 +102,7 @@ class ReadOnlyCollection implements IReadOnlyCollection
         return null;
     }
 
-    public function concat(iterable $list): self
+    public function concat(iterable $list): IReadOnlyCollection
     {
         $items = is_array($list) ? $list : iterator_to_array($list);
         $items = array_merge($this->items, $items);
@@ -120,7 +124,7 @@ class ReadOnlyCollection implements IReadOnlyCollection
         return array_values($this->items);
     }
 
-    public function unique(): self
+    public function unique(): IReadOnlyCollection
     {
         return new self(array_unique($this->items));
     }
@@ -135,12 +139,12 @@ class ReadOnlyCollection implements IReadOnlyCollection
         return $this->items;
     }
 
-    public function chunkBy(int $size): self
+    public function chunkBy(int $size): IReadOnlyCollection
     {
         return new self(array_chunk($this->items, $size));
     }
 
-    public function sorted(?callable $comaparator = null): self
+    public function sorted(?callable $comaparator = null): IReadOnlyCollection
     {
         $items = $this->items;
         if ($comaparator === null) {
@@ -149,5 +153,12 @@ class ReadOnlyCollection implements IReadOnlyCollection
             usort($items, $comaparator);
         }
         return new self($items);
+    }
+
+    public function each(callable $callback): IReadOnlyCollection {
+        foreach($this->items as $key => $value) {
+            $callback($value, $key, $this);
+        }
+        return $this;
     }
 }

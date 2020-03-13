@@ -2,6 +2,8 @@
 
 namespace Atom\Collections;
 
+use Atom\Collections\Interfaces\IQueue;
+
 class Queue extends ReadOnlyCollection implements IQueue
 {
     public static function from(iterable $items): self

@@ -2,9 +2,14 @@
 
 namespace Atom\Collections;
 
+use Atom\Collections\Interfaces\ICollection;
+
 class Collection extends ReadOnlyCollection implements ICollection
 {
-    public static function from(iterable $items): self
+    /**
+     * @return self
+     */
+    public static function from(iterable $items)
     {
         return new self($items);
     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Atom\Collections;
+namespace Atom\Collections\Interfaces;
 
 use Countable;
 use IteratorAggregate;
@@ -20,8 +20,10 @@ interface IReadOnlyCollection extends Countable, IteratorAggregate, JsonSerializ
     public function reversed(): self;
     public function first();
     public function last();
-    public function concat(iterable $list): IReadOnlyCollection;
+    public function concat(iterable $list): self;
     public function keys(): array;
     public function sorted(?callable $comaparator = null): self;
     public function chunkBy(int $size): self;
+    public function each(callable $callback): self;
+    public function unique(): self;
 }

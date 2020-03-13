@@ -2,7 +2,7 @@
 
 namespace Atom\Tests\Collections;
 
-use Atom\Collections\ISet;
+use Atom\Collections\Interfaces\ISet;
 use Atom\Collections\Set;
 use PHPUnit\Framework\TestCase;
 

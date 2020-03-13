@@ -2,7 +2,7 @@
 
 namespace Atom\Tests\Collections;
 
-use Atom\Collections\IReadOnlyCollection;
+use Atom\Collections\Interfaces\IReadOnlyCollection;
 use Atom\Collections\ReadOnlyCollection;
 use PHPUnit\Framework\TestCase;
 

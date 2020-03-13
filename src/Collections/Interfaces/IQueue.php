@@ -1,6 +1,6 @@
 <?php
 
-namespace Atom\Collections;
+namespace Atom\Collections\Interfaces;
 
 interface IQueue extends IReadOnlyCollection
 {

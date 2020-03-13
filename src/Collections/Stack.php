@@ -2,6 +2,8 @@
 
 namespace Atom\Collections;
 
+use Atom\Collections\Interfaces\IStack;
+
 class Stack extends ReadOnlyCollection implements IStack
 {
     public static function from(iterable $items): self

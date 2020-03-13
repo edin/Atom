@@ -2,7 +2,7 @@
 
 namespace Atom\Tests\Collections;
 
-use Atom\Collections\IStack;
+use Atom\Collections\Interfaces\IStack;
 use Atom\Collections\Stack;
 use PHPUnit\Framework\TestCase;
 

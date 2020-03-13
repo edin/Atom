@@ -1,6 +1,6 @@
 <?php
 
-namespace Atom\Collections;
+namespace Atom\Collections\Interfaces;
 
 use ArrayAccess;
 

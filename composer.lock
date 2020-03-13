@@ -488,12 +488,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/myclabs/DeepCopy.git",
-                "reference": "b2c28789e80a97badd14145fda39b545d83ca3ef"
+                "reference": "a491d65139e2411c75704e871dd02bdddf5a4bdc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/b2c28789e80a97badd14145fda39b545d83ca3ef",
-                "reference": "b2c28789e80a97badd14145fda39b545d83ca3ef",
+                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/a491d65139e2411c75704e871dd02bdddf5a4bdc",
+                "reference": "a491d65139e2411c75704e871dd02bdddf5a4bdc",
                 "shasum": ""
             },
             "require": {
@@ -528,7 +528,7 @@
                 "object",
                 "object graph"
             ],
-            "time": "2020-01-17T21:11:47+00:00"
+            "time": "2020-03-12T21:49:07+00:00"
         },
         {
             "name": "phar-io/manifest",
@@ -856,12 +856,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "e6cd7ec98db7fbbaf6b389a6c3e7028a28c7e056"
+                "reference": "0c867151050bef5ac941a968ffb59a3160e835b9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/e6cd7ec98db7fbbaf6b389a6c3e7028a28c7e056",
-                "reference": "e6cd7ec98db7fbbaf6b389a6c3e7028a28c7e056",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/0c867151050bef5ac941a968ffb59a3160e835b9",
+                "reference": "0c867151050bef5ac941a968ffb59a3160e835b9",
                 "shasum": ""
             },
             "require": {
@@ -887,7 +887,7 @@
                 "MIT"
             ],
             "description": "PHPStan - PHP Static Analysis Tool",
-            "time": "2020-03-08T20:48:17+00:00"
+            "time": "2020-03-11T13:07:24+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -1883,8 +1883,8 @@
             "authors": [
                 {
                     "name": "Arne Blankerts",
-                    "role": "Developer",
-                    "email": "arne@blankerts.de"
+                    "email": "arne@blankerts.de",
+                    "role": "Developer"
                 }
             ],
             "description": "A small library for converting tokenized PHP source code into XML and potentially other formats",

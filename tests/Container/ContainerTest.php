@@ -4,39 +4,10 @@ namespace Atom\Tests\Container;
 
 use PHPUnit\Framework\TestCase;
 use Atom\Container\Container;
-
-interface IDatabase
-{
-}
-
-interface IRepository
-{
-}
-
-class MySqlDatabase implements IDatabase
-{
-}
-
-class Repository implements IRepository
-{
-    public $database;
-
-    public function __construct(IDatabase $database)
-    {
-        $this->database = $database;
-    }
-}
-
-class ProxyRepository implements IRepository
-{
-    public $repository;
-
-    public function __construct(IRepository $repository)
-    {
-        $this->repository = $repository;
-    }
-}
-
+use Atom\Tests\Container\Types\Database;
+use Atom\Tests\Container\Types\IDatabase;
+use Atom\Tests\Container\Types\IRepository;
+use Atom\Tests\Container\Types\Repository;
 
 final class ContainerTest extends TestCase
 {
@@ -51,7 +22,7 @@ final class ContainerTest extends TestCase
 
     public function testResolveInstance(): void
     {
-        $repository = new Repository(new MySqlDatabase());
+        $repository = new Repository(new Database());
 
         $container = new Container;
         $container->bind(IRepository::class)->toInstance($repository);
@@ -64,49 +35,49 @@ final class ContainerTest extends TestCase
     public function testResolveClassToSelf(): void
     {
         $container = new Container;
-        $container->bind(IDatabase::class)->to(MySqlDatabase::class);
+        $container->bind(IDatabase::class)->to(Database::class);
         $container->bind(Repository::class)->toSelf();
 
         $result = $container->resolve(Repository::class);
 
         $this->assertInstanceOf(Repository::class, $result);
-        $this->assertInstanceOf(MySqlDatabase::class, $result->database);
+        $this->assertInstanceOf(Database::class, $result->database);
     }
 
     public function testResolveInterfaceToClassWithParameter(): void
     {
         $container = new Container;
-        $container->bind(IDatabase::class)->to(MySqlDatabase::class);
+        $container->bind(IDatabase::class)->to(Database::class);
         $container->bind(IRepository::class)->to(Repository::class);
 
         $result = $container->resolve(Repository::class);
 
         $this->assertInstanceOf(Repository::class, $result);
-        $this->assertInstanceOf(MySqlDatabase::class, $result->database);
+        $this->assertInstanceOf(Database::class, $result->database);
     }
 
     public function testResolveInterfaceToClassWithoutParameters(): void
     {
         $container = new Container;
-        $container->bind(IDatabase::class)->to(MySqlDatabase::class);
+        $container->bind(IDatabase::class)->to(Database::class);
 
         $result = $container->resolve(IDatabase::class);
 
-        $this->assertInstanceOf(MySqlDatabase::class, $result);
+        $this->assertInstanceOf(Database::class, $result);
     }
 
     public function testResolveInterfaceToClassWithSharedParameter(): void
     {
         $container = new Container;
-        $container->bind(IDatabase::class)->to(MySqlDatabase::class)->asShared();
+        $container->bind(IDatabase::class)->to(Database::class)->asShared();
         $container->bind(IRepository::class)->to(Repository::class);
 
         $result1 = $container->resolve(Repository::class);
         $result2 = $container->resolve(Repository::class);
 
 
-        $this->assertInstanceOf(MySqlDatabase::class, $result1->database);
-        $this->assertInstanceOf(MySqlDatabase::class, $result2->database);
+        $this->assertInstanceOf(Database::class, $result1->database);
+        $this->assertInstanceOf(Database::class, $result2->database);
 
         $this->assertEquals($result1->database, $result2->database);
     }
@@ -115,39 +86,39 @@ final class ContainerTest extends TestCase
     {
         $container = new Container;
         $container->alias("Repo", IRepository::class);
-        $container->bind(IDatabase::class)->to(MySqlDatabase::class)->asShared();
+        $container->bind(IDatabase::class)->to(Database::class)->asShared();
         $container->bind(IRepository::class)->to(Repository::class);
 
         $result = $container->resolve("Repo");
 
         $this->assertInstanceOf(Repository::class, $result);
-        $this->assertInstanceOf(MySqlDatabase::class, $result->database);
+        $this->assertInstanceOf(Database::class, $result->database);
     }
 
     public function testResolveClassThatIsNotRegistered(): void
     {
         $container = new Container;
-        $container->bind(IDatabase::class)->to(MySqlDatabase::class)->asShared();
+        $container->bind(IDatabase::class)->to(Database::class)->asShared();
 
         $result = $container->resolve(Repository::class);
 
 
         $this->assertInstanceOf(Repository::class, $result);
-        $this->assertInstanceOf(MySqlDatabase::class, $result->database);
+        $this->assertInstanceOf(Database::class, $result->database);
     }
 
     public function testRegisterMultipleComponentsOfSameType(): void
     {
         $container = new Container;
         $container->alias("X", "A");
-        $container->bind("A")->to(MySqlDatabase::class)->asShared();
-        $container->bind("B")->to(MySqlDatabase::class)->asShared();
+        $container->bind("A")->to(Database::class)->asShared();
+        $container->bind("B")->to(Database::class)->asShared();
 
         $result1 = $container->resolve("A");
         $result2= $container->resolve("B");
 
-        $this->assertInstanceOf(MySqlDatabase::class, $result1);
-        $this->assertInstanceOf(MySqlDatabase::class, $result2);
+        $this->assertInstanceOf(Database::class, $result1);
+        $this->assertInstanceOf(Database::class, $result2);
 
         $this->assertNotSame($result1, $result2);
     }

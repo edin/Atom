@@ -2,6 +2,8 @@
 
 namespace Atom\Collections;
 
+use Atom\Collections\Interfaces\ISet;
+
 class Set extends Collection implements ISet
 {
     public static function from(iterable $items): self
