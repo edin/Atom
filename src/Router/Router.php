@@ -2,11 +2,14 @@
 
 namespace Atom\Router;
 
+use Closure;
+
 class Router
 {
     use RouteTrait;
     private $routes = [];
     private $groups = [];
+    private $controllerType;
 
     public static function fromGroupAndPath(Router $router, string $path): Router
     {
@@ -39,13 +42,27 @@ class Router
         return $result;
     }
 
-    public function addGroup(string $path = "", callable $routeBuilder = null): self
+    public function addGroup(string $path = "", ?Closure $routeBuilder = null): self
     {
         $this->groups[] = $group = Router::fromGroupAndPath($this, $path);
         if ($routeBuilder !== null) {
             $routeBuilder($group);
         }
         return $group;
+    }
+
+    public function controller(string $controller, Closure $routeBuilder) {
+        $this->groups[] = $group = Router::fromGroupAndPath($this, $this->getPath());
+        $group->setController($controller);
+        $routeBuilder($group);
+    }
+
+    public function setController(string $controller) {
+        $this->controllerType = $controller;
+    }
+
+    public function getController(): ?string {
+        return $this->controllerType;
     }
 
     /**
@@ -66,6 +83,11 @@ class Router
 
     public function addRoute(string $method, string $path, $controller, $action = null): Route
     {
+        if ($action === null && $this->controllerType !== null) {
+            $action = $controller;
+            $controller = $this->controllerType;
+        }
+
         $route = new Route($this, $method, $path, ActionHandler::from($controller, $action));
         $this->routes[] = $route;
         return $route;

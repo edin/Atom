@@ -19,6 +19,8 @@ final class Action
     private $actionArguments = [];
     private $constructorArguments = [];
     private $properties = [];
+    private $resolutionContext;
+    private $controllerFactory;
 
     public function __construct(Container $container, Route $route)
     {

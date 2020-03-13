@@ -15,6 +15,7 @@ class ClassTypeFactory
     private $dependencies;
     private $arguments = [];
     private $properties = [];
+    private $context;
     /** @var ReflectionClass */
     private $reflectionClass;
 
@@ -24,6 +25,7 @@ class ClassTypeFactory
         $this->registration = $registration;
         $this->dependencies = $dependencies;
         $this->reflectionClass = $reflectionClass;
+        $this->context = $context;
 
         foreach ($this->dependencies as $index => $parameter) {
             $value = $params[$parameter->name] ?? null;

@@ -4,14 +4,8 @@ namespace Atom\Router;
 
 final class ActionHandler
 {
-    // private const ControllerMethod = 1;
-    // private const Closure = 2;
-
-    /** @var ?string */
     private $controller;
-    /** @var ?string */
     private $methodName;
-    /** @var ?callable */
     private $closure;
 
     public function __construct(?string $controller, ?string $methodName, ?callable $closure)
@@ -21,24 +15,16 @@ final class ActionHandler
         $this->closure = $closure;
     }
 
-    public static function from($controller, ?string $action = null): self
+    public static function from($controller, ?string $method = null): self
     {
         if (is_callable($controller)) {
             return ActionHandler::fromClosure($controller);
         }
 
         if (is_string($controller)) {
-            return new ActionHandler($controller, $action, null);
+            return ActionHandler::fromMethod($controller, $method, null);
         }
         throw new \InvalidArgumentException("Failed to construct ActionHandler from given parameters.");
-    }
-
-    public static function fromString(string $target): self
-    {
-        $parts = explode("@", $target);
-        $controller = $parts[0];
-        $action = $parts[1] ?? "index";
-        return new ActionHandler($controller, $action, null);
     }
 
     public static function fromMethod(string $controller, string $methodName): self
