@@ -16,7 +16,7 @@ use Atom\Validation\Rules\Required;
 use Atom\Validation\Rules\Trim;
 use Closure;
 
-class ValidationGroup
+class Validator
 {
     private const ValidateScalar = 0;
     private const ValidateArray = 1;
@@ -125,20 +125,67 @@ class ValidationGroup
         return $this;
     }
 
-    public function validate($value): array
+    public function validate($value)
     {
-        // if ($this->validatorType == self::ValidateArray) {
-        // } elseif ($this->validatorType == self::ValidateObject) {
-        // }
+        if ($this->validatorType == self::ValidateArray) {
+            $value = is_array($value) ? $value : [];
+            return $this->validateArray($value);
+        } elseif ($this->validatorType == self::ValidateObject) {
+            return $this->validateObject($value);
+        }
+        return $this->validateScalar($value);
+    }
 
-        //$result = new ValidationResult;
-        $errors = [];
+    private function validateScalar($value)
+    {
+        $result = new \stdClass;
+        $result->isValid = true;
+        $result->errors = [];
+        $result->value = null;
+
+        $ruleResults = [];
         foreach ($this->rules as $rule) {
-            $result = $rule->validate($value);
-            if ($result->isFailure()) {
-                $errors[] = $result;
+            $ruleResults[] = $rule->validate($value);
+        }
+
+        foreach ($ruleResults as $r) {
+            if ($r->isFailure()) {
+                $result->isValid = false;
+                $result->errors[] = $r->getErrorMessage();
+            }
+            $result->value = $r->getValue();
+        }
+
+        return $result;
+    }
+
+    private function validateArray($values)
+    {
+        $result = new \stdClass;
+        $result->isValid = false;
+        $result->errors = [];
+        $result->value = $values;
+
+        foreach ($values as $key => $value) {
+            if (is_array($value) || is_object($value)) {
+                $ruleResult = $this->validator->validate($value);
+            } else {
+                $ruleResult = $this->validateScalar($value);
+            }
+            if (!$ruleResult->isValid) {
+                $this->errors[$key] = $ruleResult;
             }
         }
-        return $errors;
+
+        return $result;
+    }
+
+    private function validateObject($entity)
+    {
+        $result = new \stdClass;
+        $result->isValid = false;
+        $result->value = $entity;
+        $result->errors = $this->validator->validate($entity);
+        return $result;
     }
 }
