@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Atom\Validation;
 
@@ -146,7 +146,6 @@ class Validator
         $result = new ValidationResult;
 
         $ruleResults = [];
-
         foreach ($this->rules as $rule) {
             $ruleResults[] = $ruleResult = $rule->validate($value);
             $value = $ruleResult->getValue();
@@ -155,7 +154,7 @@ class Validator
         foreach ($ruleResults as $ruleResult) {
             if ($ruleResult->isFailure()) {
                 $errorMessage = new ErrorMessage($ruleResult->getErrorMessage(), $ruleResult->getAttributes());
-                $result->addErrorMessage($errorMessage);
+                $result->addError($errorMessage);
             }
             if ($ruleResult->isSuccess()) {
                 $result->setValue($ruleResult->getValue());
@@ -168,6 +167,8 @@ class Validator
     private function validateArray($values): ValidationResult
     {
         $result = new ValidationResult;
+        $result->setArrayResults();
+
         foreach ($values as $key => $value) {
             if (is_array($value) || is_object($value)) {
                 $validationResult = $this->validator->validate($value);
@@ -176,7 +177,8 @@ class Validator
             }
 
             if ($validationResult->hasAnyErrors()) {
-                $result->addValidationResult($key, $validationResult);
+                $validationResult->setIndex($key);
+                $result->addValidationResult((string)$key, $validationResult);
             }
         }
         return $result;

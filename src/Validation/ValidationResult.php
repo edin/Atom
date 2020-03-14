@@ -7,23 +7,34 @@ use JsonSerializable;
 
 final class ValidationResult implements Countable, JsonSerializable
 {
-    private $errorMessages = [];
+    private $modelErrors = [];
     private $errors = [];
     private $value = null;
     private $hasValue = false;
+    private $index = null;
+    private $isArrayResult = false;
 
-    public function addErrorMessage(ErrorMessage $errorMessage) {
-        $this->errorMessages[] = $errorMessage;
+    public function addModelError(ErrorMessage $errorMessage) {
+        $this->modelErrors[] = $errorMessage;
     }
 
-    public function addError(string $fieldName, ErrorMessage $errorMessage) 
+    public function addError(ErrorMessage $errorMessage) 
     {
-        $this->errors[$fieldName][] = $errorMessage;
+        $this->errors[] = $errorMessage;
     }
 
     public function addValidationResult(string $fieldName, ValidationResult $validationResult) 
     {
+        $fieldName = (string)$fieldName;
         $this->errors[$fieldName] = $validationResult;
+    }
+
+    public function setArrayResults(): void {
+        $this->isArrayResult = true;
+    }
+
+    public function isArrayResult(): bool {
+        return $this->isArrayResult;
     }
 
     public function hasErrorsFor(string $fieldName): bool {
@@ -39,6 +50,14 @@ final class ValidationResult implements Countable, JsonSerializable
         $this->value = $value;
     }
 
+    public function setIndex($value): void {
+        $this->index = $value;
+    }
+
+    public function getIndex() {
+        return $this->index;
+    }
+
     public function hasValue(): bool {
         return $this->hasValue;
     }
@@ -47,24 +66,40 @@ final class ValidationResult implements Countable, JsonSerializable
         return $this->value;
     }
 
-    public function isValid() {
+    public function isValid(): bool {
         return count($this->errors) === 0 &&
-               count($this->errorMessages) == 0;
+               count($this->modelErrors) == 0;
     }
 
-    public function hasAnyErrors() {
+    public function hasAnyErrors(): bool {
         return !$this->isValid();
+    }
+
+    public function hasIndex(): bool {
+        return $this->index !== null;
     }
 
     public function jsonSerialize()
     {
-        return [
-            'errorMessages' => $this->errorMessages,
-            'errors' => $this->errors
-        ];
+        $result = [];
+        if (count($this->modelErrors)) {
+            $result['modelErrors'] = $this->modelErrors;
+        }
+
+        if ($this->hasIndex()) {
+            $result['index'] = $this->index;
+        }
+
+        if ($this->isArrayResult) {
+            $result['errors'] = (object)$this->errors;
+        } else {
+            $result['errors'] = $this->errors;
+        }
+
+        return $result;
     }
 
     public function count() {
-        return count($this->errors);
+        return count($this->errors) + count($this->modelErrors);
     }
 }
