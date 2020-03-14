@@ -19,16 +19,64 @@ abstract class Query
     protected $groupBy = [];
     protected $values = null;
 
-    public function getJoins()
+    public function getTable() {
+        return $this->table;
+    }
+
+    public function getCount() {
+        return $this->count;
+    }
+
+    public function getIsDistinct() {
+        return $this->isDistinct;
+    }
+
+    public function getIsExists() {
+        return $this->isExists;
+    }
+
+    public function getLimit() {
+        return $this->limit;
+    }
+
+    public function getOffset() {
+        return $this->offset;
+    }
+
+    public function getColumns(): array {
+        return $this->columns;
+    }
+
+    public function getUnions(): array {
+        return $this->unions;
+    }
+
+    public function getJoins(): array
     {
         return $this->joins;
     }
 
-    public function show()
+    public function getWhere(): array
     {
-        print_r($this);
+        return $this->where;
+    }    
+
+    public function getHaving(): array {
+        return $this->having;
     }
 
+    public function getOrderBy(): array {
+        return $this->orderBy;
+    }
+
+    public function getGroupBy(): array {
+        return $this->groupBy;
+    }
+
+    public function getValues() {
+        return $this->values;
+    }
+    
     public static function select(): SelectQuery
     {
         return new SelectQuery();

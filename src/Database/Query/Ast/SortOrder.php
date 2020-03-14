@@ -26,4 +26,16 @@ final class SortOrder
         $this->order = self::DESC;
         return $this;
     }
+
+    public function nullsFirst(): self
+    {
+        $this->nullsOrder = self::NULLS_FIRST;
+        return $this;
+    }
+
+    public function nullsLast(): self
+    {
+        $this->nullsOrder = self::NULLS_LAST;
+        return $this;
+    }
 }

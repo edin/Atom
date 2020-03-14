@@ -3,6 +3,7 @@
 namespace Atom\Database\Query\Compilers;
 
 use Atom\Database\Query\Ast\BinaryExpression;
+use Atom\Database\Query\Query;
 
 abstract class AbstractCompiler
 {
@@ -10,9 +11,16 @@ abstract class AbstractCompiler
     abstract public function quoteColumnName(string $name): string;
     abstract public function quoteValue($value): string;
 
+    private $textWriter;
 
-    public function compileQuery()
+    public function __construct()
     {
+        $this->textWriter = new TextWriter();
+    }
+
+    public function compileQuery(Query $query)
+    {
+        
     }
 
     public function compileCriteria($criteria)
@@ -24,3 +32,5 @@ abstract class AbstractCompiler
         }
     }
 }
+
+
