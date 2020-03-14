@@ -83,7 +83,7 @@ class Router
 
     public function addRoute(string $method, string $path, $controller, $action = null): Route
     {
-        if ($action === null && $this->controllerType !== null) {
+        if ($action === null && $this->controllerType !== null && is_string($controller)) {
             $action = $controller;
             $controller = $this->controllerType;
         }
