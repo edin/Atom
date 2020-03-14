@@ -9,6 +9,7 @@ final class ValidationResult implements JsonSerializable
     private $errorMessages = [];
     private $errors = [];
     private $value = null;
+    private $hasValue = false;
 
     public function addErrorMessage(ErrorMessage $errorMessage) {
         $this->errorMessages[] = $errorMessage;
@@ -25,7 +26,12 @@ final class ValidationResult implements JsonSerializable
     }
 
     public function setValue($value): void {
+        $this->hasValue = true;
         $this->value = $value;
+    }
+
+    public function hasValue(): bool {
+        return $this->hasValue;
     }
 
     public function getValue() {
@@ -35,6 +41,10 @@ final class ValidationResult implements JsonSerializable
     public function isValid() {
         return count($this->errors) === 0 &&
                count($this->errorMessages) == 0;
+    }
+
+    public function hasErrors() {
+        return !$this->isValid();
     }
 
     public function jsonSerialize()

@@ -26,4 +26,6 @@ interface IReadOnlyCollection extends Countable, IteratorAggregate, JsonSerializ
     public function chunkBy(int $size): self;
     public function each(callable $callback): self;
     public function unique(): self;
+    //public function indexBy(string $property): self;
+    //public function groupBy(string $property): self;
 }

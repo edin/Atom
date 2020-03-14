@@ -134,6 +134,7 @@ class Validator
             $value = is_array($value) ? $value : [];
             return $this->validateArray($value);
         } elseif ($this->validatorType == self::ValidateObject) {
+            echo "Validating object: ", get_class($value), "\n";
             return $this->validateObject($value);
         }
         return $this->validateScalar($value);
@@ -145,17 +146,19 @@ class Validator
 
         $ruleResults = [];
         foreach ($this->rules as $rule) {
-            $ruleResults[] = $rule->validate($value);
+            $ruleResults[] = $ruleResult = $rule->validate($value);
+            $value = $ruleResult->getValue();
         }
 
-        foreach ($ruleResults as $rule) {
-            if ($rule->isFailure()) {
-                $errorMessage = new ErrorMessage($rule->getErrorMessage(), $rule->getAttributes());
+        foreach ($ruleResults as $ruleResult) {
+            if ($ruleResult->isFailure()) {
+                $errorMessage = new ErrorMessage($ruleResult->getErrorMessage(), $ruleResult->getAttributes());
                 $result->addErrorMessage($errorMessage);
             }
-            $result->setValue($rule->getValue());
+            if ($ruleResult->isSuccess()) {
+                $result->setValue($ruleResult->getValue());
+            }
         }
-
         return $result;
     }
 

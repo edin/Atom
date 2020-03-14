@@ -25,9 +25,9 @@ final class RuleResult
         return new static(self::Success, $value, "", []);
     }
 
-    public static function failure(string $errorMessage, array $attributes = []): self
+    public static function failure($value, string $errorMessage, array $attributes = []): self
     {
-        return new static(self::Failure, null, $errorMessage, $attributes);
+        return new static(self::Failure, $value, $errorMessage, $attributes);
     }
 
     public function getValue()

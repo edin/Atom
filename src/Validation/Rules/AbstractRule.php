@@ -38,7 +38,7 @@ abstract class AbstractRule implements IRule
             if (!$isValid) {
                 $attributes = $this->getAttributes();
                 $attributes['value'] = $value;
-                return RuleResult::failure($this->getErrorMessage(), $attributes);
+                return RuleResult::failure($this->resultValue, $this->getErrorMessage(), $attributes);
             }
         }
         return RuleResult::success($this->resultValue);

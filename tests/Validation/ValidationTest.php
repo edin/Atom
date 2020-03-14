@@ -16,7 +16,7 @@ final class ValidationTest extends TestCase
     {
         $this->customer = new Customer;
         $this->customer->firstName = "Edin";
-        $this->customer->lastName = "Omeragic";
+        $this->customer->lastName = " Omeragic ";
         $this->customer->email = "edin.omeragic@gmail.com";
         $this->customer->phones = ["", "", "Phone"];
 
@@ -45,6 +45,12 @@ final class ValidationTest extends TestCase
     }
 
     public function testFilteringValues(): void
+    {
+        $result = $this->validator->validate($this->customer);
+        $this->assertEquals("Omeragic", $this->customer->lastName);
+    }
+
+    public function testNestedFilteringValues(): void
     {
         $result = $this->validator->validate($this->customer);
         $this->assertEquals("Street Address", $this->customer->address->street);

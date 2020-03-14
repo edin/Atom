@@ -38,6 +38,7 @@ final class Validation
             new ObjectPropertyAccessor($model);
 
         $result = new ValidationResult();
+        
 
         foreach ($this->validators as $validator) {
             $property = $validator->getProperty();
@@ -45,10 +46,12 @@ final class Validation
             $value = $propertyAccessor->getProperty($property);
             $validatorResult = $validator->validate($value);
 
-            if ($validatorResult->isValid()) {
-                $propertyAccessor->setProperty($property, $value);
-            } else {
+            if ($validatorResult->hasErrors()) {
                 $result->addValidationResult($property, $validatorResult);
+            }
+            if ($validatorResult->hasValue()) {
+                $value = $validatorResult->getValue();
+                $propertyAccessor->setProperty($property, $value);
             }
         }
         return $result;
