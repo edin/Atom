@@ -2,63 +2,51 @@
 
 namespace Atom\Tests\Validation;
 
+use Atom\Tests\Validation\Types\Address;
+use Atom\Tests\Validation\Types\Customer;
 use Atom\Validation\Validation;
 use PHPUnit\Framework\TestCase;
 
 final class ValidationTest extends TestCase
 {
-    public function testValidationBuilder(): void
+    private $customer;
+    private $validator;
+
+    protected function setUp(): void
     {
-        $validator = Validation::create(function (Validation $rule) {
+        $this->customer = new Customer;
+        $this->customer->firstName = "Edin";
+        $this->customer->lastName = "Omeragic";
+        $this->customer->email = "edin.omeragic@gmail.com";
+        $this->customer->phones = ["", "", "Phone"];
+
+        $this->customer->address = new Address;
+        $this->customer->address->city = "";
+        $this->customer->address->street = " Street Address ";
+
+        $this->validator = Validation::create(function (Validation $rule) {
             $rule->firstName->required()->trim()->length(8, 30);
             $rule->lastName->required()->trim()->length(14, 30);
             $rule->email->required()->email();
-
             $rule->address->asObject(function (Validation $rule) {
-                $rule->city->required();
-                $rule->street->required();
+                $rule->city->trim()->required();
+                $rule->street->trim()->required();
             });
-
             $rule->phones->asArray(function (Validation $rule) {
                 $rule->phone->required();
             });
         });
-
-        $customer = new Customer;
-        $customer->firstName = "Edin";
-        $customer->lastName = "Omeragic";
-        $customer->email = "edin.omeragic@gmail.com";
-        $customer->phones = [
-            "",
-            "",
-            "Phone"
-        ];
-
-        $customer->address = new Address;
-        $customer->address->city = "";
-        $customer->address->street = "Ul. Drage Karamana";
-
-        $validationResult = $validator->validate($customer);
-
-        print_r($validationResult);
-        print_r($customer);
-
-        //print_r($validationResult);
-        $this->assertEquals(1, 1);
     }
-}
 
-class Customer
-{
-    public $firstName;
-    public $lastName;
-    public $email;
-    public $address;
-    public $phones;
-}
+    public function testValidationBuilder(): void
+    {
+        $result = $this->validator->validate($this->customer);
+        $this->assertFalse($result->isValid());
+    }
 
-class Address
-{
-    public $city;
-    public $street;
+    public function testFilteringValues(): void
+    {
+        $result = $this->validator->validate($this->customer);
+        $this->assertEquals("Street Address", $this->customer->address->street);
+    }
 }

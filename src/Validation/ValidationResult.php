@@ -2,9 +2,9 @@
 
 namespace Atom\Validation;
 
-use Error;
+use JsonSerializable;
 
-final class ValidationResult
+final class ValidationResult implements JsonSerializable
 {
     private $errorMessages = [];
     private $errors = [];
@@ -17,11 +17,6 @@ final class ValidationResult
     public function addError(string $fieldName, ErrorMessage $errorMessage) 
     {
         $this->errors[$fieldName][] = $errorMessage;
-    }
-
-    public function addArrayErrors(string $fieldName, ArrayErrorList $errorMessages) 
-    {
-        $this->errors[$fieldName] = $errorMessages;
     }
 
     public function addValidationResult(string $fieldName, ValidationResult $validationResult) 
@@ -40,5 +35,13 @@ final class ValidationResult
     public function isValid() {
         return count($this->errors) === 0 &&
                count($this->errorMessages) == 0;
+    }
+
+    public function jsonSerialize()
+    {
+        return [
+            'errorMessages' => $this->errorMessages,
+            'errors' => $this->errors
+        ];
     }
 }
