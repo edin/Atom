@@ -25,16 +25,14 @@ final class ValidationTest extends TestCase
         $this->customer->address->street = " Street Address ";
 
         $this->validator = Validation::create(function (Validation $rule) {
-            $rule->firstName->required()->trim()->length(8, 30);
-            $rule->lastName->required()->trim()->length(14, 30);
+            $rule->firstName->required()->trim()->length(20, 30);
+            $rule->lastName->required()->trim()->length(20, 30);
             $rule->email->required()->email();
             $rule->address->asObject(function (Validation $rule) {
                 $rule->city->trim()->required();
                 $rule->street->trim()->required();
             });
-            $rule->phones->asArray(function (Validation $rule) {
-                $rule->phone->required();
-            });
+            $rule->phones->asArray()->required();
         });
     }
 
@@ -54,5 +52,16 @@ final class ValidationTest extends TestCase
     {
         $result = $this->validator->validate($this->customer);
         $this->assertEquals("Street Address", $this->customer->address->street);
+    }
+
+    public function testArrayValues(): void
+    {
+        $result = $this->validator->validate($this->customer);
+
+        $hasErrors = $result->hasErrorsFor("phones");
+        $errors = $result->getErrorsFor("phones");
+       
+        $this->assertTrue($hasErrors);
+        $this->assertCount(2, $errors);
     }
 }

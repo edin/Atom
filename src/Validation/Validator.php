@@ -108,10 +108,12 @@ class Validator
         return $this->addRule(new Date());
     }
 
-    public function asArray(Closure $builder): self
+    public function asArray(?Closure $builder = null): self
     {
         $this->validatorType = self::ValidateArray;
-        $this->validator = Validation::create($builder);
+        if ($builder) {
+            $this->validator = Validation::create($builder);
+        }
         return $this;
     }
 
@@ -134,7 +136,6 @@ class Validator
             $value = is_array($value) ? $value : [];
             return $this->validateArray($value);
         } elseif ($this->validatorType == self::ValidateObject) {
-            echo "Validating object: ", get_class($value), "\n";
             return $this->validateObject($value);
         }
         return $this->validateScalar($value);
@@ -145,6 +146,7 @@ class Validator
         $result = new ValidationResult;
 
         $ruleResults = [];
+
         foreach ($this->rules as $rule) {
             $ruleResults[] = $ruleResult = $rule->validate($value);
             $value = $ruleResult->getValue();
@@ -159,6 +161,7 @@ class Validator
                 $result->setValue($ruleResult->getValue());
             }
         }
+
         return $result;
     }
 
@@ -168,9 +171,11 @@ class Validator
         foreach ($values as $key => $value) {
             if (is_array($value) || is_object($value)) {
                 $validationResult = $this->validator->validate($value);
-                $result->addValidationResult($key, $validationResult);
             } else {
                 $validationResult = $this->validateScalar($value);
+            }
+
+            if ($validationResult->hasAnyErrors()) {
                 $result->addValidationResult($key, $validationResult);
             }
         }

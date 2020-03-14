@@ -2,9 +2,10 @@
 
 namespace Atom\Validation;
 
+use Countable;
 use JsonSerializable;
 
-final class ValidationResult implements JsonSerializable
+final class ValidationResult implements Countable, JsonSerializable
 {
     private $errorMessages = [];
     private $errors = [];
@@ -25,6 +26,14 @@ final class ValidationResult implements JsonSerializable
         $this->errors[$fieldName] = $validationResult;
     }
 
+    public function hasErrorsFor(string $fieldName): bool {
+        return isset($this->errors[$fieldName]);
+    }
+
+    public function getErrorsFor(string $fieldName) {
+        return $this->errors[$fieldName];
+    }
+
     public function setValue($value): void {
         $this->hasValue = true;
         $this->value = $value;
@@ -43,7 +52,7 @@ final class ValidationResult implements JsonSerializable
                count($this->errorMessages) == 0;
     }
 
-    public function hasErrors() {
+    public function hasAnyErrors() {
         return !$this->isValid();
     }
 
@@ -53,5 +62,9 @@ final class ValidationResult implements JsonSerializable
             'errorMessages' => $this->errorMessages,
             'errors' => $this->errors
         ];
+    }
+
+    public function count() {
+        return count($this->errors);
     }
 }

@@ -46,7 +46,7 @@ final class Validation
             $value = $propertyAccessor->getProperty($property);
             $validatorResult = $validator->validate($value);
 
-            if ($validatorResult->hasErrors()) {
+            if ($validatorResult->hasAnyErrors()) {
                 $result->addValidationResult($property, $validatorResult);
             }
             if ($validatorResult->hasValue()) {
