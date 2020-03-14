@@ -2,39 +2,43 @@
 
 namespace Atom\Validation;
 
+use Error;
+
 final class ValidationResult
 {
-    // private $errorMessage = "";
-    // private $attributes = [];
-    // private $isValid;
+    private $errorMessages = [];
+    private $errors = [];
+    private $value = null;
 
-    // public static function success(): self
-    // {
-    //     return new static("", [], true);
-    // }
+    public function addErrorMessage(ErrorMessage $errorMessage) {
+        $this->errorMessages[] = $errorMessage;
+    }
 
-    // public static function failure(string $errorMessage, array $attributes = []): self
-    // {
-    //     return new static($errorMessage, $attributes, false);
-    // }
+    public function addError(string $fieldName, ErrorMessage $errorMessage) 
+    {
+        $this->errors[$fieldName][] = $errorMessage;
+    }
 
-    // public function getAttributes(): array
-    // {
-    //     return $this->attributes;
-    // }
+    public function addArrayErrors(string $fieldName, ArrayErrorList $errorMessages) 
+    {
+        $this->errors[$fieldName] = $errorMessages;
+    }
 
-    // public function getErrorMessage(): string
-    // {
-    //     return $this->errorMessage;
-    // }
+    public function addValidationResult(string $fieldName, ValidationResult $validationResult) 
+    {
+        $this->errors[$fieldName] = $validationResult;
+    }
 
-    // public function isSuccess(): bool
-    // {
-    //     return $this->isValid;
-    // }
+    public function setValue($value): void {
+        $this->value = $value;
+    }
 
-    // public function isFailure(): bool
-    // {
-    //     return !$this->isValid;
-    // }
+    public function getValue() {
+        return $this->value;
+    }
+
+    public function isValid() {
+        return count($this->errors) === 0 &&
+               count($this->errorMessages) == 0;
+    }
 }

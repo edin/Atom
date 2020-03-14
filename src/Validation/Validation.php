@@ -31,13 +31,13 @@ final class Validation
         return $validation;
     }
 
-    public function validate($model): array
+    public function validate($model): ValidationResult
     {
         $propertyAccessor = is_array($model) ?
             new ArrayPropertyAccessor($model):
             new ObjectPropertyAccessor($model);
 
-        $result = []; //new ValidationResult();
+        $result = new ValidationResult();
 
         foreach ($this->validators as $validator) {
             $property = $validator->getProperty();
@@ -45,15 +45,12 @@ final class Validation
             $value = $propertyAccessor->getProperty($property);
             $validatorResult = $validator->validate($value);
 
-            if ($validatorResult->isValid) {
+            if ($validatorResult->isValid()) {
                 $propertyAccessor->setProperty($property, $value);
             } else {
-                $result[$property] = [
-                    'errors' => $validatorResult->errors
-                ];
+                $result->addValidationResult($property, $validatorResult);
             }
         }
-
         return $result;
     }
 
