@@ -9,6 +9,7 @@ use Atom\Database\Query\Ast\Join;
 use Atom\Database\Query\Ast\SortOrder;
 use Atom\Database\Query\Ast\Table;
 use Atom\Database\Query\Ast\UnaryExpression;
+use Atom\Database\Query\Criteria;
 use Atom\Database\Query\DeleteQuery;
 use Atom\Database\Query\InsertQuery;
 use Atom\Database\Query\Query;
@@ -31,101 +32,183 @@ abstract class AbstractCompiler
     public function compileQuery(Query $query)
     {
         $this->visitNode($query);
+        return $this->textWriter->getText();
     }
 
-    protected function visitNode($node) {
+    protected function visitNode($node)
+    {
         if ($node instanceof SelectQuery) {
             $this->visitSelectQuery($node);
-        } 
-        else if ($node instanceof DeleteQuery) {
+        } else if ($node instanceof DeleteQuery) {
             $this->visitDeleteQuery($node);
-        }
-        else if ($node instanceof InsertQuery) {
+        } else if ($node instanceof InsertQuery) {
             $this->visitInsertQuery($node);
-        }
-        else if ($node instanceof UpdateQuery) {
+        } else if ($node instanceof UpdateQuery) {
             $this->visitUpdateQuery($node);
         }
     }
 
-    protected function visitSelectQuery(SelectQuery $query) {
-    }
+    protected function visitSelectQuery(SelectQuery $query)
+    {
+        // var_dump($query);
 
-    protected function visitDeleteQuery(DeleteQuery $query) {
-    }
+        $count = $query->getCount();
+        $columns = $query->getColumns();
+        $table = $query->getTable();
+        $joins = $query->getJoins();
+        $where = $query->getWhere();
+        $groupBys = $query->getGroupBy();
+        $having = $query->getHaving();
+        $orderBys = $query->getOrderBy();
+        $unions = $query->getUnions();
 
-    protected function visitUpdateQuery(UpdateQuery $query) {
-    }
+        if ($count !== null) {
+            $this->textWriter->write("SELECT COUNT($count)");
+        } else {
+            $this->textWriter->write("SELECT");
+            $this->visitColumns($columns);
+        }
 
-    protected function visitInsertQuery(InsertQuery $query) {
-    }
-    
-    protected function visitColumns(array $columns) {
-        foreach($columns as $column) {
-            $this->visitJoin($column);
+        if ($table) {
+            // TODO: Add support to visit from SelectQuery
+            $this->visitFrom($table);
+        }
+        if ($joins) {
+            $this->visitJoins($joins);
+        }
+        if ($where) {
+            $this->visitWhere($where);
+        }
+        if ($groupBys) {
+            $this->visitGroupBys($groupBys);
+        }
+        if ($having) {
+            $this->visitHaving($having);
+        }
+        if ($orderBys) {
+            $this->visitOrderBys($orderBys);
+        }
+        if ($unions) {
+            $this->visitOrderBys($unions);
         }
     }
 
-    protected function visitJoins(array $joins) {
-        foreach($joins as $join) {
+    protected function visitDeleteQuery(DeleteQuery $query): void
+    {
+    }
+
+    protected function visitUpdateQuery(UpdateQuery $query): void
+    {
+    }
+
+    protected function visitInsertQuery(InsertQuery $query): void
+    {
+    }
+
+    protected function visitColumns(array $columns): void
+    {
+        $index = 0;
+        $total = count($columns);
+        $this->textWriter->ident();
+        $this->textWriter->write("\n");
+        foreach ($columns as $column) {
+            $index ++;
+            $this->visitColumn($column);
+            if ($index < $total) {
+                $this->textWriter->write(",\n");
+            }
+        }
+        $this->textWriter->unident();
+        $this->textWriter->write("\n");
+    }
+
+    protected function visitJoins(array $joins): void
+    {
+        foreach ($joins as $join) {
             $this->visitJoin($join);
         }
     }
 
-    protected function visitOrderBys(array $orderBys) {
-        foreach($orderBys as $orderBy) {
+    protected function visitOrderBys(array $orderBys): void
+    {
+        foreach ($orderBys as $orderBy) {
             $this->visitOrder($orderBy);
         }
     }
 
-    protected function visitGroupBys(array $groupBys) {
-        foreach($groupBys as $groupBy) {
+    protected function visitGroupBys(array $groupBys): void
+    {
+        foreach ($groupBys as $groupBy) {
             $this->visitGroupBy($groupBy);
-        }        
+        }
     }
 
-    protected function visitHaving(array $havings) {
-        
+    protected function visitHaving(Criteria $node): void
+    {
     }
 
-    protected function visitColumn(Column $column) {
-        
+    protected function visitColumn(Column $node): void
+    {
+        if ($node->expression) {
+            $this->visitNode($node->expression);
+            $this->textWriter->write(" AS {$node->alias}");
+        } else {
+            $columnName = $node->name;
+            if ($node->table) {
+                $columnName = $node->table . "." . $columnName;
+            }
+            if ($node->alias) {
+                $columnName .= " AS {$node->alias}";
+            }
+            $this->textWriter->write($columnName);
+        }
     }
 
-    protected function visitTable(Table $table) {
+    protected function visitFrom(Table $node): void
+    {
+        $tableName = $node->name;
+        if ($node->alias) {
+            $tableName .= " AS {$node->alias}";
+        }
 
+        $this->textWriter->write("FROM $tableName\n");
     }
 
-    protected function visitJoin(Join $sortOrder) {
-        
+    protected function visitFromSelect(Table $node): void
+    {
+        throw new \RuntimeException("Method not implemented");
     }
 
-    protected function visitOrder(SortOrder $sortOrder) {
-        
+
+    protected function visitJoin(Join $node): void
+    {
     }
 
-    protected function visitGroupBy(Column $groupBy) {
-        
+    protected function visitOrder(SortOrder $node): void
+    {
     }
 
-    protected function visitBinaryExpression(BinaryExpression $node) {
-        
+    protected function visitGroupBy(Column $node): void
+    {
     }
 
-    protected function visitGroupExpression(GroupExpression $node) {
-        
+    protected function visitCriteria(Criteria $node): void
+    {
     }
 
-    protected function visitUnaryExpression(UnaryExpression $node) {
-        
+    protected function visitWhere(Criteria $node): void
+    {
     }
 
-    // public function compileCriteria($criteria)
-    // {
-    //     if ($criteria instanceof BinaryExpression) {
-    //         //$criteria->leftNode;
-    //         //$criteria->rightNode;
-    //         //$criteria->operator
-    //     }
-    // }
+    protected function visitBinaryExpression(BinaryExpression $node): void
+    {
+    }
+
+    protected function visitGroupExpression(GroupExpression $node): void
+    {
+    }
+
+    protected function visitUnaryExpression(UnaryExpression $node): void
+    {
+    }
 }

@@ -5,7 +5,7 @@ use PHPUnit\Framework\TestCase;
 use Atom\Database\Query\Ast\Column;
 use Atom\Database\Query\Ast\Table;
 
-final class QueryTest extends TestCase
+final class BasicParsingTest extends TestCase
 {
     public function testColumn(): void
     {

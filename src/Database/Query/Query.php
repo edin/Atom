@@ -13,8 +13,8 @@ abstract class Query
     protected $columns = [];
     protected $unions = [];
     protected $joins = [];
-    protected $where = [];
-    protected $having = [];
+    protected $where = null;
+    protected $having = null;
     protected $orderBy = [];
     protected $groupBy = [];
     protected $values = null;
@@ -56,12 +56,12 @@ abstract class Query
         return $this->joins;
     }
 
-    public function getWhere(): array
+    public function getWhere(): ?Criteria
     {
         return $this->where;
     }    
 
-    public function getHaving(): array {
+    public function getHaving(): ?Criteria {
         return $this->having;
     }
 

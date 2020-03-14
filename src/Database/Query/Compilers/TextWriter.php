@@ -20,12 +20,11 @@ class TextWriter
 
     public function write(string $text): void 
     {
-        $lines = explode("\n", $text);
-        $prefix = str_repeat(" ", $this->ident * 4);
-
-        foreach($lines as $line) {
-            $this->text .= $prefix . $line . "\n";
+        if (strpos($text, "\n") !== false) {
+            $prefix = str_repeat(" ", $this->ident * 4);
+            $text = str_replace("\n", "\n" . $prefix, $text);
         }
+        $this->text .= $text;
     }
 
     public function getText(): string {

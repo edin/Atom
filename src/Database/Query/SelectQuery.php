@@ -100,7 +100,7 @@ final class SelectQuery extends Query
     {
         $criteria = new Criteria();
         $criteriaBuilder($criteria);
-        $this->having[] = $criteria;
+        $this->having = $criteria;
         return $this;
     }
 
