@@ -1,4 +1,5 @@
 <?php
+
 namespace Atom\Tests\Database;
 
 use PHPUnit\Framework\TestCase;
@@ -13,18 +14,18 @@ final class QueryBuilderTest extends TestCase
         $compiler = new MySqlCompiler();
 
         $query = Query::select()
-                ->from("Users u")
-                ->columns(['u.id x', 'firstName', 'lastName'])
-                ->orderBy("u.id")
-                ->orderByDesc("firstName")
-                ->groupBy("u.id")
-                ->join("Comments c", function(Criteria $criteria) {
-
-                })
-                ->where(function(Criteria $criteria) {
-                    
-                })
-                ;
+            ->from("Users u")
+            ->columns(['u.id x', 'firstName', 'lastName'])
+            ->orderBy("u.id")
+            ->orderByDesc("firstName")
+            ->groupBy("u.id")
+            ->join("Comments c", function (Criteria $criteria) {
+                $criteria->on("c.id", "u.id");
+                $criteria->on("c.id", "u.id");
+                $criteria->on("c.id", "u.id");
+            })
+            ->where(function (Criteria $criteria) {
+            });
 
         $sql = $compiler->compileQuery($query);
 

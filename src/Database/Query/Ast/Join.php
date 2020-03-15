@@ -2,6 +2,8 @@
 
 namespace Atom\Database\Query\Ast;
 
+use Atom\Database\Query\Criteria;
+
 final class Join
 {
     public const LeftJoin  = 1;
@@ -12,7 +14,7 @@ final class Join
     public $table;
     public $joinCondition;
 
-    public static function create(int $type, string $table, $joinCondition): Join
+    public static function create(int $type, string $table, Criteria $joinCondition): Join
     {
         $join = new Join();
         $join->joinType = $type;

@@ -3,6 +3,7 @@
 namespace Atom\Database\Query;
 
 use Atom\Database\Query\Ast\BinaryExpression;
+use Atom\Database\Query\Ast\Column;
 use Atom\Database\Query\Ast\GroupExpression;
 
 final class Criteria
@@ -15,8 +16,8 @@ final class Criteria
         $valueExpression = Operator::fromValue($value);
 
         $exp = new BinaryExpression();
-        $exp->leftNode = $column;
-        $exp->rightNode = $value;
+        $exp->leftNode = Column::fromValue($column);
+        $exp->rightNode = $valueExpression;
         $exp->operator = $valueExpression->getOperator();
 
         if ($this->expression == null) {
