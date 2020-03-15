@@ -13,6 +13,8 @@ final class Operator
     public const Equal = "=";
     public const GreaterOrEqual = ">=";
     public const Greater = ">";
+    public const Like = "LIKE";
+    public const In = "IN";
 
     public function __construct(string $operator, $value)
     {

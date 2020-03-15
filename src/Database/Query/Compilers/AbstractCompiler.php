@@ -2,21 +2,21 @@
 
 namespace Atom\Database\Query\Compilers;
 
-use Atom\Database\Query\Ast\BinaryExpression;
-use Atom\Database\Query\Ast\Column;
-use Atom\Database\Query\Ast\GroupExpression;
+use Closure;
+use Atom\Database\Query\Query;
 use Atom\Database\Query\Ast\Join;
-use Atom\Database\Query\Ast\SortOrder;
-use Atom\Database\Query\Ast\Table;
-use Atom\Database\Query\Ast\UnaryExpression;
 use Atom\Database\Query\Criteria;
+use Atom\Database\Query\Operator;
+use Atom\Database\Query\Ast\Table;
+use Atom\Database\Query\Ast\Column;
 use Atom\Database\Query\DeleteQuery;
 use Atom\Database\Query\InsertQuery;
-use Atom\Database\Query\Operator;
-use Atom\Database\Query\Query;
 use Atom\Database\Query\SelectQuery;
 use Atom\Database\Query\UpdateQuery;
-use Closure;
+use Atom\Database\Query\Ast\SortOrder;
+use Atom\Database\Query\Ast\GroupExpression;
+use Atom\Database\Query\Ast\UnaryExpression;
+use Atom\Database\Query\Ast\BinaryExpression;
 
 abstract class AbstractCompiler
 {
@@ -31,6 +31,21 @@ abstract class AbstractCompiler
         $this->textWriter = new TextWriter();
     }
 
+    private function emit(string $text): void
+    {
+        $this->textWriter->write($text);
+    }
+
+    private function indent(): void
+    {
+        $this->textWriter->indent();
+    }
+
+    private function unindent(): void
+    {
+        $this->textWriter->unindent();
+    }
+
     public function compileQuery(Query $query)
     {
         $this->visitNode($query);
@@ -41,23 +56,23 @@ abstract class AbstractCompiler
     {
         if ($node instanceof SelectQuery) {
             $this->visitSelectQuery($node);
-        } else if ($node instanceof DeleteQuery) {
+        } elseif ($node instanceof DeleteQuery) {
             $this->visitDeleteQuery($node);
-        } else if ($node instanceof InsertQuery) {
+        } elseif ($node instanceof InsertQuery) {
             $this->visitInsertQuery($node);
-        } else if ($node instanceof UpdateQuery) {
+        } elseif ($node instanceof UpdateQuery) {
             $this->visitUpdateQuery($node);
-        } else if ($node instanceof Column) {
+        } elseif ($node instanceof Column) {
             $this->visitColumn($node);
-        } else if ($node instanceof GroupExpression) {
+        } elseif ($node instanceof GroupExpression) {
             $this->visitGroupExpression($node);
-        } else if ($node instanceof BinaryExpression) {
+        } elseif ($node instanceof BinaryExpression) {
             $this->visitBinaryExpression($node);
-        } else if ($node instanceof UnaryExpression) {
+        } elseif ($node instanceof UnaryExpression) {
             $this->visitUnaryExpression($node);
-        } else if ($node instanceof Operator) {
+        } elseif ($node instanceof Operator) {
             $this->visitOperator($node);
-        } else if ($node instanceof Criteria) {
+        } elseif ($node instanceof Criteria) {
             $this->visitCriteria($node);
         } else {
             $name = get_class($node);
@@ -78,10 +93,12 @@ abstract class AbstractCompiler
         $unions = $query->getUnions();
 
         if ($count !== null) {
-            $this->textWriter->write("SELECT COUNT($count) ");
-        } else {
-            $this->textWriter->write("SELECT ");
+            $this->emit("SELECT COUNT($count) ");
+        } elseif (count($columns) > 0) {
+            $this->emit("SELECT ");
             $this->visitColumns($columns);
+        } else {
+            $this->emit("SELECT * ");
         }
 
         if ($table) {
@@ -103,7 +120,7 @@ abstract class AbstractCompiler
             $this->visitOrderBys($orderBys);
         }
         if ($unions) {
-            $this->visitOrderBys($unions);
+            $this->viistUnions($unions);
         }
     }
 
@@ -124,24 +141,24 @@ abstract class AbstractCompiler
         $index = 0;
         $total = count($nodes);
 
-        $this->textWriter->ident();
+        $this->indent();
         foreach ($nodes as $node) {
             $index++;
             $callback($node);
             if ($index < $total) {
-                $this->textWriter->write(",\n");
+                $this->emit(",\n");
             }
         }
-        $this->textWriter->unident();
-        $this->textWriter->write("\n");
+        $this->unindent();
+        $this->emit("\n");
     }
 
     protected function visitColumns(array $nodes): void
     {
-        $this->textWriter->ident();
-        $this->textWriter->write("\n");
-        $this->textWriter->unident();
-        $this->visitList($nodes,  function ($node) {
+        $this->indent();
+        $this->emit("\n");
+        $this->unindent();
+        $this->visitList($nodes, function ($node) {
             $this->visitColumn($node);
         });
     }
@@ -155,23 +172,31 @@ abstract class AbstractCompiler
 
     protected function visitOrderBys(array $nodes): void
     {
-        $this->textWriter->write("ORDER BY ");
-        $this->visitList($nodes,  function ($node) {
+        $this->emit("ORDER BY ");
+        $this->visitList($nodes, function ($node) {
             $this->visitOrder($node);
         });
     }
 
     protected function visitGroupBys(array $nodes): void
     {
-        $this->textWriter->write("GROUP BY ");
+        $this->emit("GROUP BY ");
         $this->visitList($nodes, function ($node) {
             $this->visitColumn($node);
         });
     }
 
+    protected function visitUnions(array $nodes): void
+    {
+        foreach ($nodes as $node) {
+            $this->emit("UNION ");
+            $this->visitSelectQuery($node);
+        }
+    }
+
     protected function visitHaving(Criteria $node): void
     {
-        $this->textWriter->write("HAVING ");
+        $this->emit("HAVING ");
         $this->visitCriteria($node);
     }
 
@@ -179,103 +204,105 @@ abstract class AbstractCompiler
     {
         if ($node->expression) {
             $this->visitNode($node->expression);
-            $this->textWriter->write(" AS {$node->alias}");
+            $alias = $this->quoteColumnName($node->alias);
+            $this->emit(" AS {$alias}");
         } else {
-            $columnName = $node->name;
+            $columnName = $this->quoteColumnName($node->name);
             if ($node->table) {
-                $columnName = $node->table . "." . $columnName;
+                $columnName = $this->quoteTableName($node->table) . "." . $columnName;
             }
             if ($node->alias) {
-                $columnName .= " {$node->alias}";
+                $alias = $this->quoteColumnName($node->alias);
+                $columnName .= " {$alias}";
             }
-            $this->textWriter->write($columnName);
+            $this->emit($columnName);
         }
     }
 
     protected function visitFrom(Table $node): void
     {
-        $this->textWriter->write("FROM ");
+        $this->emit("FROM ");
         $this->visitTable($node);
-        $this->textWriter->write("\n");
+        $this->emit("\n");
     }
 
     protected function visitTable(Table $node): void
     {
-        $tableName = $node->name;
+        $tableName =  $this->quoteTableName($node->name);
         if ($node->alias) {
-            $tableName .= " {$node->alias}";
+            $alias = $this->quoteColumnName($node->alias);
+            $tableName .= " {$alias}";
         }
-        $this->textWriter->write("$tableName");
+        $this->emit($tableName);
     }
 
     protected function visitJoin(Join $node): void
     {
         $joinType = [
-            Join::Join => "JOIN",
-            Join::LeftJoin => "LEFT JOIN",
-            Join::RightJoin => "RIGHT JOIN"
+            Join::Join => "JOIN ",
+            Join::LeftJoin => "LEFT JOIN ",
+            Join::RightJoin => "RIGHT JOIN "
         ];
 
         $join = $joinType[$node->joinType];
 
-        $this->textWriter->write($join);
-        $this->textWriter->write(" ");
+        $this->emit($join);
+        $this->emit(" ");
         $this->visitTable($node->table);
-        $this->textWriter->write(" ON ");
+        $this->emit(" ON ");
         $this->visitCriteria($node->joinCondition);
-        $this->textWriter->write("\n");
+        $this->emit("\n");
     }
 
     protected function visitOrder(SortOrder $node): void
     {
         $this->visitNode($node->expression);
-
         $order = $node->order;
         if ($node->nullsOrder) {
             $order .= " {$node->nullsOrder}";
         }
-
-        $this->textWriter->write(" " . $order);
+        $this->emit(" {$order}");
     }
 
     protected function visitCriteria(Criteria $node): void
     {
-        $expression = $node->getExpression();
-        if ($expression) {
-            $this->visitNode($expression);
+        if ($node->hasExpression()) {
+            $this->visitNode($node->getExpression());
         }
     }
 
     protected function visitWhere(Criteria $node): void
     {
-        $this->textWriter->write("WHERE ");
-        $this->visitCriteria($node);
-        $this->textWriter->write("\n");
+        if ($node->hasExpression()) {
+            $this->emit("WHERE ");
+            $this->visitCriteria($node);
+            $this->emit("\n");
+        }
     }
 
     protected function visitBinaryExpression(BinaryExpression $node): void
     {
         $this->visitNode($node->leftNode);
-        $this->textWriter->write(" {$node->operator} ");
+        $this->emit(" {$node->operator} ");
         $this->visitNode($node->rightNode);
     }
 
     protected function visitGroupExpression(GroupExpression $node): void
     {
-        $this->textWriter->write("(");
+        $this->emit("(");
         $this->visitNode($node->node);
-        $this->textWriter->write(")");
-        $this->textWriter->write("\n");
+        $this->emit(")");
+        $this->emit("\n");
     }
 
     protected function visitUnaryExpression(UnaryExpression $node): void
     {
-        $this->textWriter->write($node->operator);
+        $this->emit($node->operator);
         $this->visitNode($node->node);
     }
 
     protected function visitOperator(Operator $node): void
     {
-        $this->textWriter->write($node->getValue());
+        $this->emit($node->getValue());
     }
 }

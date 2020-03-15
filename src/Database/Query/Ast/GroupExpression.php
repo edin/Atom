@@ -10,4 +10,9 @@ final class GroupExpression
     {
         $this->node = $node;
     }
+
+    public function hasExpression(): bool
+    {
+        return $this->node !== null;
+    }
 }

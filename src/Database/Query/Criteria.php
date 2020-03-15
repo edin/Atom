@@ -32,6 +32,11 @@ final class Criteria
         return $this;
     }
 
+    public function hasExpression(): bool
+    {
+        return $this->expression !== null;
+    }
+
     public function on(string $column, $value): self
     {
         return $this->combineExpression("AND", $column, $value, false);

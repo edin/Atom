@@ -2,33 +2,34 @@
 
 namespace Atom\Database\Query\Compilers;
 
-class TextWriter 
+class TextWriter
 {
-    private $ident = 0;
+    private $indent = 0;
     private $text = "";
 
-    public function ident(): void 
+    public function indent(): void
     {
-        $this->ident += 1;
+        $this->indent += 1;
     }
 
-    public function unident(): void {
-        if ($this->ident > 0) {
-            $this->ident -= 1;
+    public function unindent(): void
+    {
+        if ($this->indent > 0) {
+            $this->indent -= 1;
         }
     }
 
-    public function write(string $text): void 
+    public function write(string $text): void
     {
         if (strpos($text, "\n") !== false) {
-            $prefix = str_repeat(" ", $this->ident * 4);
+            $prefix = str_repeat(" ", $this->indent * 4);
             $text = str_replace("\n", "\n" . $prefix, $text);
         }
         $this->text .= $text;
     }
 
-    public function getText(): string {
+    public function getText(): string
+    {
         return $this->text;
     }
 }
-

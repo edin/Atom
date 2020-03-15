@@ -6,6 +6,7 @@ use Atom\Database\Query\Ast\Column;
 use Atom\Database\Query\Ast\Join;
 use Atom\Database\Query\Ast\SortOrder;
 use Atom\Database\Query\Ast\Table;
+use Closure;
 
 final class SelectQuery extends Query
 {
@@ -71,32 +72,32 @@ final class SelectQuery extends Query
         return $this;
     }
 
-    public function join(string $table, callable $join): self
+    public function join(string $table, Closure $join): self
     {
         $this->joins[] = Join::create(Join::Join, $table, $this->buildJoinCriteria($join));
         return $this;
     }
 
-    public function leftJoin(string $table, callable $join): self
+    public function leftJoin(string $table, Closure $join): self
     {
         $this->joins[] = Join::create(Join::LeftJoin, $table, $this->buildJoinCriteria($join));
         return $this;
     }
 
-    public function rightJoin(string $table, callable $join): self
+    public function rightJoin(string $table, Closure $join): self
     {
         $this->joins[] = Join::create(Join::RightJoin, $table, $this->buildJoinCriteria($join));
         return $this;
     }
 
-    private function buildJoinCriteria(callable $joinBuilder): Criteria
+    private function buildJoinCriteria(Closure $joinBuilder): Criteria
     {
         $criteria = new Criteria();
         $joinBuilder($criteria);
         return $criteria;
     }
 
-    public function where(callable $criteriaBuilder): self
+    public function where(Closure $criteriaBuilder): self
     {
         $criteria = new Criteria();
         $criteriaBuilder($criteria);
@@ -104,7 +105,7 @@ final class SelectQuery extends Query
         return $this;
     }
 
-    public function having(callable $criteriaBuilder): self
+    public function having(Closure $criteriaBuilder): self
     {
         $criteria = new Criteria();
         $criteriaBuilder($criteria);
