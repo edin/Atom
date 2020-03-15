@@ -15,6 +15,7 @@ use Atom\Database\Query\InsertQuery;
 use Atom\Database\Query\Query;
 use Atom\Database\Query\SelectQuery;
 use Atom\Database\Query\UpdateQuery;
+use Closure;
 
 abstract class AbstractCompiler
 {
@@ -45,13 +46,16 @@ abstract class AbstractCompiler
             $this->visitInsertQuery($node);
         } else if ($node instanceof UpdateQuery) {
             $this->visitUpdateQuery($node);
+        } else if ($node instanceof Column) {
+            $this->visitColumn($node);
+        } else {
+            $name = get_class($node);
+            throw new \RuntimeException("Missing overload for type $name");
         }
     }
 
     protected function visitSelectQuery(SelectQuery $query)
     {
-        // var_dump($query);
-
         $count = $query->getCount();
         $columns = $query->getColumns();
         $table = $query->getTable();
@@ -70,7 +74,6 @@ abstract class AbstractCompiler
         }
 
         if ($table) {
-            // TODO: Add support to visit from SelectQuery
             $this->visitFrom($table);
         }
         if ($joins) {
@@ -105,21 +108,27 @@ abstract class AbstractCompiler
     {
     }
 
-    protected function visitColumns(array $columns): void
-    {
+    private function visitList(array $nodes, Closure $callback) {
         $index = 0;
-        $total = count($columns);
+        $total = count($nodes);
+
         $this->textWriter->ident();
-        $this->textWriter->write("\n");
-        foreach ($columns as $column) {
+        foreach ($nodes as $node) {
             $index ++;
-            $this->visitColumn($column);
+            $callback($node);
             if ($index < $total) {
-                $this->textWriter->write(",\n");
+                $this->textWriter->write(", ");
             }
         }
         $this->textWriter->unident();
-        $this->textWriter->write("\n");
+        $this->textWriter->write("\n");        
+    }
+
+    protected function visitColumns(array $nodes): void
+    {
+        $this->visitList($nodes,  function($node) {
+            $this->visitColumn($node);
+        });        
     }
 
     protected function visitJoins(array $joins): void
@@ -129,18 +138,20 @@ abstract class AbstractCompiler
         }
     }
 
-    protected function visitOrderBys(array $orderBys): void
+    protected function visitOrderBys(array $nodes): void
     {
-        foreach ($orderBys as $orderBy) {
-            $this->visitOrder($orderBy);
-        }
+        $this->textWriter->write("ORDER BY ");
+        $this->visitList($nodes,  function($node) {
+            $this->visitOrder($node);
+        });
     }
 
-    protected function visitGroupBys(array $groupBys): void
+    protected function visitGroupBys(array $nodes): void
     {
-        foreach ($groupBys as $groupBy) {
-            $this->visitGroupBy($groupBy);
-        }
+        $this->textWriter->write("GROUP BY ");
+        $this->visitList($nodes, function($node) {
+            $this->visitColumn($node);
+        });
     }
 
     protected function visitHaving(Criteria $node): void
@@ -158,7 +169,7 @@ abstract class AbstractCompiler
                 $columnName = $node->table . "." . $columnName;
             }
             if ($node->alias) {
-                $columnName .= " AS {$node->alias}";
+                $columnName .= " {$node->alias}";
             }
             $this->textWriter->write($columnName);
         }
@@ -168,47 +179,59 @@ abstract class AbstractCompiler
     {
         $tableName = $node->name;
         if ($node->alias) {
-            $tableName .= " AS {$node->alias}";
+            $tableName .= " {$node->alias}";
         }
-
         $this->textWriter->write("FROM $tableName\n");
     }
 
-    protected function visitFromSelect(Table $node): void
-    {
-        throw new \RuntimeException("Method not implemented");
-    }
-
+    // protected function visitFromSelect(SelectQuery $node): void
+    // {
+    //     $this->textWriter->write("(");
+    //     $this->visitSelectQuery($node);
+    //     $this->textWriter->write(")");
+    // }
 
     protected function visitJoin(Join $node): void
     {
+        $node->joinType
+
+        throw new \RuntimeException("Method visitJoin not implemented");
     }
 
     protected function visitOrder(SortOrder $node): void
     {
-    }
+        $this->visitNode($node->expression);
 
-    protected function visitGroupBy(Column $node): void
-    {
+        $order = $node->order;
+        if ($node->nullsOrder) {
+            $order .= " {$node->nullsOrder}";
+        }
+
+        $this->textWriter->write(" " . $order);
     }
 
     protected function visitCriteria(Criteria $node): void
     {
+        throw new \RuntimeException("Method visitCriteria not implemented");
     }
 
     protected function visitWhere(Criteria $node): void
     {
+        throw new \RuntimeException("Method visitWhere not implemented");
     }
 
     protected function visitBinaryExpression(BinaryExpression $node): void
     {
+        throw new \RuntimeException("Method visitBinaryExpression not implemented");
     }
 
     protected function visitGroupExpression(GroupExpression $node): void
     {
+        throw new \RuntimeException("Method visitGroupExpression not implemented");
     }
 
     protected function visitUnaryExpression(UnaryExpression $node): void
     {
+        throw new \RuntimeException("Method visitUnaryExpression not implemented");
     }
 }

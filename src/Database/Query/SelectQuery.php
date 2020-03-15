@@ -96,6 +96,14 @@ final class SelectQuery extends Query
         return $criteria;
     }
 
+    public function where(callable $criteriaBuilder): self
+    {
+        $criteria = new Criteria();
+        $criteriaBuilder($criteria);
+        $this->where = $criteria;
+        return $this;
+    }
+
     public function having(callable $criteriaBuilder): self
     {
         $criteria = new Criteria();
