@@ -75,7 +75,7 @@ abstract class AbstractCompiler
         } elseif ($node instanceof Criteria) {
             $this->visitCriteria($node);
         } else {
-            $name = get_class($node);
+            $name = is_object($node) ? get_class($node) : gettype($node);
             throw new \RuntimeException("Missing overload for type $name");
         }
     }
@@ -91,6 +91,15 @@ abstract class AbstractCompiler
         $having = $query->getHaving();
         $orderBys = $query->getOrderBy();
         $unions = $query->getUnions();
+        $isExists =  $query->getIsExists();
+
+        if ($isExists !== null) {
+            if ($isExists=== true) {
+                $this->emit("EXISTS(");
+            } else {
+                $this->emit("NOT EXISTS(");
+            }
+        }
 
         if ($count !== null) {
             $this->emit("SELECT COUNT($count) ");
@@ -120,7 +129,11 @@ abstract class AbstractCompiler
             $this->visitOrderBys($orderBys);
         }
         if ($unions) {
-            $this->viistUnions($unions);
+            $this->visitUnions($unions);
+        }
+
+        if ($isExists !== null) {
+            $this->emit(")");
         }
     }
 
@@ -203,7 +216,9 @@ abstract class AbstractCompiler
     protected function visitColumn(Column $node): void
     {
         if ($node->expression) {
+            $this->emit("(");
             $this->visitNode($node->expression);
+            $this->emit(")");
             $alias = $this->quoteColumnName($node->alias);
             $this->emit(" AS {$alias}");
         } else {
@@ -303,6 +318,15 @@ abstract class AbstractCompiler
 
     protected function visitOperator(Operator $node): void
     {
-        $this->emit($node->getValue());
+        $value = $node->getExpression();
+        $isValue = $node->getIsValue();
+
+        if ($isValue) {
+            $this->emit($this->quoteValue($value));
+        } elseif (is_string($value)) {
+            $this->emit($value);
+        } else {
+            $this->visitNode($value);
+        }
     }
 }

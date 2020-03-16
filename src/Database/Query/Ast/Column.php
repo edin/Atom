@@ -26,4 +26,12 @@ final class Column
         }
         return $t;
     }
+
+    public static function fromAlias(string $alias, $expression): self
+    {
+        $t = new static();
+        $t->alias = $alias;
+        $t->expression = $expression;
+        return $t;
+    }
 }

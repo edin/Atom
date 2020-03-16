@@ -14,6 +14,7 @@ final class Criteria
     private function combineExpression($operator, $column, $value, $isValue): self
     {
         $valueExpression = Operator::fromValue($value);
+        $valueExpression->setIsValue($isValue);
 
         $exp = new BinaryExpression();
         $exp->leftNode = Column::fromValue($column);

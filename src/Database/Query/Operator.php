@@ -7,6 +7,8 @@ final class Operator
     private $operator;
     private $value;
     private $isNegation = false;
+    private $isValue = false;
+    private $parameter;
 
     public const Less = "<";
     public const LessOrEqual = "<=";
@@ -39,9 +41,41 @@ final class Operator
         return $this->operator;
     }
 
-    public function getValue()
+    public function getExpression()
     {
         return $this->value;
+    }
+
+    public function setIsValue(bool $value): void
+    {
+        $this->isValue = $value;
+    }
+
+    public function getIsValue()
+    {
+        return $this->isValue;
+    }
+
+    public function asField(): self
+    {
+        $this->isValue = false;
+        return $this;
+    }
+
+    public function getParameterName(): ?string
+    {
+        return $this->parameter;
+    }
+
+    public function setParameterName(string $name): void
+    {
+        $this->parameter = $name;
+    }
+
+    public function asParameter(string $name): self
+    {
+        $this->parameter = $name;
+        return $this;
     }
 
     public static function less($value): self
@@ -77,6 +111,11 @@ final class Operator
     public static function like($value): self
     {
         return new static("LIKE", $value);
+    }
+
+    public static function ilike($value): self
+    {
+        return new static("ILIKE", $value);
     }
 
     public static function or($value): self

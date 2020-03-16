@@ -58,9 +58,7 @@ final class SelectQuery extends Query
             if (is_int($key)) {
                 $this->columns[] = Column::fromValue($value);
             } else {
-                $column =  Column::fromValue($key);
-                $column->expression = $value;
-                $this->columns[] = $column;
+                $this->columns[] = Column::fromAlias($key, $value);
             }
         }
         return $this;
