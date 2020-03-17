@@ -118,6 +118,14 @@ final class Criteria
         return $this->combineGroupExpression("AND", $callable);
     }
 
+    public function addParameters(array $params): self
+    {
+        foreach ($params as $key => $value) {
+            $this->params[$key] = $value;
+        }
+        return $this;
+    }
+
     public function addParameter(string $name, $value): self
     {
         $this->params[$name] = $value;
@@ -132,5 +140,26 @@ final class Criteria
     public function getExpression()
     {
         return $this->expression;
+    }
+
+    public function combine(string $operator, Criteria $criteria)
+    {
+        $this->addParameters($criteria->getParameters());
+
+        if ($this->expression == null) {
+            $this->expression = $criteria->expression;
+            return;
+        }
+
+        if ($criteria->expression == null) {
+            return;
+        }
+
+        $expression = new BinaryExpression();
+        $expression->operator = $operator;
+        $expression->leftNode = new GroupExpression($this->expression);
+        $expression->rightNode = new GroupExpression($criteria->expression);
+
+        $this->expression = $expression;
     }
 }
