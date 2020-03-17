@@ -11,15 +11,47 @@ final class Criteria
     private $params = [];
     private $expression = null;
 
-    private function combineExpression($operator, $column, $value, $isValue): self
+
+    public static function parseWhere(string $where, $value)
     {
-        $valueExpression = Operator::fromValue($value);
-        $valueExpression->setIsValue($isValue);
+        $parts = explode(" ", trim($where));
+        //1. id  => field
+        //2. u.id => field with table reference
+        //3. u.id OP :p => field operator and parameter name
+        //4. u.id OP x.id => field operator and field
+        $left = Field::from($parts[0]);
+
+        if (count($parts) == 3) {
+            $op = $parts[1];
+            $right = $parts[2];
+            if ($right[0] === ':') {
+                $right = Parameter::from($right, $value);
+            } else {
+                $right = Field::from($right);
+            }
+            return [$left, $op, $right];
+        }
+        return [$left];
+    }
+
+    private function combineExpression(string $operator, $where, $value): self
+    {
+        $result = self::parseWhere($where, $value);
 
         $exp = new BinaryExpression();
-        $exp->leftNode = Column::fromValue($column);
-        $exp->rightNode = $valueExpression;
-        $exp->operator = $valueExpression->getOperator();
+
+        if (count($result) == 3) {
+            [$left, $op, $right] = $result;
+            $exp->leftNode = $left;
+            $exp->rightNode = $right;
+            $exp->operator = $op;
+        } else {
+            [$left] = $result;
+            $epression = Operator::fromValue($value);
+            $exp->leftNode = $left;
+            $exp->rightNode = $epression;
+            $exp->operator = $epression->getOperator();
+        }
 
         if ($this->expression == null) {
             $this->expression = $exp;
@@ -38,24 +70,14 @@ final class Criteria
         return $this->expression !== null;
     }
 
-    public function on(string $column, $value): self
+    public function where(string $where, $value = null): self
     {
-        return $this->combineExpression("AND", $column, $value, false);
+        return $this->combineExpression("AND", $where, $value);
     }
 
-    public function orOn(string $column, $value): self
+    public function orWhere(string $where, $value = null): self
     {
-        return $this->combineExpression("OR", $column, $value, false);
-    }
-
-    public function where(string $column, $value): self
-    {
-        return $this->combineExpression("AND", $column, $value, true);
-    }
-
-    public function orWhere(string $column, $value): self
-    {
-        return $this->combineExpression("OR", $column, $value, true);
+        return $this->combineExpression("OR", $where, $value);
     }
 
     private function combineGroupExpression($operator, callable $callable)

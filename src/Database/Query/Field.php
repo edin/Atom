@@ -4,8 +4,8 @@ namespace Atom\Database\Query;
 
 final class Field
 {
-    private $table = null;
-    private $name;
+    public $table = null;
+    public $name;
 
     public function __construct(string $name)
     {
@@ -21,15 +21,5 @@ final class Field
     public static function from(string $name): self
     {
         return new Field($name);
-    }
-
-    public function getName(): string
-    {
-        return $this->name;
-    }
-
-    public function getTableName(): ?string
-    {
-        return $this->table;
     }
 }

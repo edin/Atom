@@ -10,9 +10,11 @@ use Closure;
 
 final class SelectQuery extends Query
 {
+    use QueryTrait;
+
     public function from(string $table): self
     {
-        $this->table = Table::fromValue($table);
+        $this->from = Table::fromValue($table);
         return $this;
     }
 
@@ -40,11 +42,11 @@ final class SelectQuery extends Query
         return $this;
     }
 
-    public function limit(int $limit): self
-    {
-        $this->limit = $limit;
-        return $this;
-    }
+    // public function limit(int $limit): self
+    // {
+    //     $this->limit = $limit;
+    //     return $this;
+    // }
 
     public function count(string $column = "*"): self
     {
@@ -95,13 +97,13 @@ final class SelectQuery extends Query
         return $criteria;
     }
 
-    public function where(Closure $criteriaBuilder): self
-    {
-        $criteria = new Criteria();
-        $criteriaBuilder($criteria);
-        $this->where = $criteria;
-        return $this;
-    }
+    // public function where(Closure $criteriaBuilder): self
+    // {
+    //     $criteria = new Criteria();
+    //     $criteriaBuilder($criteria);
+    //     $this->where = $criteria;
+    //     return $this;
+    // }
 
     public function having(Closure $criteriaBuilder): self
     {

@@ -17,13 +17,6 @@ final class QueryBuilderTest extends TestCase
         return trim($text);
     }
 
-    private function getSql($query): string
-    {
-        $compiler = new MySqlCompiler();
-        $sql = $compiler->compileQuery($query);
-        return $this->clean($sql);
-    }
-
     private function assertQuery($expected, $query)
     {
         $compiler = new MySqlCompiler();
@@ -37,6 +30,12 @@ final class QueryBuilderTest extends TestCase
     {
         $query = Query::select()->from("users u");
         $this->assertQuery("SELECT * FROM `users` `u`", $query);
+    }
+
+    public function testSimpleSelectWithLimit(): void
+    {
+        $query = Query::select()->from("users u")->skip(5)->limit(10);
+        $this->assertQuery("SELECT * FROM `users` `u` LIMIT 5, 10", $query);
     }
 
     public function testSimpleSelectWithColumns(): void
@@ -65,8 +64,8 @@ final class QueryBuilderTest extends TestCase
     public function testSimpleSelectWithWhere(): void
     {
         $query = Query::select()->from("users u")->where(function (Criteria $criteria) {
-            $criteria->on("u.first_name", ':first_name');
-            $criteria->on("u.last_name", ':last_name');
+            $criteria->where("u.first_name = :first_name");
+            $criteria->where("u.last_name = :last_name");
         });
 
         $expected = "SELECT * FROM `users` `u` WHERE `u`.`first_name` = :first_name AND `u`.`last_name` = :last_name";
@@ -76,8 +75,8 @@ final class QueryBuilderTest extends TestCase
     public function testSimpleSelectWithOrWhere(): void
     {
         $query = Query::select()->from("users u")->where(function (Criteria $criteria) {
-            $criteria->on("u.first_name", ':first_name');
-            $criteria->orOn("u.last_name", ':last_name');
+            $criteria->where("u.first_name = :first_name");
+            $criteria->orWhere("u.last_name = :last_name");
         });
 
         $expected = "SELECT * FROM `users` `u` WHERE `u`.`first_name` = :first_name OR `u`.`last_name` = :last_name";
@@ -161,11 +160,24 @@ final class QueryBuilderTest extends TestCase
         $query = Query::select()->from("users")->columns([
             'users.id id',
             'commentsCount' => Query::select()->from('comments')->count()->where(function ($c) {
-                $c->on("c.user_id", Field::equal("users.id"));
+                $c->where("comments.user_id = users.id");
             })
         ]);
 
-        $expected = "SELECT `users`.`id` `id`, (SELECT COUNT(*) FROM `comments` WHERE `c`.`user_id` = users.id ) AS `commentsCount` FROM `users`";
+        $expected = "SELECT `users`.`id` `id`, (SELECT COUNT(*) FROM `comments` WHERE `comments`.`user_id` = `users`.`id` ) AS `commentsCount` FROM `users`";
+        $this->assertQuery($expected, $query);
+    }
+
+
+    public function testInsert(): void
+    {
+        $query = Query::insert()->into("users")->values([
+            'id' => 1,
+            'first_name' => 'Edin',
+            'last_name' => 'Omeragic',
+        ]);
+
+        $expected = "INSERT INTO `users` (`id`, `first_name`, `last_name`) VALUES (:id, :first_name, :last_name)";
         $this->assertQuery($expected, $query);
     }
 }

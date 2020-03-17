@@ -4,6 +4,7 @@ namespace Atom\Database\Query;
 
 abstract class Query
 {
+    protected $from = null;
     protected $table = null;
     protected $count = null;
     protected $isDistinct = null;
@@ -19,35 +20,48 @@ abstract class Query
     protected $groupBy = [];
     protected $values = null;
 
-    public function getTable() {
+    public function getTable()
+    {
         return $this->table;
     }
 
-    public function getCount() {
+    public function getFrom()
+    {
+        return $this->from;
+    }
+
+    public function getCount()
+    {
         return $this->count;
     }
 
-    public function getIsDistinct() {
+    public function getIsDistinct()
+    {
         return $this->isDistinct;
     }
 
-    public function getIsExists() {
+    public function getIsExists()
+    {
         return $this->isExists;
     }
 
-    public function getLimit() {
+    public function getLimit()
+    {
         return $this->limit;
     }
 
-    public function getOffset() {
+    public function getOffset()
+    {
         return $this->offset;
     }
 
-    public function getColumns(): array {
+    public function getColumns(): array
+    {
         return $this->columns;
     }
 
-    public function getUnions(): array {
+    public function getUnions(): array
+    {
         return $this->unions;
     }
 
@@ -59,24 +73,28 @@ abstract class Query
     public function getWhere(): ?Criteria
     {
         return $this->where;
-    }    
+    }
 
-    public function getHaving(): ?Criteria {
+    public function getHaving(): ?Criteria
+    {
         return $this->having;
     }
 
-    public function getOrderBy(): array {
+    public function getOrderBy(): array
+    {
         return $this->orderBy;
     }
 
-    public function getGroupBy(): array {
+    public function getGroupBy(): array
+    {
         return $this->groupBy;
     }
 
-    public function getValues() {
+    public function getValues()
+    {
         return $this->values;
     }
-    
+
     public static function select(): SelectQuery
     {
         return new SelectQuery();

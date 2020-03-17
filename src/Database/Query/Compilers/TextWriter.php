@@ -28,6 +28,12 @@ class TextWriter
         $this->text .= $text;
     }
 
+    public function clear(): void
+    {
+        $this->text = "";
+        $this->indent = 0;
+    }
+
     public function getText(): string
     {
         return $this->text;
