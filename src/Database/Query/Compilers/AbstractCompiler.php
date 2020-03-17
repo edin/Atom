@@ -143,7 +143,7 @@ abstract class AbstractCompiler
     protected function visitDeleteQuery(DeleteQuery $query): void
     {
         $this->emit("DELETE ");
-        $this->visitFrom($query->getFrom());
+        $this->visitFrom($query->getTable());
         $this->visitJoins($query->getJoins());
         $this->visitWhere($query->getWhere());
         $this->emitLimits($query);
@@ -155,9 +155,22 @@ abstract class AbstractCompiler
 
         $this->emit("UPDATE ");
         $this->visitTable($query->getTable());
-        $this->emit("SET ");
+        $this->emit(" SET ");
 
-        $this->visitFrom($query->getTable());
+        $fields = [];
+        foreach ($values as $key => $value) {
+            $field = Field::from($key);
+            $parameter = is_object($value) ? $value : Parameter::from(":{$field->name}", $value);
+            $fields[] = [$field, $parameter];
+        }
+
+        $this->visitList($fields, function ($item) {
+            $this->visitField($item[0]);
+            $this->emit(" = ");
+            $this->visitNode($item[1]);
+        });
+
+        $this->visitFrom($query->getFrom());
         $this->visitJoins($query->getJoins());
         $this->visitWhere($query->getWhere());
         $this->visitGroupBys($query->getGroupBy());
@@ -180,8 +193,8 @@ abstract class AbstractCompiler
         $fieldNames = [];
         $parameters = [];
         foreach ($values as $key => $value) {
-            $fieldNames[$key] = Field::from($key);
-            $parameter = is_object($value) ? $value : Parameter::from(":$key", $value);
+            $fieldNames[$key] = $field = Field::from($key);
+            $parameter = is_object($value) ? $value : Parameter::from(":{$field->name}", $value);
             $parameters[$key] = $parameter;
         }
 
@@ -193,9 +206,8 @@ abstract class AbstractCompiler
         $this->emit("\n) VALUES (");
         $this->indent();
 
-
-        $this->visitList($fieldNames, function ($field) {
-            $this->visitField($field);
+        $this->visitList($parameters, function ($parameter) {
+            $this->visitParameter($parameter);
         });
 
         $this->emit("\n");

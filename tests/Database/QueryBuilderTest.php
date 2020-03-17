@@ -14,6 +14,8 @@ final class QueryBuilderTest extends TestCase
     {
         $text = str_replace('\n', ' ', $text);
         $text = preg_replace('/\s+/', ' ', $text);
+        $text = str_replace('( ', '(', $text);
+        $text = str_replace(' )', ')', $text);
         return trim($text);
     }
 
@@ -178,6 +180,29 @@ final class QueryBuilderTest extends TestCase
         ]);
 
         $expected = "INSERT INTO `users` (`id`, `first_name`, `last_name`) VALUES (:id, :first_name, :last_name)";
+        $this->assertQuery($expected, $query);
+    }
+
+    public function testDelete(): void
+    {
+        $query = Query::delete()->from("users")->where(function (Criteria $c) {
+            $c->where("id = :id", 1);
+        })->limit(1);
+
+        $expected = "DELETE FROM `users` WHERE `id` = :id LIMIT 1";
+        $this->assertQuery($expected, $query);
+    }
+
+    public function testUpdate(): void
+    {
+        $query = Query::update()->table("users")->values([
+            'first_name' => 'John',
+            'last_name' => 'Doe'
+        ])->where(function (Criteria $c) {
+            $c->where("id = :id", 1);
+        });
+
+        $expected = "UPDATE `users` SET `first_name` = :first_name, `last_name` = :last_name WHERE `id` = :id";
         $this->assertQuery($expected, $query);
     }
 }
