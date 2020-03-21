@@ -407,7 +407,6 @@ abstract class AbstractCompiler
         $this->emit("(");
         $this->visitNode($node->node);
         $this->emit(")");
-        $this->emit("\n");
     }
 
     protected function visitUnaryExpression(UnaryExpression $node): void

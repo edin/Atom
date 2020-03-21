@@ -95,9 +95,13 @@ abstract class Query
         return $this->values;
     }
 
-    public static function select(): SelectQuery
+    public static function select(?string $table = null): SelectQuery
     {
-        return new SelectQuery();
+        $query = new SelectQuery();
+        if ($table !== null) {
+            $query->from($table);
+        }
+        return $query;
     }
 
     public static function delete(): DeleteQuery

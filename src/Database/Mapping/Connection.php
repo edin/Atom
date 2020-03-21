@@ -1,19 +1,9 @@
 <?php
 
-namespace Atom\Database;
-
-use PDO;
-
 class Connection
 {
     public const MySQL = "mysql";
-    public const SQLite = "sqlite";
-
-    private $driver;
-    private $host;
-    private $user;
-    private $password;
-    private $database;
+    public const SqLite = "sqlite";
     private $db = null;
 
     public function __construct(string $driver, string $host, string $user, string $password, string $database)
@@ -27,7 +17,7 @@ class Connection
 
     private function getDb(): PDO
     {
-        if ($this->db == null) {
+        if ($this->db === null) {
             $dsn = "{$this->driver}:dbname={$this->database};host={$this->host}";
             $this->db = new PDO($dsn, $this->user, $this->password);
             $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
@@ -38,11 +28,27 @@ class Connection
 
     private function prepare(string $sql, array $params)
     {
-        $command = $this->getDb()->prepare($sql);
+        $db = $this->getDb();
+        $command = $db->prepare($sql);
+
         foreach ($params as $key => $value) {
             $command->bindValue($key, $value);
         }
+
         return $command;
+    }
+
+    public function execute(string $sql, array $params = []): bool
+    {
+        $command = $this->prepare($sql, $params);
+        return $command->execute();
+    }
+
+    public function insert(string $sql, array $params = [])
+    {
+        $command = $this->prepare($sql, $params);
+        $command->execute();
+        return $this->getDb()->lastInsertId();
     }
 
     public function queryAll(string $sql, array $params = []): array

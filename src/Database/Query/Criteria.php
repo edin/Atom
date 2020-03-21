@@ -142,7 +142,7 @@ final class Criteria
         return $this->expression;
     }
 
-    public function combine(string $operator, Criteria $criteria)
+    public function combine(string $operator, Criteria $criteria, bool $group = false)
     {
         $this->addParameters($criteria->getParameters());
 
@@ -157,8 +157,13 @@ final class Criteria
 
         $expression = new BinaryExpression();
         $expression->operator = $operator;
-        $expression->leftNode = new GroupExpression($this->expression);
-        $expression->rightNode = new GroupExpression($criteria->expression);
+        $expression->leftNode = $this->expression;
+        $expression->rightNode = $criteria->expression;
+
+        if ($group) {
+            $expression->leftNode = new GroupExpression($expression->leftNode);
+            $expression->rightNode = new GroupExpression($expression->rightNode);
+        }
 
         $this->expression = $expression;
     }
