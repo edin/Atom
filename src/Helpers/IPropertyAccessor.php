@@ -2,7 +2,7 @@
 
 namespace Atom\Helpers;
 
-interface IPropetyAccessor
+interface IPropertyAccessor
 {
     public function getProperty(string $name);
     public function setProperty(string $name, $value);

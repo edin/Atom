@@ -2,7 +2,7 @@
 
 namespace Atom\Database\Query\Compilers;
 
-class SQLiteCompiler extends AbstractCompiler
+class PgSqlCompiler extends AbstractCompiler
 {
     public function quoteTableName(string $name): string
     {

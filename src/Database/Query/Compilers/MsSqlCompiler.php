@@ -2,15 +2,15 @@
 
 namespace Atom\Database\Query\Compilers;
 
-class SQLiteCompiler extends AbstractCompiler
+class MsSqlCompiler extends AbstractCompiler
 {
     public function quoteTableName(string $name): string
     {
-        return "\"$name\"";
+        return "[$name]";
     }
 
     public function quoteColumnName(string $name): string
     {
-        return "\"$name\"";
+        return "[$name]";
     }
 }

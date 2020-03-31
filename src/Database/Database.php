@@ -3,16 +3,15 @@
 namespace Atom\Database;
 
 use Exception;
+use Atom\Database\Interfaces\IConnection;
 
 class Database
 {
     // private static $instance;
-
     // public static function initialize(Database $instance)
     // {
     //     self::$instance = $instance;
     // }
-
     // public static function instance(): Database
     // {
     //     return self::$instance;

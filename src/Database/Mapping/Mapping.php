@@ -1,6 +1,8 @@
 <?php
 
-class Mapping
+namespace Atom\Database\Mapping;
+
+final class Mapping
 {
     private $mapping = [];
     private $table;

@@ -1,21 +1,12 @@
 <?php
 
-class FieldMapping
-{
-    public const TypeSmallInt = "smallint";
-    public const TypeTinyInt = "tinyint";
-    public const TypeInt = "int";
-    public const TypeFloat = "float";
-    public const TypeDecimal = "decimal";
-    public const TypeString = "string";
-    public const TypeText = "text";
-    public const TypeGuid = "guid";
-    public const TypeBinary = "binary";
-    public const TypeDate = "date";
-    public const TypeDateTime = "datetime";
-    public const TypeTime = "time";
-    public const TypeJson = "json";
+namespace Atom\Database\Mapping;
 
+use Atom\Database\Interfaces\ITypeConverter;
+use ReflectionClass;
+
+final class FieldMapping
+{
     public $primaryKey = false;
     public $propertyName;
     public $fieldName;
@@ -24,8 +15,9 @@ class FieldMapping
     public $precision;
     public $nullable = false;
     public $converter = null;
+    public $valueProvider = null;
     private $converterInstance = null;
-    public $valueProvider;
+    private $valueProviderInstance = null;
 
     public $includeInSelect = true;
     public $includeInInsert = true;
@@ -66,31 +58,31 @@ class FieldMapping
 
     public function int(): self
     {
-        $this->type = self::TypeInt;
+        $this->type = DatabaseTypes::TypeInt;
         return $this;
     }
 
     public function smallint(): self
     {
-        $this->type = self::TypeSmallInt;
+        $this->type = DatabaseTypes::TypeSmallInt;
         return $this;
     }
 
     public function tinyint(): self
     {
-        $this->type = self::TypeTinyInt;
+        $this->type = DatabaseTypes::TypeTinyInt;
         return $this;
     }
 
     public function float(): self
     {
-        $this->type = self::TypeFloat;
+        $this->type = DatabaseTypes::TypeFloat;
         return $this;
     }
 
-    public function decimal(int $size=18, int $precision=6): self
+    public function decimal(int $size = 18, int $precision = 6): self
     {
-        $this->type = self::TypeDecimal;
+        $this->type = DatabaseTypes::TypeDecimal;
         $this->size = $size;
         $this->precision = $precision;
         return $this;
@@ -102,61 +94,77 @@ class FieldMapping
         return $this;
     }
 
-    public function string(?int $size=null): self
+    public function string(?int $size = null): self
     {
-        $this->type = self::TypeString;
+        $this->type = DatabaseTypes::TypeString;
         $this->size = $size;
         return $this;
     }
 
     public function text(): self
     {
-        $this->type = self::TypeText;
+        $this->type = DatabaseTypes::TypeText;
         return $this;
     }
 
     public function date(): self
     {
-        $this->type = self::TypeDate;
+        $this->type = DatabaseTypes::TypeDate;
         return $this;
     }
 
     public function time(): self
     {
-        $this->type = self::TypeTime;
+        $this->type = DatabaseTypes::TypeTime;
         return $this;
     }
 
     public function dateTime(): self
     {
-        $this->type = self::TypeDateTime;
+        $this->type = DatabaseTypes::TypeDateTime;
         return $this;
     }
 
     public function binary(): self
     {
-        $this->type = self::TypeBinary;
+        $this->type = DatabaseTypes::TypeBinary;
         return $this;
     }
 
     public function guid(): self
     {
-        $this->type = self::TypeGuid;
+        $this->type = DatabaseTypes::TypeGuid;
         return $this;
     }
 
     public function json(): self
     {
-        $this->type = self::TypeJson;
+        $this->type = DatabaseTypes::TypeJson;
         return $this;
+    }
+
+    private function getOrCreateType($type)
+    {
+        if (is_string($type)) {
+            return new $type;
+        }
+        return $type;
     }
 
     public function getConverter(): ?ITypeConverter
     {
         if ($this->converterInstance === null && $this->converter !== null) {
-            $this->converterInstance = new $this->converter;
+            $this->converterInstance = $this->getOrCreateType($this->converter);
         }
         return $this->converterInstance;
+    }
+
+    public function getValueProvider(): ?IValueProvider
+    {
+        if ($this->valueProviderInstance === null && $this->valueProvider !== null) {
+            $this->valueProviderInstance = $this->getOrCreateType($this->valueProvider);
+        }
+        return $this->valueProviderInstance;
     }
 
     public function getPropertyValue(ReflectionClass $classType, $instance)
@@ -195,20 +203,6 @@ class FieldMapping
         return $value;
     }
 
-    public function withConverter(string $typeName): self
-    {
-        //TODO: Check if $typeName is instance of ITypeConverter
-        $this->converter = $typeName;
-        return $this;
-    }
-
-    public function withValueProvider(string $valueProvider): self
-    {
-        //TODO: Check if $typeName is instance of IValueProvder
-        $this->valueProvider = $valueProvider;
-        return $this;
-    }
-
     public function indexed(): self
     {
         $this->isIndexed = true;
@@ -219,5 +213,33 @@ class FieldMapping
     {
         $this->isUnique = true;
         return $this;
+    }
+
+    /**
+     * @param  string|ITypeConverter $converter
+     */
+    public function withConverter($converter): self
+    {
+        $this->ensureType($provider, ITypeConverter::class);
+        $this->converter = $converter;
+        return $this;
+    }
+
+    /**
+     * @param  string|IValueProvider $provider
+     */
+    public function withValueProvider($provider): self
+    {
+        $this->ensureType($provider, IValueProvider::class);
+        $this->valueProvider = $valueProvider;
+        return $this;
+    }
+
+    private function ensureType($typeOrInstance, $type): void
+    {
+        $reflection = new ReflectionClass($typeOrInstance);
+        if (!$reflection->implementsInterface($type)) {
+            throw new InvalidArgumentException("Type does not implement $type interface.");
+        }
     }
 }

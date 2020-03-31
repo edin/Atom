@@ -1,5 +1,7 @@
 <?php
 
+namespace Atom\Database\Mapping;
+
 class QueryBuilder
 {
     /** @var Mapping */

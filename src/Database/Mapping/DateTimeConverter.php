@@ -1,5 +1,10 @@
 <?php
 
+namespace Atom\Database\Mapping;
+
+use DateTimeImmutable;
+use Atom\Database\Interfaces\ITypeConverter;
+
 class DateTimeConverter implements ITypeConverter
 {
     public function convertTo($value)

@@ -2,7 +2,7 @@
 
 namespace Atom\Helpers;
 
-final class ArrayPropertyAccessor implements IPropetyAccessor
+final class ArrayPropertyAccessor implements IPropertyAccessor
 {
     private $model;
 

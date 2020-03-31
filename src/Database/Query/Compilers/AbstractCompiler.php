@@ -16,17 +16,48 @@ use Atom\Database\Query\InsertQuery;
 use Atom\Database\Query\SelectQuery;
 use Atom\Database\Query\UpdateQuery;
 use Atom\Database\Query\Ast\SortOrder;
+use Atom\Database\Interfaces\IQueryCompiler;
 use Atom\Database\Query\Ast\GroupExpression;
 use Atom\Database\Query\Ast\UnaryExpression;
 use Atom\Database\Query\Ast\BinaryExpression;
 
-abstract class AbstractCompiler
+abstract class AbstractCompiler implements IQueryCompiler
 {
+    private $textWriter;
+
     abstract public function quoteTableName(string $name): string;
     abstract public function quoteColumnName(string $name): string;
-    abstract public function quoteValue($value): string;
 
-    private $textWriter;
+    public function quoteValue($value): string
+    {
+        if (is_null($value)) {
+            return 'NULL';
+        }
+
+        if (is_int($value)) {
+            return (string)$value;
+        }
+
+        if (is_float($value)) {
+            return (string)$value;
+        }
+
+        if (is_bool($value)) {
+            return $value ? '1' : '0';
+        }
+
+        if (is_array($value)) {
+            $items = [];
+            foreach ($value as $it) {
+                $items[] = $this->quoteValue($it);
+            }
+            return "(" . implode(", ", $items) . ")";
+        }
+
+        $value = (string)$value;
+        $value = str_replace("'", "''", $value);
+        return "'$value'";
+    }
 
     public function __construct()
     {
@@ -48,7 +79,7 @@ abstract class AbstractCompiler
         $this->textWriter->unindent();
     }
 
-    public function compileQuery(Query $query)
+    public function compileQuery(Query $query): Command
     {
         $this->visitNode($query);
         return $this->textWriter->getText();

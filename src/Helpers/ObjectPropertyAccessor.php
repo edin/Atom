@@ -4,7 +4,7 @@ namespace Atom\Helpers;
 
 use ReflectionClass;
 
-final class ObjectPropertyAccessor implements IPropetyAccessor
+final class ObjectPropertyAccessor implements IPropertyAccessor
 {
     private $model;
     private $reflection;

@@ -3,58 +3,63 @@
 namespace Atom\Database;
 
 use PDO;
+use PDOStatement;
+use Atom\Database\Interfaces\IConnection;
+use Atom\Database\Interfaces\IDatabaseConnector;
 
-class Connection
+class Connection implements IConnection
 {
-    public const MySQL = "mysql";
-    public const SQLite = "sqlite";
+    private $connector;
 
-    private $driver;
-    private $host;
-    private $user;
-    private $password;
-    private $database;
-    private $db = null;
-
-    public function __construct(string $driver, string $host, string $user, string $password, string $database)
+    public function __construct(IDatabaseConnector $connector)
     {
-        $this->driver = $driver;
-        $this->host = $host;
-        $this->user = $user;
-        $this->password = $password;
-        $this->database = $database;
+        $this->connector = $connector;
     }
 
-    private function getDb(): PDO
+    private function getConnection(): PDO
     {
-        if ($this->db == null) {
-            $dsn = "{$this->driver}:dbname={$this->database};host={$this->host}";
-            $this->db = new PDO($dsn, $this->user, $this->password);
-            $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $this->db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+        if (!$this->connector->isActive()) {
+            $this->connector->open();
         }
         return $this->db;
     }
 
-    private function prepare(string $sql, array $params)
+    public function close(): void
     {
-        $command = $this->getDb()->prepare($sql);
+        $this->connector->close();
+    }
+
+    private function prepare(string $sql, array $params) : PDOStatement
+    {
+        $command = $this->getConnection()->prepare($sql);
         foreach ($params as $key => $value) {
             $command->bindValue($key, $value);
         }
         return $command;
     }
 
+    public function execute(string $sql, array $params = []): bool
+    {
+        $command = $this->prepare($sql, $params);
+        $result = $command->execute();
+        $command->closeCursor();
+        return $result;
+    }
+
     public function queryAll(string $sql, array $params = []): array
     {
         $command = $this->prepare($sql, $params);
         $command->execute();
-        return $command->fetchAll();
+        $result = $command->fetchAll();
+        $command->closeCursor();
+        return $result;
     }
 
     public function queryScalar(string $sql, array $params = [])
     {
         $command = $this->prepare($sql, $params);
-        return $command->fetchColumn();
+        $result = $command->fetchColumn();
+        $command->closeCursor();
+        return $result;
     }
 }
