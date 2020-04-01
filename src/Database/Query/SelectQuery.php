@@ -42,12 +42,6 @@ final class SelectQuery extends Query
         return $this;
     }
 
-    // public function limit(int $limit): self
-    // {
-    //     $this->limit = $limit;
-    //     return $this;
-    // }
-
     public function count(string $column = "*"): self
     {
         $this->count = $column;
@@ -97,14 +91,6 @@ final class SelectQuery extends Query
         return $criteria;
     }
 
-    // public function where(Closure $criteriaBuilder): self
-    // {
-    //     $criteria = new Criteria();
-    //     $criteriaBuilder($criteria);
-    //     $this->where = $criteria;
-    //     return $this;
-    // }
-
     public function having(Closure $criteriaBuilder): self
     {
         $criteria = new Criteria();
@@ -135,5 +121,15 @@ final class SelectQuery extends Query
     {
         $this->groupBy[] = Column::fromValue($field);
         return $this;
+    }
+
+    public function queryAll()
+    {
+        return $this->getConnection()->compileQuery($this)->queryAll();
+    }
+
+    public function queryScalar()
+    {
+        return $this->getConnection()->compileQuery($this)->queryScalar();
     }
 }

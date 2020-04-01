@@ -2,6 +2,10 @@
 
 namespace Atom\Database\Query;
 
+use Atom\Application;
+use Atom\Database\Database;
+use Atom\Database\Interfaces\IConnection;
+
 abstract class Query
 {
     protected $from = null;
@@ -19,6 +23,7 @@ abstract class Query
     protected $orderBy = [];
     protected $groupBy = [];
     protected $values = null;
+    protected $connection = null;
 
     public function getTable()
     {
@@ -117,5 +122,18 @@ abstract class Query
     public static function insert(): InsertQuery
     {
         return new InsertQuery();
+    }
+
+    public function setConnection(IConnection $connection): void
+    {
+        $this->connection = $connection;
+    }
+
+    public function getConnection(): IConnection
+    {
+        if ($this->connection === null) {
+            return Application::$app->getContainer()->get(Database::class)->getConnection($this);
+        }
+        return $this->connection;
     }
 }

@@ -7,6 +7,7 @@ use Atom\Database\Query\Ast\Table;
 final class DeleteQuery extends Query
 {
     use QueryTrait;
+    use ExecuteTrait;
 
     public function from(string $table): self
     {

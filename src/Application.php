@@ -10,6 +10,7 @@ use Atom\Dispatcher\DispatcherServices;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
+use RuntimeException;
 
 abstract class Application
 {
@@ -21,63 +22,63 @@ abstract class Application
 
     public function __construct()
     {
-        self::$app = $this;
+        if (self::$app !== null) {
+            throw new RuntimeException("Application was already initialized");
+        }
+        static::$app = $this;
+
+        $this->container = new Container();
+        $this->container->bind(Application::class)->toInstance($this);
+        $this->container->bind(static::class)
+            ->withName("Application")
+            ->toInstance($this);
+
+        $this->container->bind(Container::class)
+            ->withName("Container")
+            ->toInstance($this->container);
     }
 
     final public function getContainer(): Container
     {
-        if ($this->container == null) {
-            $this->container = new Container();
-        }
         return $this->container;
     }
 
     final public function getRouter(): Router
     {
-        return $this->getContainer()->Router;
+        return $this->container->Router;
     }
 
     final public function getCurrentRoute(): ?Route
     {
-        return $this->getContainer()->CurrentRoute;
+        return $this->container->CurrentRoute;
     }
 
     final public function getRequest(): ServerRequestInterface
     {
-        return $this->getContainer()->Request;
+        return $this->container->Request;
     }
 
     final public function getResponse(): ResponseInterface
     {
-        return $this->getContainer()->Response;
+        return $this->container->Response;
     }
 
     final public function getDispatcher(): RequestHandlerInterface
     {
-        return $this->getContainer()->Dispatcher;
+        return $this->container->Dispatcher;
     }
 
     final public function getResponseEmitter()
     {
-        return $this->getContainer()->ResponseEmitter;
+        return $this->container->ResponseEmitter;
     }
 
     public function registerDefaultServices()
     {
-        $container = $this->getContainer();
-
-        $container->bind(Router::class)
+        $this->container->bind(Router::class)
             ->withName("Router")
             ->toSelf()
             ->asShared();
-
-        $container->bind(Application::class)
-            ->withName("Application")
-            ->toInstance($this);
-
-        $container->bind(Container::class)
-            ->withName("Container")
-            ->toInstance($container);
 
         $this->use(DispatcherServices::class);
         $this->use(ViewServices::class);
@@ -97,19 +98,18 @@ abstract class Application
 
     public function initialize()
     {
-        $container = $this->getContainer();
         $this->registerDefaultServices();
         $this->configure();
 
         foreach ($this->plugins as $pluginType) {
-            $this->pluginInstances[] =  $container->createType($pluginType);
+            $this->pluginInstances[] = $this->container->createType($pluginType);
         }
 
         foreach ($this->pluginInstances as $plugin) {
             $reflection = new \ReflectionClass($plugin);
             if ($reflection->hasMethod("configureServices")) {
                 $configureServices = $reflection->getMethod("configureServices");
-                $parameters =  $container->resolveMethodParameters($configureServices);
+                $parameters =  $this->container->resolveMethodParameters($configureServices);
                 $configureServices->invokeArgs($plugin, $parameters);
             }
         }

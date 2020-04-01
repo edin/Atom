@@ -3,7 +3,7 @@
 namespace Atom\Database\Interfaces;
 
 use Atom\Database\Query\Query;
-use Atom\Database\Command\Command;
+use Atom\Database\Query\Command;
 
 interface IQueryCompiler
 {

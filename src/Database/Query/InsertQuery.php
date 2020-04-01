@@ -8,6 +8,7 @@ use Closure;
 final class InsertQuery extends Query
 {
     use QueryTrait;
+    use ExecuteTrait;
 
     public function into(string $table): self
     {

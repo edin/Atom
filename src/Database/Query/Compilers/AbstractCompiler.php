@@ -5,10 +5,10 @@ namespace Atom\Database\Query\Compilers;
 use Closure;
 use Atom\Database\Query\Field;
 use Atom\Database\Query\Query;
+use Atom\Database\Query\Command;
 use Atom\Database\Query\Ast\Join;
 use Atom\Database\Query\Criteria;
 use Atom\Database\Query\Operator;
-use Atom\Database\Command\Command;
 use Atom\Database\Query\Ast\Table;
 use Atom\Database\Query\Parameter;
 use Atom\Database\Query\Ast\Column;
@@ -25,6 +25,7 @@ use Atom\Database\Query\Ast\BinaryExpression;
 abstract class AbstractCompiler implements IQueryCompiler
 {
     private $textWriter;
+    private $parameters = [];
 
     abstract public function quoteTableName(string $name): string;
     abstract public function quoteColumnName(string $name): string;
@@ -82,10 +83,15 @@ abstract class AbstractCompiler implements IQueryCompiler
 
     public function compileQuery(Query $query): Command
     {
+        $this->parameters = [];
+        $this->textWriter->clear();
         $this->visitNode($query);
-        $command = new Command;
+
         $sql =  $this->textWriter->getText();
+
+        $command = new Command();
         $command->setSql($sql);
+        $command->setParameters($this->parameters);
         return $command;
     }
 
@@ -363,7 +369,7 @@ abstract class AbstractCompiler implements IQueryCompiler
     protected function visitParameter(Parameter $node): void
     {
         $this->emit($node->getName());
-        //TODO: Store parameter value for later use
+        $this->parameters[$node->getName()] = $node;
     }
 
 

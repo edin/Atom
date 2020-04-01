@@ -8,6 +8,7 @@ use Closure;
 final class UpdateQuery extends Query
 {
     use QueryTrait;
+    use ExecuteTrait;
 
     public function table(string $table): self
     {

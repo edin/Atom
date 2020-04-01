@@ -4,8 +4,11 @@ namespace Atom\Database;
 
 use PDO;
 use PDOStatement;
-use Atom\Database\Command\Parameter;
+use Atom\Database\Query\Query;
+use Atom\Database\Query\Command;
+use Atom\Database\Query\Parameter;
 use Atom\Database\Interfaces\IConnection;
+use Atom\Database\Interfaces\ITransaction;
 use Atom\Database\Interfaces\IDatabaseConnector;
 
 class Connection implements IConnection
@@ -20,7 +23,7 @@ class Connection implements IConnection
 
     private function getConnection(): PDO
     {
-        if (!$this->connector->isActive()) {
+        if ($this->connection == null) {
             $this->connection = $this->connector->open();
         }
         return $this->connection;
@@ -44,6 +47,19 @@ class Connection implements IConnection
                 $command->bindValue($key, $value);
             }
         }
+        return $command;
+    }
+
+    public function beginTransaction(): ITransaction
+    {
+        return new Transaction($this->getConnection());
+    }
+
+    public function compileQuery(Query $query): Command
+    {
+        $compiler = $this->connector->getQueryCompiler();
+        $command = $compiler->compileQuery($query);
+        $command->setConnection($this);
         return $command;
     }
 
