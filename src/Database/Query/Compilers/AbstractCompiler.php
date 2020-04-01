@@ -8,6 +8,7 @@ use Atom\Database\Query\Query;
 use Atom\Database\Query\Ast\Join;
 use Atom\Database\Query\Criteria;
 use Atom\Database\Query\Operator;
+use Atom\Database\Command\Command;
 use Atom\Database\Query\Ast\Table;
 use Atom\Database\Query\Parameter;
 use Atom\Database\Query\Ast\Column;
@@ -82,7 +83,10 @@ abstract class AbstractCompiler implements IQueryCompiler
     public function compileQuery(Query $query): Command
     {
         $this->visitNode($query);
-        return $this->textWriter->getText();
+        $command = new Command;
+        $sql =  $this->textWriter->getText();
+        $command->setSql($sql);
+        return $command;
     }
 
     protected function visitNode($node)
