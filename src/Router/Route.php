@@ -49,4 +49,24 @@ final class Route
     {
         return $this->actionHandler;
     }
+
+    public function getController(): ?string
+    {
+        return $this->actionHandler->getController();
+    }
+
+    public function getMethodName(): ?string
+    {
+        return $this->actionHandler->getMethodName();
+    }
+
+    public function getClosure(): ?callable
+    {
+        return $this->actionHandler->getClosure();
+    }
+
+    public function isClosure(): bool
+    {
+        return $this->actionHandler->isClosure();
+    }
 }
