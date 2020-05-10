@@ -2,7 +2,7 @@
 
 namespace Atom\Database\Query\Ast;
 
-final class Table
+final class Table extends Node
 {
     public $name;
     public $alias;

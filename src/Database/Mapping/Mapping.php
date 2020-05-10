@@ -58,7 +58,7 @@ final class Mapping
     {
         return array_values(
             array_filter($this->mapping, function ($it) {
-                return $it->primaryKey;
+                return $it->isPrimaryKey();
             })
         );
     }

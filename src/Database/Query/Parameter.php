@@ -6,10 +6,10 @@ use PDO;
 
 final class Parameter
 {
-    public const Input = 1;
+    public const Input  = 1;
     public const Output = 2;
 
-    public const TypeString = PDO::PARAM_STR;
+    public const TypeString  = PDO::PARAM_STR;
     public const TypeInteger = PDO::PARAM_INT;
     public const TypeBoolean = PDO::PARAM_BOOL;
 
@@ -53,7 +53,6 @@ final class Parameter
     {
         return $this->direction == self::Input;
     }
-
 
     public function getDirection(): int
     {

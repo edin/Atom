@@ -21,10 +21,13 @@ use Atom\Database\Interfaces\IQueryCompiler;
 use Atom\Database\Query\Ast\GroupExpression;
 use Atom\Database\Query\Ast\UnaryExpression;
 use Atom\Database\Query\Ast\BinaryExpression;
+use ReflectionClass;
+use RuntimeException;
 
 abstract class AbstractCompiler implements IQueryCompiler
 {
     private $textWriter;
+    private $reflection;
     private $parameters = [];
 
     abstract public function quoteTableName(string $name): string;
@@ -37,11 +40,11 @@ abstract class AbstractCompiler implements IQueryCompiler
         }
 
         if (is_int($value)) {
-            return (string)$value;
+            return (string) $value;
         }
 
         if (is_float($value)) {
-            return (string)$value;
+            return (string) $value;
         }
 
         if (is_bool($value)) {
@@ -56,7 +59,7 @@ abstract class AbstractCompiler implements IQueryCompiler
             return "(" . implode(", ", $items) . ")";
         }
 
-        $value = (string)$value;
+        $value = (string) $value;
         $value = str_replace("'", "''", $value);
         return "'$value'";
     }
@@ -64,6 +67,7 @@ abstract class AbstractCompiler implements IQueryCompiler
     public function __construct()
     {
         $this->textWriter = new TextWriter();
+        $this->reflection = new ReflectionClass($this);
     }
 
     private function emit(string $text): void
@@ -95,38 +99,19 @@ abstract class AbstractCompiler implements IQueryCompiler
         return $command;
     }
 
-    protected function visitNode($node)
+    protected function visitNode(object $node)
     {
-        if ($node instanceof SelectQuery) {
-            $this->visitSelectQuery($node);
-        } elseif ($node instanceof DeleteQuery) {
-            $this->visitDeleteQuery($node);
-        } elseif ($node instanceof InsertQuery) {
-            $this->visitInsertQuery($node);
-        } elseif ($node instanceof UpdateQuery) {
-            $this->visitUpdateQuery($node);
-        } elseif ($node instanceof Column) {
-            $this->visitColumn($node);
-        } elseif ($node instanceof GroupExpression) {
-            $this->visitGroupExpression($node);
-        } elseif ($node instanceof BinaryExpression) {
-            $this->visitBinaryExpression($node);
-        } elseif ($node instanceof UnaryExpression) {
-            $this->visitUnaryExpression($node);
-        } elseif ($node instanceof Operator) {
-            $this->visitOperator($node);
-        } elseif ($node instanceof Criteria) {
-            $this->visitCriteria($node);
-        } elseif ($node instanceof Field) {
-            $this->visitField($node);
-        } elseif ($node instanceof Parameter) {
-            $this->visitParameter($node);
-        } elseif ($node instanceof Table) {
-            $this->visitTable($node);
-        } else {
-            $name = is_object($node) ? get_class($node) : gettype($node);
-            throw new \RuntimeException("Missing overload for type $name");
+        $reflection = new ReflectionClass($node);
+        $typeName = $reflection->getShortName();
+        $methodName = "visit{$typeName}";
+
+        if (!$this->reflection->hasMethod($methodName)) {
+            throw new RuntimeException("Missing method $methodName for type $typeName");
         }
+
+        $method = $this->reflection->getMethod($methodName);
+        $method->setAccessible(true);
+        $method->invoke($this, $node);
     }
 
     protected function visitSelectQuery(SelectQuery $query)
@@ -136,10 +121,10 @@ abstract class AbstractCompiler implements IQueryCompiler
         $isExists =  $query->getIsExists();
         $isDistinct =  $query->getIsDistinct();
 
-        $distinct = ($isDistinct) ? "DISTINCT ": "";
+        $distinct = ($isDistinct) ? "DISTINCT " : "";
 
         if ($isExists !== null) {
-            if ($isExists=== true) {
+            if ($isExists === true) {
                 $this->emit("EXISTS(");
             } else {
                 $this->emit("NOT EXISTS(");
@@ -371,7 +356,6 @@ abstract class AbstractCompiler implements IQueryCompiler
         $this->emit($node->getName());
         $this->parameters[$node->getName()] = $node;
     }
-
 
     protected function visitFrom(?Table $node): void
     {

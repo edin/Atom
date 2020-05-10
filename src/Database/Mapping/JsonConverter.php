@@ -8,11 +8,17 @@ class JsonConverter implements ITypeConverter
 {
     public function convertTo($value)
     {
-        return  json_decode($value);
+        if (empty($value)) {
+            return null;
+        }
+        return json_decode($value);
     }
 
     public function convertBack($value)
     {
+        if (empty($value)) {
+            return null;
+        }
         return json_encode($value);
     }
 }

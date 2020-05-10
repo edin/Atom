@@ -2,7 +2,7 @@
 
 namespace Atom\Database\Query\Ast;
 
-final class SortOrder
+final class SortOrder extends Node
 {
     public const ASC = "ASC";
     public const DESC = "DESC";

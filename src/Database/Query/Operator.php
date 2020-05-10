@@ -6,22 +6,24 @@ final class Operator
 {
     private $operator;
     private $value;
-    private $isNegation = false;
+    private $maxValue;
+    //private $isNegation = false;
     private $isValue = false;
     private $parameter;
 
-    public const Less = "<";
-    public const LessOrEqual = "<=";
-    public const Equal = "=";
-    public const GreaterOrEqual = ">=";
-    public const Greater = ">";
-    public const Like = "LIKE";
-    public const In = "IN";
+    // public const Less = "<";
+    // public const LessOrEqual = "<=";
+    // public const Equal = "=";
+    // public const GreaterOrEqual = ">=";
+    // public const Greater = ">";
+    // public const Like = "LIKE";
+    // public const In = "IN";
 
-    public function __construct(string $operator, $value)
+    public function __construct(string $operator, $value, $maxValue = null)
     {
         $this->operator = $operator;
         $this->value = $value;
+        $this->maxValue = $maxValue;
     }
 
     public static function fromValue($value): self
@@ -44,6 +46,16 @@ final class Operator
     public function getExpression()
     {
         return $this->value;
+    }
+
+    public function getMinExpression()
+    {
+        return $this->value;
+    }
+
+    public function getMaxExpression()
+    {
+        return $this->maxValue;
     }
 
     public function setIsValue(bool $value): void
@@ -93,6 +105,11 @@ final class Operator
         return new static("=", $value);
     }
 
+    public static function notEqual($value): self
+    {
+        return new static("<>", $value);
+    }
+
     public static function greaterOrEqual($value): self
     {
         return new static(">=", $value);
@@ -121,5 +138,10 @@ final class Operator
     public static function or($value): self
     {
         return new static("OR", $value);
+    }
+
+    public static function between($min, $max): self
+    {
+        return new static("BETWEEN", $min, $max);
     }
 }

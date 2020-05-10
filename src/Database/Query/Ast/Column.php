@@ -2,7 +2,7 @@
 
 namespace Atom\Database\Query\Ast;
 
-final class Column
+final class Column extends Node
 {
     public $table = null;
     public $name = null;

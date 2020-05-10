@@ -4,7 +4,7 @@ namespace Atom\Database\Query\Ast;
 
 use Atom\Database\Query\Criteria;
 
-final class Join
+final class Join extends Node
 {
     public const LeftJoin  = 1;
     public const RightJoin = 2;

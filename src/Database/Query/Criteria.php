@@ -14,11 +14,13 @@ final class Criteria
 
     public static function parseWhere(string $where, $value)
     {
-        $parts = explode(" ", trim($where));
-        //1. id  => field
-        //2. u.id => field with table reference
-        //3. u.id OP :p => field operator and parameter name
+        //Following cases are supported:
+        //1. id           => field
+        //2. u.id         => field with table reference
+        //3. u.id OP :p   => field operator and parameter name
         //4. u.id OP x.id => field operator and field
+
+        $parts = explode(" ", trim($where));
         $left = Field::from($parts[0]);
 
         if (count($parts) == 3) {

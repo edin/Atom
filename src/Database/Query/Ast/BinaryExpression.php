@@ -2,7 +2,7 @@
 
 namespace Atom\Database\Query\Ast;
 
-final class BinaryExpression
+final class BinaryExpression extends Node
 {
     public $operator = null;
     public $leftNode = null;

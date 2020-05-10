@@ -3,32 +3,81 @@
 namespace Atom\Database\Mapping;
 
 use Atom\Database\Interfaces\ITypeConverter;
+use Atom\Database\Interfaces\IValueProvider;
+use InvalidArgumentException;
 use ReflectionClass;
 
 final class FieldMapping
 {
-    public $primaryKey = false;
-    public $propertyName;
-    public $fieldName;
-    public $type;
-    public $size;
-    public $precision;
-    public $nullable = false;
-    public $converter = null;
-    public $valueProvider = null;
+    private $primaryKey = false;
+    private $propertyName;
+    private $fieldName;
+    private $type;
+    private $size;
+    private $precision;
+    private $nullable = false;
+    private $converter = null;
+    private $valueProvider = null;
     private $converterInstance = null;
     private $valueProviderInstance = null;
 
-    public $includeInSelect = true;
-    public $includeInInsert = true;
-    public $includeInUpdate = true;
-    public $isIndexed = false;
-    public $isUnique = false;
+    private $includeInSelect = true;
+    private $includeInInsert = true;
+    private $includeInUpdate = true;
+    private $isIndexed = false;
+    private $isUnique = false;
 
     public function __construct(string $propertyName)
     {
         $this->propertyName = $propertyName;
-        $this->fieldName = $propertyName;
+    }
+
+    public function isPrimaryKey(): bool {
+        return $this->primaryKey;
+    }
+
+    public function getPropertyName(): string {
+        return $this->propertyName;
+    }
+
+    public function getFieldName(): string {
+        return $this->fieldName ?? $this->propertyName;
+    }
+
+    public function getType(): string {
+        return $this->type;
+    }
+
+    public function getSize(): ?int {
+        return $this->size;
+    }
+
+    public function getPrecision(): ?int {
+        return $this->precision;
+    }
+
+    public function isNullable(): bool {
+        return $this->nullable;
+    }
+
+    public function isIncludedInSelect(): bool {
+        return $this->includeInSelect;
+    }
+
+    public function isIncluedInUpdate(): bool {
+        return $this->includeInUpdate;
+    }
+
+    public function isIncludedInInsert(): bool {
+        return $this->includeInInsert;
+    }
+
+    public function isIndexed(): bool {
+        return $this->isIndexed;
+    }
+
+    public function isUnique(): bool {
+        return $this->isUnique;
     }
 
     public function primaryKey(): self
@@ -220,7 +269,7 @@ final class FieldMapping
      */
     public function withConverter($converter): self
     {
-        $this->ensureType($provider, ITypeConverter::class);
+        $this->ensureType($converter, ITypeConverter::class);
         $this->converter = $converter;
         return $this;
     }
@@ -231,7 +280,7 @@ final class FieldMapping
     public function withValueProvider($provider): self
     {
         $this->ensureType($provider, IValueProvider::class);
-        $this->valueProvider = $valueProvider;
+        $this->valueProvider = $provider;
         return $this;
     }
 

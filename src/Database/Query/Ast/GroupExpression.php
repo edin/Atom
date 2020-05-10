@@ -2,7 +2,7 @@
 
 namespace Atom\Database\Query\Ast;
 
-final class GroupExpression
+final class GroupExpression extends Node
 {
     public $node = null;
 

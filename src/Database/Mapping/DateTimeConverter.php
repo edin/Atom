@@ -9,6 +9,10 @@ class DateTimeConverter implements ITypeConverter
 {
     public function convertTo($value)
     {
+        if (empty($value)) {
+            return null;
+        }
+
         return DateTimeImmutable::createFromFormat("Y-m-d H:i:s", $value);
     }
 
