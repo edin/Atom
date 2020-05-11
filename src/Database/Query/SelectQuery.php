@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Atom\Database\Query;
 
 use Atom\Database\Query\Ast\Column;

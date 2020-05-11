@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Atom\Validation\Rules;
 
 final class Pattern extends AbstractRule
@@ -26,7 +28,7 @@ final class Pattern extends AbstractRule
         }
 
         if (is_scalar(($value))) {
-            $value = (string)$value;
+            $value = (string) $value;
         }
 
         return preg_match($this->pattern, $value) === 1;

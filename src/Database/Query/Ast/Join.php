@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Atom\Database\Query\Ast;
 
 use Atom\Database\Query\Criteria;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Atom\Container\TypeFactory;
 
 use Atom\Container\Container;
@@ -17,10 +19,11 @@ final class TypeFactoryRegistry
         $this->registry[] = [$typeMatcher, $typeFactory];
     }
 
-    public function canCreateType(string $typeName) {
+    public function canCreateType(string $typeName)
+    {
         $typeInfo = new TypeInfo($typeName);
 
-        foreach($this->registry as $item) {
+        foreach ($this->registry as $item) {
             $matcher = $item[0];
             if ($matcher->matches($typeInfo)) {
                 return true;
@@ -29,9 +32,10 @@ final class TypeFactoryRegistry
         return false;
     }
 
-    public function createType(Container $container, string $typeName): ?object {
+    public function createType(Container $container, string $typeName): ?object
+    {
         $typeInfo = new TypeInfo($typeName);
-        foreach($this->registry as $item) {
+        foreach ($this->registry as $item) {
             $matcher = $item[0];
             $factoryType = $item[1];
 

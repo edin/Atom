@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Atom\Collections;
 
 class PagedCollection extends ReadOnlyCollection
@@ -9,27 +11,33 @@ class PagedCollection extends ReadOnlyCollection
     private $pageSize = 0;
     private $totalCount = 0;
 
-    public function hasPrevious(): bool {
+    public function hasPrevious(): bool
+    {
         return $this->currentPage > 1;
     }
 
-    public function hasNext(): bool {
+    public function hasNext(): bool
+    {
         return $this->currentPage < $this->totalPages;
     }
 
-    public function setTotalCount(int $totalCount): void {
+    public function setTotalCount(int $totalCount): void
+    {
         $this->totalCount = $totalCount;
     }
-    
-    public function getTotalCount(): int {
+
+    public function getTotalCount(): int
+    {
         return $this->totalCount;
     }
 
-    public function setPageSize(int $pageSize): void {
+    public function setPageSize(int $pageSize): void
+    {
         $this->pageSize = $pageSize;
     }
 
-    public function getPageSize(): int {
+    public function getPageSize(): int
+    {
         return $this->pageSize;
     }
 
@@ -54,12 +62,12 @@ class PagedCollection extends ReadOnlyCollection
     }
 
     public static function from(iterable $items, int $count, int $pageNumber, int $pageSize): self
-	{
+    {
         $result = new PagedCollection($items);
         $result->setTotalCount($count);
         $result->setPageSize($pageSize);
         $result->setCurrentPage($pageNumber);
-        $result->setTotalPages((int)ceil($count/$pageSize));
-		return $result;
-	}
+        $result->setTotalPages((int) ceil($count / $pageSize));
+        return $result;
+    }
 }

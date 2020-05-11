@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Atom\Database\Query\Ast;
 
 final class SortOrder extends Node

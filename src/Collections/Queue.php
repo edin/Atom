@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Atom\Collections;
 
 use Atom\Collections\Interfaces\IQueue;

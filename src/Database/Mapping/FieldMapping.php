@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Atom\Database\Mapping;
 
 use Atom\Database\Interfaces\ITypeConverter;
@@ -32,51 +34,63 @@ final class FieldMapping
         $this->propertyName = $propertyName;
     }
 
-    public function isPrimaryKey(): bool {
+    public function isPrimaryKey(): bool
+    {
         return $this->primaryKey;
     }
 
-    public function getPropertyName(): string {
+    public function getPropertyName(): string
+    {
         return $this->propertyName;
     }
 
-    public function getFieldName(): string {
+    public function getFieldName(): string
+    {
         return $this->fieldName ?? $this->propertyName;
     }
 
-    public function getType(): string {
+    public function getType(): string
+    {
         return $this->type;
     }
 
-    public function getSize(): ?int {
+    public function getSize(): ?int
+    {
         return $this->size;
     }
 
-    public function getPrecision(): ?int {
+    public function getPrecision(): ?int
+    {
         return $this->precision;
     }
 
-    public function isNullable(): bool {
+    public function isNullable(): bool
+    {
         return $this->nullable;
     }
 
-    public function isIncludedInSelect(): bool {
+    public function isIncludedInSelect(): bool
+    {
         return $this->includeInSelect;
     }
 
-    public function isIncluedInUpdate(): bool {
+    public function isIncluedInUpdate(): bool
+    {
         return $this->includeInUpdate;
     }
 
-    public function isIncludedInInsert(): bool {
+    public function isIncludedInInsert(): bool
+    {
         return $this->includeInInsert;
     }
 
-    public function isIndexed(): bool {
+    public function isIndexed(): bool
+    {
         return $this->isIndexed;
     }
 
-    public function isUnique(): bool {
+    public function isUnique(): bool
+    {
         return $this->isUnique;
     }
 

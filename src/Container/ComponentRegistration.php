@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Atom\Container;
 
 use Atom\Container\Resolver\InstanceResolver;
@@ -102,17 +104,17 @@ final class ComponentRegistration
     {
         switch ($this->type) {
             case self::INSTANCE: {
-                return new InstanceResolver($this);
-            }
+                    return new InstanceResolver($this);
+                }
             case self::FACTORY_METHOD: {
-                return new FactoryResolver($this);
-            }
+                    return new FactoryResolver($this);
+                }
             case self::CLASS_NAME: {
-                return  new ClassResolver($this);
-            }
+                    return  new ClassResolver($this);
+                }
             case self::TYPE_FACTORY: {
-                return new TypeFactoryResolver($this);
-            }
+                    return new TypeFactoryResolver($this);
+                }
         }
         throw new \RuntimeException("Invalid component registration");
     }

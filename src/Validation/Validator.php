@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Atom\Validation;
 
@@ -178,7 +180,7 @@ class Validator
 
             if ($validationResult->hasAnyErrors()) {
                 $validationResult->setIndex($key);
-                $result->addValidationResult((string)$key, $validationResult);
+                $result->addValidationResult((string) $key, $validationResult);
             }
         }
         return $result;

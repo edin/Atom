@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Atom\Router;
 
 use Closure;
@@ -51,17 +53,20 @@ class Router
         return $group;
     }
 
-    public function controller(string $controller, Closure $routeBuilder) {
+    public function controller(string $controller, Closure $routeBuilder)
+    {
         $this->groups[] = $group = Router::fromGroupAndPath($this, $this->getPath());
         $group->setController($controller);
         $routeBuilder($group);
     }
 
-    public function setController(string $controller) {
+    public function setController(string $controller)
+    {
         $this->controllerType = $controller;
     }
 
-    public function getController(): ?string {
+    public function getController(): ?string
+    {
         return $this->controllerType;
     }
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Atom\Database;
 
 use PDO;
@@ -35,7 +37,7 @@ class Connection implements IConnection
         $this->connector->close();
     }
 
-    private function prepare(string $sql, array $params) : PDOStatement
+    private function prepare(string $sql, array $params): PDOStatement
     {
         $command = $this->getConnection()->prepare($sql);
 

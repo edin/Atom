@@ -1,8 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Atom\Validation;
 
-class ErrorMessage 
+class ErrorMessage
 {
     public $attributes;
     public $message;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Atom\Collections;
 
 use ArrayIterator;
@@ -155,8 +157,9 @@ class ReadOnlyCollection implements IReadOnlyCollection
         return new self($items);
     }
 
-    public function each(callable $callback): IReadOnlyCollection {
-        foreach($this->items as $key => $value) {
+    public function each(callable $callback): IReadOnlyCollection
+    {
+        foreach ($this->items as $key => $value) {
             $callback($value, $key, $this);
         }
         return $this;

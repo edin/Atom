@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Atom\Container;
 
 use Atom\Container\Resolver\IDependencyResolver;
@@ -199,7 +201,7 @@ final class Container
     public function has($name): bool
     {
         return isset($this->registry[$name]) ||
-               isset($this->alias[$name]);
+            isset($this->alias[$name]);
     }
 
     public function get($name)

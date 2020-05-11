@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Atom\Router;
 
 use ReflectionClass;
@@ -23,7 +25,7 @@ class RouteBuilder implements IRouteBuilder
             $route = $this->getRouteInfo($method);
             if ($route) {
                 $methodName = $method->getName();
-                $router->addRoute($route->method, $route->path, $this->controllerType, $methodName);     
+                $router->addRoute($route->method, $route->path, $this->controllerType, $methodName);
             } else {
                 $methodName = $method->getName();
                 $router->addRoute("GET", $methodName, $this->controllerType, $methodName);
@@ -31,7 +33,8 @@ class RouteBuilder implements IRouteBuilder
         }
     }
 
-    private function getRouteInfo(ReflectionMethod $method) {
+    private function getRouteInfo(ReflectionMethod $method)
+    {
         $comment = $method->getDocComment();
         $result = preg_match('/@(Get|Post|Put|Patch|Delete|Head|Options)\(\"(.*)\"\)/', $comment, $matches);
         if ($result) {
@@ -43,7 +46,7 @@ class RouteBuilder implements IRouteBuilder
         return null;
     }
 
-    public static function fromController(string $controllerType): self 
+    public static function fromController(string $controllerType): self
     {
         return new self($controllerType);
     }

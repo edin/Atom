@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Atom\Validation;
 
 use Atom\Helpers\ArrayPropertyAccessor;
@@ -34,11 +36,11 @@ final class Validation
     public function validate($model): ValidationResult
     {
         $propertyAccessor = is_array($model) ?
-            new ArrayPropertyAccessor($model):
+            new ArrayPropertyAccessor($model) :
             new ObjectPropertyAccessor($model);
 
         $result = new ValidationResult();
-        
+
 
         foreach ($this->validators as $validator) {
             $property = $validator->getProperty();

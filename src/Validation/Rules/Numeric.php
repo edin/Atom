@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Atom\Validation\Rules;
 
 final class Numeric extends AbstractRule
