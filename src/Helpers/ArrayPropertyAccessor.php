@@ -6,7 +6,7 @@ namespace Atom\Helpers;
 
 final class ArrayPropertyAccessor implements IPropertyAccessor
 {
-    private $model;
+    private array $model;
 
     public function __construct(array &$model)
     {

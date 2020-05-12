@@ -6,12 +6,12 @@ namespace Atom\Database\Query;
 
 final class Operator
 {
-    private $operator;
+    private string $operator;
     private $value;
     private $maxValue;
     //private $isNegation = false;
-    private $isValue = false;
-    private $parameter;
+    private bool $isValue = false;
+    private ?string $parameter = null;
 
     // public const Less = "<";
     // public const LessOrEqual = "<=";

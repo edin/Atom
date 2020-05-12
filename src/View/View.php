@@ -10,9 +10,9 @@ use Atom\Container\Container;
 
 final class View
 {
-    private $viewsDir;
-    private $di;
-    private $engines = [];
+    private string $viewsDir;
+    private Container $di;
+    private array $engines = [];
 
     public function __construct(Container $di)
     {

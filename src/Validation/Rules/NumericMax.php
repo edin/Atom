@@ -6,8 +6,8 @@ namespace Atom\Validation\Rules;
 
 final class NumericMax extends AbstractRule
 {
-    protected $errorMessage = "The field value should be less or equal to {maxValue}";
-    protected $maxValue = 0;
+    protected string $errorMessage = "The field value should be less or equal to {maxValue}";
+    protected float $maxValue = 0;
 
     public function __construct(float $maxValue)
     {

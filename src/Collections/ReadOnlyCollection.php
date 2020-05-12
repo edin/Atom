@@ -9,7 +9,7 @@ use Atom\Collections\Interfaces\IReadOnlyCollection;
 
 class ReadOnlyCollection implements IReadOnlyCollection
 {
-    protected $items = [];
+    protected array $items = [];
 
     public function __construct(iterable $items)
     {

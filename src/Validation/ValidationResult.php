@@ -9,12 +9,12 @@ use JsonSerializable;
 
 final class ValidationResult implements Countable, JsonSerializable
 {
-    private $modelErrors = [];
-    private $errors = [];
+    private array $modelErrors = [];
+    private array $errors = [];
     private $value = null;
-    private $hasValue = false;
+    private bool $hasValue = false;
     private $index = null;
-    private $isArrayResult = false;
+    private bool $isArrayResult = false;
 
     public function addModelError(ErrorMessage $errorMessage)
     {

@@ -6,8 +6,8 @@ namespace Atom\Database\Query;
 
 final class Field
 {
-    public $table = null;
-    public $name;
+    public ?string $table = null;
+    public string $name;
 
     public function __construct(string $name)
     {

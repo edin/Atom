@@ -6,12 +6,12 @@ namespace Atom\View;
 
 final class Template
 {
-    public $parent = null;
-    public $child = null;
-    public $view;
-    public $viewName;
-    public $content;
-    public $params = [];
+    public ?Template  $parent = null;
+    public ?Template  $child = null;
+    public ViewEngine $view;
+    public string     $viewName;
+    public string     $content = "";
+    public array      $params = [];
 
     public function __construct(ViewEngine $view, string $viewName, array $params)
     {

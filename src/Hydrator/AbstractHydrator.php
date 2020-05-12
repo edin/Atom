@@ -8,8 +8,8 @@ use ReflectionClass;
 
 abstract class AbstractHydrator implements IHydrator
 {
-    protected $reflection;
-    protected $properties;
+    protected ReflectionClass $reflection;
+    protected array $properties;
 
     public function __construct(string $typeName)
     {

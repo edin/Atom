@@ -6,8 +6,8 @@ namespace Atom\Database\Mapping;
 
 final class Mapping
 {
-    private $mapping = [];
-    private $table;
+    private array $mapping = [];
+    private ?string $table = null;
 
     public static function create($callable)
     {

@@ -11,9 +11,9 @@ final class SortOrder extends Node
     public const NULLS_FIRST = "NULLS FIRST";
     public const NULLS_LAST  = "NULLS LAST";
 
-    public $expression = null;
-    public $order = self::ASC;
-    public $nullsOrder = null;
+    public ?Node $expression = null;
+    public string $order = self::ASC;
+    public ?string $nullsOrder = null;
 
     public static function fromColumn(string $value, string $order = self::ASC): self
     {

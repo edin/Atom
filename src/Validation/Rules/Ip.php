@@ -6,7 +6,7 @@ namespace Atom\Validation\Rules;
 
 final class Ip extends AbstractRule
 {
-    protected $errorMessage = "Value is not a valid IP address";
+    protected string $errorMessage = "Value is not a valid IP address";
 
     public function isValid($value): bool
     {

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atom\Dispatcher;
 
 use Atom\Router\Route;
+use Atom\Router\Router;
 use Atom\Container\Container;
 use Atom\Dispatcher\RouteHandler;
 use Atom\Dispatcher\RequestHandler;
@@ -14,8 +15,8 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 final class Dispatcher implements RequestHandlerInterface
 {
-    private $container;
-    private $router;
+    private Container $container;
+    private Router $router;
 
     public function __construct(Container $container)
     {

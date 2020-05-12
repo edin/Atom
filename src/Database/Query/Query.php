@@ -17,15 +17,15 @@ abstract class Query
     protected $isExists = null;
     protected $limit = null;
     protected $offset = null;
-    protected $columns = [];
-    protected $unions = [];
-    protected $joins = [];
+    protected array $columns = [];
+    protected array $unions = [];
+    protected array $joins = [];
     protected $where = null;
     protected $having = null;
-    protected $orderBy = [];
-    protected $groupBy = [];
+    protected array $orderBy = [];
+    protected array $groupBy = [];
     protected $values = null;
-    protected $connection = null;
+    protected ?IConnection $connection = null;
 
     public function getTable()
     {

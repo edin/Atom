@@ -6,7 +6,7 @@ namespace Atom\Validation\Rules;
 
 final class Boolean extends AbstractRule
 {
-    protected $errorMessage = "The field value is not valid";
+    protected string $errorMessage = "The field value is not valid";
 
     public function isValid($value): bool
     {

@@ -6,7 +6,7 @@ namespace Atom\Validation\Rules;
 
 final class Enum extends AbstractRule
 {
-    protected $errorMessage = "Value is not one of the given values";
+    protected string $errorMessage = "Value is not one of the given values";
 
     protected $enumValues = 0;
 

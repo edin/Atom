@@ -6,8 +6,8 @@ namespace Atom\Database\Query\Ast;
 
 final class Table extends Node
 {
-    public $name;
-    public $alias;
+    public ?string $name = null;
+    public ?string $alias = null;
 
     public static function fromValue(string $value): self
     {

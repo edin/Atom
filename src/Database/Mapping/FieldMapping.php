@@ -11,23 +11,23 @@ use ReflectionClass;
 
 final class FieldMapping
 {
-    private $primaryKey = false;
-    private $propertyName;
-    private $fieldName;
-    private $type;
-    private $size;
-    private $precision;
-    private $nullable = false;
-    private $converter = null;
-    private $valueProvider = null;
-    private $converterInstance = null;
-    private $valueProviderInstance = null;
+    private bool $primaryKey = false;
+    private string $propertyName;
+    private string $fieldName = "";
+    private string $type = "";
+    private ?int $size = null;
+    private ?int $precision = null;
+    private bool $nullable = false;
+    private /* string | ITypeConverter | null */ $converter = null;
+    private /* string | IValueProvider | null */ $valueProvider = null;
+    private ?ITypeConverter $converterInstance = null;
+    private ?IValueProvider $valueProviderInstance = null;
 
-    private $includeInSelect = true;
-    private $includeInInsert = true;
-    private $includeInUpdate = true;
-    private $isIndexed = false;
-    private $isUnique = false;
+    private bool $includeInSelect = true;
+    private bool $includeInInsert = true;
+    private bool $includeInUpdate = true;
+    private bool $isIndexed = false;
+    private bool $isUnique = false;
 
     public function __construct(string $propertyName)
     {

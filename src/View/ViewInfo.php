@@ -8,8 +8,8 @@ use Atom\Interfaces\IViewInfo;
 
 final class ViewInfo implements IViewInfo
 {
-    private $viewName;
-    private $params;
+    private string $viewName;
+    private array $params;
 
     public function __construct(string $viewName, array $params = [])
     {

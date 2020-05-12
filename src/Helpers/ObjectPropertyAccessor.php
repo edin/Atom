@@ -8,10 +8,10 @@ use ReflectionClass;
 
 final class ObjectPropertyAccessor implements IPropertyAccessor
 {
-    private $model;
-    private $reflection;
+    private object $model;
+    private ReflectionClass $reflection;
 
-    public function __construct($model)
+    public function __construct(object $model)
     {
         $this->model = $model;
         $this->reflection = new ReflectionClass($model);

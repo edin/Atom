@@ -6,10 +6,10 @@ namespace Atom\Collections;
 
 class PagedCollection extends ReadOnlyCollection
 {
-    private $currentPage = 0;
-    private $totalPages = 0;
-    private $pageSize = 0;
-    private $totalCount = 0;
+    private int $currentPage = 0;
+    private int $totalPages = 0;
+    private int $pageSize = 0;
+    private int $totalCount = 0;
 
     public function hasPrevious(): bool
     {

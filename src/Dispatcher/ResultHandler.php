@@ -9,8 +9,8 @@ use Psr\Http\Message\ResponseInterface;
 
 class ResultHandler
 {
-    private $container;
-    private $resultHandlerRegistry;
+    private Container $container;
+    private ResultHandlerRegistry $resultHandlerRegistry;
 
     public function __construct(Container $container, ResultHandlerRegistry $resultHandlerRegistry)
     {

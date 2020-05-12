@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace Atom\View;
 
+use SplStack;
+
 final class ViewEngine implements \Atom\Interfaces\IViewEngine
 {
-    public $sections = [];
-    public $prevSections = [];
-    private $sectionStack;
-    private $view;
-    private $params = [];
-    private $currentTemplate;
+    public array $sections = [];
+    public array $prevSections = [];
+    private SplStack $sectionStack;
+    private View $view;
+    private array $params = [];
+    private Template $currentTemplate;
 
     public function __construct(View $view)
     {

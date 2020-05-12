@@ -9,11 +9,11 @@ use ReflectionClass;
 
 final class Container
 {
-    private $registry = [];
-    private $resolvers = [];
-    private $instances = [];
-    private $alias = [];
-    private $dependencyResolver;
+    private array $registry = [];
+    private array $resolvers = [];
+    private array $instances = [];
+    private array $alias = [];
+    private DependencyResolver $dependencyResolver;
 
     public function __construct()
     {

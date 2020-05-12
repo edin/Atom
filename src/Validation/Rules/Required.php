@@ -6,7 +6,7 @@ namespace Atom\Validation\Rules;
 
 final class Required extends AbstractRule
 {
-    protected $errorMessage = "The field value is required";
+    protected string $errorMessage = "The field value is required";
 
     protected function hasValue($value): bool
     {

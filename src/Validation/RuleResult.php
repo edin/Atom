@@ -9,9 +9,9 @@ final class RuleResult
     private const Success = 1;
     private const Failure = 2;
 
-    private $errorMessage = "";
-    private $attributes = [];
-    private $status;
+    private string $errorMessage = "";
+    private array $attributes = [];
+    private int $status;
     private $value;
 
     private function __construct(int $status, $value, string $errorMessage, array $attributes)

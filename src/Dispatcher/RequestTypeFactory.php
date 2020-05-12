@@ -9,8 +9,8 @@ use Psr\Http\Message\ServerRequestInterface;
 
 class RequestTypeFactory
 {
-    private $container;
-    private $request;
+    private Container $container;
+    private ServerRequestInterface $request;
 
     public function __construct(Container $container, ServerRequestInterface $request)
     {

@@ -6,8 +6,8 @@ namespace Atom\Database\Query\Compilers;
 
 class TextWriter
 {
-    private $indent = 0;
-    private $text = "";
+    private int $indent = 0;
+    private string $text = "";
 
     public function indent(): void
     {

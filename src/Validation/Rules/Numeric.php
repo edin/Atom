@@ -6,7 +6,7 @@ namespace Atom\Validation\Rules;
 
 final class Numeric extends AbstractRule
 {
-    protected $errorMessage = "The field should have numeric value";
+    protected string $errorMessage = "The field should have numeric value";
 
     public function isValid($value): bool
     {

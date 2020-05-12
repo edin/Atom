@@ -6,8 +6,8 @@ namespace Atom\Validation\Rules;
 
 final class MinLength extends AbstractRule
 {
-    protected $errorMessage = "Length of the field should be at least {minValue} char(s)";
-    protected $minValue = 0;
+    protected string $errorMessage = "Length of the field should be at least {minValue} char(s)";
+    protected int $minValue = 0;
 
     public function __construct(int $minValue)
     {

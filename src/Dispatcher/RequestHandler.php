@@ -10,8 +10,8 @@ use Psr\Http\Message\ResponseInterface;
 
 class RequestHandler implements RequestHandlerInterface
 {
-    private $middlewares = [];
-    private $defaultHandler;
+    private array $middlewares = [];
+    private RequestHandlerInterface $defaultHandler;
 
     public function __construct(RequestHandlerInterface $defaultHandler)
     {

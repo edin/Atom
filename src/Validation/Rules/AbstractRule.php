@@ -9,8 +9,8 @@ use Atom\Validation\RuleResult;
 
 abstract class AbstractRule implements IRule
 {
-    protected $errorMessage;
-    private $resultValue;
+    protected string $errorMessage;
+    private /*any*/ $resultValue;
 
     public function setErrorMessage(string $errorMessage): void
     {

@@ -6,8 +6,8 @@ namespace Atom\Router;
 
 final class ActionHandler
 {
-    private $controller;
-    private $methodName;
+    private ?string $controller;
+    private ?string $methodName;
     private $closure;
 
     public function __construct(?string $controller, ?string $methodName, ?callable $closure)

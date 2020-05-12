@@ -15,10 +15,10 @@ final class Parameter
     public const TypeInteger = PDO::PARAM_INT;
     public const TypeBoolean = PDO::PARAM_BOOL;
 
-    private $name;
+    private string $name;
     private $value;
-    private $type;
-    private $direction;
+    private ?int $type;
+    private int  $direction;
 
     public function __construct(string $name, $value, ?int $type, int $direction)
     {

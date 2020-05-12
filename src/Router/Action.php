@@ -10,18 +10,20 @@ use Atom\Container\Resolver\ClassResolver;
 use Atom\Router\Route;
 use ReflectionClass;
 use ReflectionFunction;
+use ReflectionFunctionAbstract;
+use ReflectionMethod;
 use RuntimeException;
 
 final class Action
 {
-    private $container;
-    private $route;
-    private $controller;
-    private $handler;
-    private $actionArguments = [];
-    private $constructorArguments = [];
-    private $properties = [];
-    private $resolutionContext;
+    private Container $container;
+    private Route $route;
+    private ?object $controller = null;
+    private ReflectionFunctionAbstract $handler;
+    private array $actionArguments = [];
+    private array $constructorArguments = [];
+    private array $properties = [];
+    private ResolutionContext $resolutionContext;
     private $controllerFactory;
 
     public function __construct(Container $container, Route $route)
@@ -98,7 +100,7 @@ final class Action
 
     public function execute()
     {
-        if ($this->handler instanceof \ReflectionMethod) {
+        if ($this->handler instanceof ReflectionMethod) {
             return $this->handler->invokeArgs($this->getController(), $this->actionArguments);
         }
         return $this->handler->invokeArgs($this->actionArguments);

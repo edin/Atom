@@ -6,7 +6,7 @@ namespace Atom\Hydrator;
 
 class ConstructorHydrator extends AbstractHydrator
 {
-    private $parameters = [];
+    private array $parameters = [];
 
     public function __construct(string $typeName)
     {

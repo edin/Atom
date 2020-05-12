@@ -36,12 +36,14 @@ class RouteBuilder implements IRouteBuilder
     private function getRouteInfo(ReflectionMethod $method)
     {
         $comment = $method->getDocComment();
-        $result = preg_match('/@(Get|Post|Put|Patch|Delete|Head|Options)\(\"(.*)\"\)/', $comment, $matches);
-        if ($result) {
-            $info = new \stdClass;
-            $info->method = strtoupper($matches[1]);
-            $info->path = $matches[2];
-            return $info;
+        if ($comment !== false) {
+            $result = preg_match('/@(Get|Post|Put|Patch|Delete|Head|Options)\(\"(.*)\"\)/', $comment, $matches);
+            if ($result) {
+                $info = new \stdClass;
+                $info->method = strtoupper($matches[1]);
+                $info->path = $matches[2];
+                return $info;
+            }
         }
         return null;
     }

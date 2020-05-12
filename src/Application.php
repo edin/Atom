@@ -16,11 +16,11 @@ use RuntimeException;
 
 abstract class Application
 {
-    public static $app = null;
-    private $container = null;
-    private $plugins = [];
-    private $pluginInstances = [];
-    private $baseUrl = "";
+    public static ?Application $app = null;
+    private ?Container $container = null;
+    private array $plugins = [];
+    private array $pluginInstances = [];
+    private string $baseUrl = "";
 
     public function __construct()
     {

@@ -24,10 +24,10 @@ class Validator
     private const ValidateArray = 1;
     private const ValidateObject = 2;
 
-    private $rules = [];
-    private $lastAdded;
-    private $property;
-    private $validatorType = self::ValidateScalar;
+    private array  $rules = [];
+    private IRule  $lastAdded;
+    private string $property;
+    private int    $validatorType = self::ValidateScalar;
     /**
      *  @var Validation
      */

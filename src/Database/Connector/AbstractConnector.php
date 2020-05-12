@@ -9,13 +9,13 @@ use Atom\Database\Interfaces\IDatabaseConnector;
 
 abstract class AbstractConnector implements IDatabaseConnector
 {
-    protected $host;
-    protected $port;
-    protected $user;
-    protected $password;
-    protected $database;
-    protected $attributes;
-    protected $connection;
+    protected string $host;
+    protected ?int   $port;
+    protected string $user;
+    protected string $password;
+    protected string $database;
+    protected array  $attributes;
+    protected ?PDO $connection;
 
     public function __construct(string $host, string $user, string $password, string $database, ?int $port = null, array $attributes = [])
     {

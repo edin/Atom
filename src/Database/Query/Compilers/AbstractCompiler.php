@@ -28,9 +28,9 @@ use RuntimeException;
 
 abstract class AbstractCompiler implements IQueryCompiler
 {
-    private $textWriter;
-    private $reflection;
-    private $parameters = [];
+    private TextWriter $textWriter;
+    private ReflectionClass $reflection;
+    private array $parameters = [];
 
     abstract public function quoteTableName(string $name): string;
     abstract public function quoteColumnName(string $name): string;

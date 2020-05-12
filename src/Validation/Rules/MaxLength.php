@@ -6,8 +6,8 @@ namespace Atom\Validation\Rules;
 
 final class MaxLength extends AbstractRule
 {
-    protected $errorMessage = "Length of the field should be maximum {maxValue} chars";
-    protected $maxValue = 0;
+    protected string $errorMessage = "Length of the field should be maximum {maxValue} chars";
+    protected int $maxValue = 0;
 
     public function __construct(float $maxValue)
     {

@@ -11,7 +11,7 @@ class ViewInfoResultHandler implements IResultHandler
 {
     use ResultHandlerTrait;
 
-    public function isMatch($result): bool
+    public function isMatch(/*any*/$result): bool
     {
         return $result instanceof \Atom\Interfaces\IViewInfo;
     }

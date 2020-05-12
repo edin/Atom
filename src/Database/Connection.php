@@ -15,8 +15,8 @@ use Atom\Database\Interfaces\IDatabaseConnector;
 
 class Connection implements IConnection
 {
-    private $connector;
-    private $connection;
+    private IDatabaseConnector $connector;
+    private ?PDO $connection = null;
 
     public function __construct(IDatabaseConnector $connector)
     {

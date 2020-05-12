@@ -9,7 +9,7 @@ use Atom\Container\TypeInfo;
 
 final class TypeFactoryRegistry
 {
-    private $registry = [];
+    private array $registry = [];
 
     public function registerFactory($typeFactory, $typeMatcher): void
     {

@@ -10,9 +10,8 @@ use Atom\Database\Query\Ast\GroupExpression;
 
 final class Criteria
 {
-    private $params = [];
+    private array $params = [];
     private $expression = null;
-
 
     public static function parseWhere(string $where, $value)
     {

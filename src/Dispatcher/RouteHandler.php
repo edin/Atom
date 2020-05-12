@@ -13,8 +13,8 @@ use Psr\Http\Server\RequestHandlerInterface;
 
 class RouteHandler implements RequestHandlerInterface
 {
-    private $container;
-    private $route;
+    private Container $container;
+    private Route $route;
 
     public function __construct(Container $container, Route $route)
     {

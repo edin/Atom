@@ -9,8 +9,8 @@ use DateTimeInterface;
 
 final class Date extends AbstractRule
 {
-    protected $errorMessage = "Value is not in valid date format";
-    private $formats = [
+    protected string $errorMessage = "Value is not in valid date format";
+    private array $formats = [
         DateTime::ISO8601,
         'Y-m-d\TH:i:s.u\Z',
         'Y-m-d\TH:i:s+',

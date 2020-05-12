@@ -7,10 +7,9 @@ namespace Atom\Router;
 final class Route
 {
     use RouteTrait;
-    private $method;
-    /** @var ActionHandler */
-    private $actionHandler;
-    private $params = [];
+    private string $method;
+    private ActionHandler $actionHandler;
+    private array $params = [];
 
     public function __construct(Router $group, string  $method, string $path, ActionHandler $actionHandler)
     {

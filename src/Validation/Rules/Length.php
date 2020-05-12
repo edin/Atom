@@ -6,9 +6,9 @@ namespace Atom\Validation\Rules;
 
 final class Length extends AbstractRule
 {
-    protected $errorMessage = "Length should be between {minValue} and {maxValue} chars";
-    protected $minValue = 0;
-    protected $maxValue = 0;
+    protected string $errorMessage = "Length should be between {minValue} and {maxValue} chars";
+    protected int $minValue = 0;
+    protected int $maxValue = 0;
 
     public function __construct(int $minValue, int $maxValue)
     {

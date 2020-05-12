@@ -12,11 +12,8 @@ use Atom\Interfaces\IResultHandler;
 
 class ResultHandlerRegistry
 {
-    /** @var Container */
-    private $container;
-
-    /** @var array */
-    private $handlers = [];
+    private Container $container;
+    private array $handlers = [];
 
     public function __construct(Container $container, ?array $handlers = null)
     {

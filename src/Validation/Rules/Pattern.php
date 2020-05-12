@@ -6,8 +6,8 @@ namespace Atom\Validation\Rules;
 
 final class Pattern extends AbstractRule
 {
-    protected $errorMessage = "The field does not match to specified pattern";
-    private $pattern;
+    protected string $errorMessage = "The field does not match to specified pattern";
+    private string $pattern;
 
     public function __construct(string $pattern)
     {

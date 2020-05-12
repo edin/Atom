@@ -6,9 +6,13 @@ namespace Atom\Database;
 
 class Repository
 {
-    public function __construct(Database $database)
+    private Database $database;
+    private string $entityType;
+
+    public function __construct(Database $database, string $entityType)
     {
         $this->database = $database;
+        $this->entityType = $entityType;
     }
 
     public function findById($id)
