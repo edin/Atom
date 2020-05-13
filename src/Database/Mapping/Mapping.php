@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Atom\Database\Mapping;
 
+use Closure;
+use phpDocumentor\Reflection\Types\Callable_;
+
 final class Mapping
 {
     private array $mapping = [];
@@ -65,12 +68,16 @@ final class Mapping
         );
     }
 
-
     /**
      * @return FieldMapping[]
      */
-    public function getMapping(): array
+    public function getFieldMapping(): array
     {
         return $this->mapping;
+    }
+
+    public function filter(Closure $filter): array
+    {
+        return array_filter($this->mapping, $filter);
     }
 }

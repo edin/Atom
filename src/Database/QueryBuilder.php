@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Atom\Database;
 
+use Atom\Database\Mapping\FieldMapping;
 use Atom\Database\Mapping\Mapping;
 use Atom\Database\Query\DeleteQuery;
 use Atom\Database\Query\InsertQuery;
+use Atom\Database\Query\Parameter;
 use Atom\Database\Query\Query;
 use Atom\Database\Query\SelectQuery;
 use Atom\Database\Query\UpdateQuery;
@@ -27,77 +29,49 @@ class QueryBuilder
 
     public function getInsertQuery(): InsertQuery
     {
-        $query = Query::insert();
-        //TODO: Build insert query here
+        $fields = $this->mapping->filter(function (FieldMapping $field) {
+            return $field->isIncludedInInsert() && !$field->isPrimaryKey();
+        });
+
+        $query = Query::insert()->into($this->mapping->getTableName());
+
+        foreach ($fields as $field) {
+            $parameter = new Parameter($field->getProperyName(), null, null, Parameter::Input);
+            $query->setValue($field->getFieldName(), $parameter);
+        }
 
         return $query;
-        // $table = $this->quoteTableName($this->mapping->getTableName());
-        // $fields = $this->mapping->getMapping();
-
-        // $insertFields = array_filter($fields, function ($f) {
-        //     return $f->includeInInsert && !$f->primaryKey;
-        // });
-
-        // $commandParams = [];
-
-        // foreach ($insertFields as $propertyMapping) {
-        //     $fieldName = $this->quoteColumnName($propertyMapping->propertyName);
-        //     $paramName = $this->getParameterName($propertyMapping->propertyName);
-        //     $fieldList[] = $fieldName;
-        //     $valueList[] = $paramName;
-        //     $commandParams[$paramName] = $propertyMapping;
-        // }
-
-        // $fieldListStr  = implode(", ", $fieldList);
-        // $valuesListStr = implode(", ", $valueList);
-
-        // $sql = "INSERT INTO {$table} ($fieldListStr) VAlUES ($valuesListStr)";
-        // return new Command($sql, $commandParams);
     }
 
     public function getUpdateQuery(): UpdateQuery
     {
-        $query = Query::update();
+        $fields = $this->mapping->filter(function (FieldMapping $field) {
+            return $field->isIncluedInUpdate() && !$field->isPrimaryKey();
+        });
 
+        $query = Query::update()->table($this->mapping->getTableName());
+
+        foreach ($fields as $field) {
+            $parameter = new Parameter($field->getPropertyName(), null, null, Parameter::Input);
+            $query->setValue($field->getFieldName(), $parameter);
+        }
+
+        foreach ($this->mapping->getPrimaryKeys() as $field) {
+            $parameter = new Parameter($field->getPropertyName(), null, null, Parameter::Input);
+            $query->where($field->getFieldName(), $parameter);
+        }
+
+        $query->limit(1);
 
         return $query;
-
-        // $table = $this->quoteTableName($this->mapping->getTableName());
-        // $fields = $this->mapping->getMapping();
-
-        // $updateFields = array_filter($fields, function ($f) {
-        //     return $f->includedInUpdate && !$f->primaryKey;
-        // });
-
-        // $whereFields = array_filter($fields, function ($f) {
-        //     return $f->primaryKey;
-        // });
-
-        // $commandParams = [];
-
-        // foreach ($updateFields as $propertyMapping) {
-        //     $field = $this->quoteColumnName($propertyMapping->propertyName);
-        //     $parameter = $this->getParameterName($propertyMapping->propertyName);
-        //     $updateList[] = "$field = $parameter";
-        //     $commandParams[$parameter] = $field;
-        // }
-
-        // foreach ($whereFields as $propertyMapping) {
-        //     $field = $this->quoteColumnName($propertyMapping->propertyName);
-        //     $parameter = $this->getParameterName($propertyMapping->propertyName);
-        //     $whereList[] = "$field = $parameter";
-        //     $commandParams[$parameter] = $field;
-        // }
-
-        // $updateListStr  = implode(", ", $updateList);
-        // $whereListStr = implode(" AND ", $whereList);
-
-        // $sql = "UPDATE {$table} SET ($updateListStr) WHERE ($whereListStr) LIMIT 1";
-        // return new Command($sql, $commandParams);
     }
 
     public function getSelectByPkQuery(): SelectQuery
     {
+        $fields = $this->mapping->filter(function (FieldMapping $field) {
+            return $field->isIncludedInSelect();
+        });
+
         $query = Query::select();
 
         return $query;
@@ -134,6 +108,10 @@ class QueryBuilder
 
     public function getSelectQuery(): SelectQuery
     {
+        $fields = $this->mapping->filter(function (FieldMapping $field) {
+            return $field->isIncludedInSelect();
+        });
+
         $query = Query::select();
 
         return $query;
@@ -157,27 +135,13 @@ class QueryBuilder
 
     public function getDeleteQuery(): DeleteQuery
     {
-        $query = Query::delete();
+        $query = Query::delete()->from($this->mapping->getTableName());
+
+        foreach ($this->mapping->getPrimaryKeys() as $field) {
+            $parameter = new Parameter($field->getPropertyName(), null, null, Parameter::Input);
+            $query->where($field->getFieldName(), $parameter);
+        }
 
         return $query;
-        // $commandParams = [];
-        // $table = $this->quoteTableName($this->mapping->getTableName());
-        // $fields = $this->mapping->getMapping();
-
-        // $whereFields = array_filter($fields, function ($f) {
-        //     return $f->primaryKey;
-        // });
-
-        // foreach ($whereFields as $propertyMapping) {
-        //     $field = $this->quoteColumnName($propertyMapping->propertyName);
-        //     $parameter = $this->getParameterName($propertyMapping->propertyName);
-        //     $whereList[] = "$field = $parameter";
-        //     $commandParams[$parameter] = $propertyMapping;
-        // }
-
-        // $whereStr  = implode(" AND ", $whereList);
-
-        // $sql = "DELETE FROM {$table} WHERE {$whereStr} LIMIT 1";
-        // return new Command($sql, $commandParams);
     }
 }

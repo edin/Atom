@@ -24,6 +24,12 @@ final class InsertQuery extends Query
         return $this;
     }
 
+    public function setValue($field, $value): self
+    {
+        $this->values[$field] = $value;
+        return $this;
+    }
+
     public function where(Closure $criteriaBuilder): self
     {
         $criteria = new Criteria();
