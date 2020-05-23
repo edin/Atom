@@ -127,11 +127,11 @@ final class SelectQuery extends Query
 
     public function queryAll()
     {
-        return $this->getConnection()->compileQuery($this)->queryAll();
+        return $this->compileQuery()->queryAll();
     }
 
     public function queryScalar()
     {
-        return $this->getConnection()->compileQuery($this)->queryScalar();
+        return $this->compileQuery()->queryScalar();
     }
 }

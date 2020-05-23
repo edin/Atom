@@ -138,4 +138,9 @@ abstract class Query
         }
         return $this->connection;
     }
+
+    public function compileQuery(): Command
+    {
+        return $this->getConnection()->compileQuery($this);
+    }
 }

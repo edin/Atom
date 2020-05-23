@@ -66,7 +66,20 @@ class QueryBuilder
         return $query;
     }
 
-    public function getSelectByPrimaryKey(object $entity): SelectQuery
+    public function getSelectByPrimaryKey($id): SelectQuery
+    {
+        $query = $this->getSelectQuery();
+        //TODO: Check if there is only one primary key
+        foreach ($this->mapping->getPrimaryKeys() as $field) {
+            $propertyName = $field->getPropertyName();
+            $parameter = new Parameter($propertyName, $id, null, Parameter::Input);
+            $query->where($field->getFieldName(), $parameter);
+        }
+        $query->limit(1);
+        return $query;
+    }
+
+    public function getSelectByPrimaryKeys($keys): SelectQuery
     {
         $query = $this->getSelectQuery();
 
@@ -75,9 +88,7 @@ class QueryBuilder
             $parameter = new Parameter($propertyName, null, null, Parameter::Input);
             $query->where($field->getFieldName(), $parameter);
         }
-
         $query->limit(1);
-
         return $query;
     }
 
@@ -100,6 +111,20 @@ class QueryBuilder
     }
 
     public function getDeleteQuery(object $entity): DeleteQuery
+    {
+        $query = Query::delete()->from($this->mapping->getTableName());
+
+        foreach ($this->mapping->getPrimaryKeys() as $field) {
+            $propertyName = $field->getPropertyName();
+
+            $parameter = new Parameter($propertyName, null, null, Parameter::Input);
+            $query->where($field->getFieldName(), $parameter);
+        }
+
+        return $query;
+    }
+
+    public function getDeleteQueryByPk($key): DeleteQuery
     {
         $query = Query::delete()->from($this->mapping->getTableName());
 
