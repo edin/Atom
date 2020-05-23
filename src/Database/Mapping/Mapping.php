@@ -76,6 +76,9 @@ final class Mapping
         return $this->mapping;
     }
 
+    /**
+     * @return FieldMapping[]
+     */
     public function filter(Closure $filter): array
     {
         return array_filter($this->mapping, $filter);

@@ -36,7 +36,7 @@ class QueryBuilder
         $query = Query::insert()->into($this->mapping->getTableName());
 
         foreach ($fields as $field) {
-            $parameter = new Parameter($field->getProperyName(), null, null, Parameter::Input);
+            $parameter = new Parameter($field->getPropertyName(), null, null, Parameter::Input);
             $query->setValue($field->getFieldName(), $parameter);
         }
 
@@ -66,44 +66,19 @@ class QueryBuilder
         return $query;
     }
 
-    public function getSelectByPkQuery(): SelectQuery
+    public function getSelectByPrimaryKey(object $entity): SelectQuery
     {
-        $fields = $this->mapping->filter(function (FieldMapping $field) {
-            return $field->isIncludedInSelect();
-        });
+        $query = $this->getSelectQuery();
 
-        $query = Query::select();
+        foreach ($this->mapping->getPrimaryKeys() as $field) {
+            $propertyName = $field->getPropertyName();
+            $parameter = new Parameter($propertyName, null, null, Parameter::Input);
+            $query->where($field->getFieldName(), $parameter);
+        }
+
+        $query->limit(1);
 
         return $query;
-
-        // $table = $this->quoteTableName($this->mapping->getTableName());
-        // $fields = $this->mapping->getMapping();
-        // $commandParams = [];
-
-        // $selectFields = array_filter($fields, function ($f) {
-        //     return $f->includeInSelect || $f->primaryKey;
-        // });
-
-        // $whereFields = array_filter($fields, function ($f) {
-        //     return $f->primaryKey;
-        // });
-
-        // foreach ($selectFields as $field) {
-        //     $fieldList[] = $this->quoteColumnName($field->propertyName);
-        // }
-
-        // foreach ($whereFields as $propertyMapping) {
-        //     $field = $this->quoteColumnName($propertyMapping->propertyName);
-        //     $parameter = $this->getParameterName($propertyMapping->propertyName);
-        //     $whereList[] = "$field = $parameter";
-        //     $commandParams[$parameter] = $propertyMapping;
-        // }
-
-        // $fieldListStr  = implode(", ", $fieldList);
-        // $whereStr  = implode(" AND ", $whereList);
-
-        // $sql = "SELECT $fieldListStr FROM {$table} WHERE {$whereStr} LIMIT 1";
-        // return new Command($sql, $commandParams);
     }
 
     public function getSelectQuery(): SelectQuery
@@ -112,33 +87,26 @@ class QueryBuilder
             return $field->isIncludedInSelect();
         });
 
-        $query = Query::select();
+        $columns = [];
+
+        foreach ($fields as $field) {
+            $columns[] = $field->getFieldName();
+        }
+
+        $query = Query::select($this->mapping->getTableName());
+        $query->columns($columns);
 
         return $query;
-
-        // $table = $this->quoteTableName($this->mapping->getTableName());
-        // $fields = $this->mapping->getMapping();
-
-        // $selectFields = array_filter($fields, function ($f) {
-        //     return $f->includeInSelect || $f->primaryKey;
-        // });
-
-        // foreach ($selectFields as $propertyMapping) {
-        //     $fieldList[] = $this->quoteColumnName($propertyMapping->propertyName);
-        // }
-
-        // $fieldListStr  = implode(", ", $fieldList);
-
-        // $sql = "SELECT $fieldListStr FROM {$table} LIMIT 1000";
-        // return new Command($sql, []);
     }
 
-    public function getDeleteQuery(): DeleteQuery
+    public function getDeleteQuery(object $entity): DeleteQuery
     {
         $query = Query::delete()->from($this->mapping->getTableName());
 
         foreach ($this->mapping->getPrimaryKeys() as $field) {
-            $parameter = new Parameter($field->getPropertyName(), null, null, Parameter::Input);
+            $propertyName = $field->getPropertyName();
+
+            $parameter = new Parameter($propertyName, null, null, Parameter::Input);
             $query->where($field->getFieldName(), $parameter);
         }
 
