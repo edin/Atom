@@ -12,6 +12,8 @@ use Atom\Database\Query\Parameter;
 use Atom\Database\Query\Query;
 use Atom\Database\Query\SelectQuery;
 use Atom\Database\Query\UpdateQuery;
+use ReflectionClass;
+use RuntimeException;
 
 class QueryBuilder
 {
@@ -66,11 +68,22 @@ class QueryBuilder
         return $query;
     }
 
+    private function ensureSinglePrimaryKey($primaryKeys)
+    {
+        if (count($primaryKeys) == 0) {
+            throw new RuntimeException("Primary key is not defined on entity {$this->entityType}.");
+        } elseif (count($primaryKeys) > 1) {
+            throw new RuntimeException("Multiple primary keys are not supported.");
+        }
+    }
+
     public function getSelectByPrimaryKey($id): SelectQuery
     {
         $query = $this->getSelectQuery();
-        //TODO: Check if there is only one primary key
-        foreach ($this->mapping->getPrimaryKeys() as $field) {
+        $primaryKeys = $this->mapping->getPrimaryKeys();
+        $this->ensureSinglePrimaryKey($primaryKeys);
+
+        foreach ($primaryKeys as $field) {
             $propertyName = $field->getPropertyName();
             $parameter = new Parameter($propertyName, $id, null, Parameter::Input);
             $query->where($field->getFieldName(), $parameter);
@@ -79,15 +92,18 @@ class QueryBuilder
         return $query;
     }
 
-    public function getSelectByPrimaryKeys($keys): SelectQuery
+    public function getSelectByPrimaryKeys(array $keys): SelectQuery
     {
         $query = $this->getSelectQuery();
 
         foreach ($this->mapping->getPrimaryKeys() as $field) {
             $propertyName = $field->getPropertyName();
-            $parameter = new Parameter($propertyName, null, null, Parameter::Input);
-            $query->where($field->getFieldName(), $parameter);
+            $fieldName = $field->getFieldName();
+            $value = $keys[$propertyName] ?? null;
+            $parameter = new Parameter($fieldName, $value, null, Parameter::Input);
+            $query->where($fieldName, $parameter);
         }
+
         $query->limit(1);
         return $query;
     }
@@ -113,12 +129,16 @@ class QueryBuilder
     public function getDeleteQuery(object $entity): DeleteQuery
     {
         $query = Query::delete()->from($this->mapping->getTableName());
+        $reflection = new ReflectionClass($entity);
 
         foreach ($this->mapping->getPrimaryKeys() as $field) {
             $propertyName = $field->getPropertyName();
-
-            $parameter = new Parameter($propertyName, null, null, Parameter::Input);
-            $query->where($field->getFieldName(), $parameter);
+            $fieldName = $field->getFieldName();
+            $property = $reflection->getProperty($propertyName);
+            $property->setAccessible(true);
+            $value  = $property->getValue($entity);
+            $parameter = new Parameter($fieldName, $value, null, Parameter::Input);
+            $query->where($fieldName, $parameter);
         }
 
         return $query;
@@ -127,12 +147,13 @@ class QueryBuilder
     public function getDeleteQueryByPk($key): DeleteQuery
     {
         $query = Query::delete()->from($this->mapping->getTableName());
+        $primaryKeys = $this->mapping->getPrimaryKeys();
+        $this->ensureSinglePrimaryKey($primaryKeys);
 
-        foreach ($this->mapping->getPrimaryKeys() as $field) {
-            $propertyName = $field->getPropertyName();
-
-            $parameter = new Parameter($propertyName, null, null, Parameter::Input);
-            $query->where($field->getFieldName(), $parameter);
+        foreach ($primaryKeys as $field) {
+            $fieldName = $field->getFieldName();
+            $parameter = new Parameter($fieldName, $key, null, Parameter::Input);
+            $query->where($fieldName, $parameter);
         }
 
         return $query;

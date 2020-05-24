@@ -8,9 +8,9 @@ use Atom\Database\Interfaces\IConnection;
 
 final class Command
 {
-    private $connection;
-    private $parameters = [];
-    private $sql;
+    private ?IConnection $connection;
+    private array $parameters = [];
+    private string $sql = "";
 
     private function add(Parameter $parameter): void
     {
@@ -76,6 +76,7 @@ final class Command
 
     public function queryAll(): array
     {
-        return $this->connection->queryAll($this->sql, $this->parameters);
+        $result =  $this->connection->queryAll($this->sql, $this->parameters);
+        return $result;
     }
 }

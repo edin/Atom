@@ -13,13 +13,13 @@ final class FieldMapping
 {
     private bool $primaryKey = false;
     private string $propertyName;
-    private string $fieldName = "";
+    private ?string $fieldName = null;
     private string $type = "";
     private ?int $size = null;
     private ?int $precision = null;
     private bool $nullable = false;
-    private /* string | ITypeConverter | null */ $converter = null;
-    private /* string | IValueProvider | null */ $valueProvider = null;
+    /* string | ITypeConverter | null */ private $converter = null;
+    /* string | IValueProvider | null */ private $valueProvider = null;
     private ?ITypeConverter $converterInstance = null;
     private ?IValueProvider $valueProviderInstance = null;
 

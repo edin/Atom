@@ -4,6 +4,6 @@ namespace Atom\Hydrator;
 
 interface IHydrator
 {
-    function hydrate(array $data);
-    function extract(): array;
+    public function hydrate(array $data);
+    public function extract(object $instance): array;
 }

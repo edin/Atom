@@ -7,6 +7,7 @@ namespace Atom\Database\Query;
 use Atom\Application;
 use Atom\Database\Database;
 use Atom\Database\Interfaces\IConnection;
+use Atom\Hydrator\IHydrator;
 
 abstract class Query
 {
@@ -26,6 +27,7 @@ abstract class Query
     protected array $groupBy = [];
     protected $values = null;
     protected ?IConnection $connection = null;
+    protected ?IHydrator $hydrator = null;
 
     public function getTable()
     {
@@ -137,6 +139,16 @@ abstract class Query
             return Application::$app->getContainer()->get(Database::class)->getConnection($this);
         }
         return $this->connection;
+    }
+
+    public function setHydrator(IHydrator $hydrator): void
+    {
+        $this->hydrator = $hydrator;
+    }
+
+    public function getHydrator(): ?IHydrator
+    {
+        return $this->hydrator;
     }
 
     public function compileQuery(): Command
