@@ -24,9 +24,18 @@ class RequestTypeFactory
 
         $reflection = new \ReflectionClass($instance);
         $params = $this->request->getQueryParams();
+        $body   = $this->request->getBody()->getContents();
+        $jsonBody = json_decode($body, true);
+
+        if (is_array($jsonBody)) {
+            $params = $jsonBody;
+        }
 
         foreach ($reflection->getProperties() as $prop) {
-            $instance->{$prop->name} = $params[$prop->name] ?? "";
+            if (isset($params[$prop->name])) {
+                $value = $params[$prop->name];
+                $prop->setValue($instance, $value);
+            }
         }
         return $instance;
     }

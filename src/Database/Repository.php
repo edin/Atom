@@ -25,7 +25,7 @@ class Repository
         $this->entityType = $entityType;
         $this->mapping = $this->getEntityMapping();
         $this->queryBuilder = new QueryBuilder($this->mapping);
-        $this->hydrator = new MappingHydrator($entityType,  $this->mapping);
+        $this->hydrator = new MappingHydrator($entityType, $this->mapping);
     }
 
     protected function getEntityMapping()
@@ -95,6 +95,7 @@ class Repository
         } else {
             $this->insert($entity);
         }
+        return $entity;
     }
 
     public function insert($entity)

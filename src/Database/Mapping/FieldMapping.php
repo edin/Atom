@@ -244,6 +244,11 @@ final class FieldMapping
         $property = $classType->getProperty($this->propertyName);
         $property->setAccessible(true);
 
+        $valueProvider = $this->getValueProvider();
+        if ($valueProvider !== null) {
+            $property->setValue($instance, $valueProvider->getValue());
+        }
+
         try {
             $value = $property->getValue($instance);
         } catch (Error $err) {
