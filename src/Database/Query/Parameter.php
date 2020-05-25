@@ -63,6 +63,9 @@ final class Parameter
 
     public function getName(): string
     {
+        if ($this->name[0] != ":") {
+            return ":" . $this->name;
+        }
         return $this->name;
     }
 

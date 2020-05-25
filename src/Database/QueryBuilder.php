@@ -84,8 +84,7 @@ class QueryBuilder
         $this->ensureSinglePrimaryKey($primaryKeys);
 
         foreach ($primaryKeys as $field) {
-            $propertyName = $field->getPropertyName();
-            $parameter = new Parameter($propertyName, $id, null, Parameter::Input);
+            $parameter = new Parameter($field->getFieldName(), $id, null, Parameter::Input);
             $query->where($field->getFieldName(), $parameter);
         }
         $query->limit(1);

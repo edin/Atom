@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Atom\Database;
 
 use Atom\Database\Mapping\Mapping;
+use Atom\Database\Mapping\MappingHydrator;
 use Atom\Database\Query\SelectQuery;
 use Atom\Hydrator\IHydrator;
-use Atom\Hydrator\PropertyHydrator;
 use InvalidArgumentException;
 use ReflectionClass;
 
@@ -17,19 +17,26 @@ class Repository
     private string $entityType;
     private QueryBuilder $queryBuilder;
     private IHydrator $hydrator;
+    private Mapping $mapping;
 
     public function __construct(Database $database, string $entityType)
     {
         $this->database = $database;
         $this->entityType = $entityType;
-        $this->queryBuilder = new QueryBuilder($this->getMapping());
-        $this->hydrator = new PropertyHydrator($entityType);
+        $this->mapping = $this->getEntityMapping();
+        $this->queryBuilder = new QueryBuilder($this->mapping);
+        $this->hydrator = new MappingHydrator($entityType,  $this->mapping);
+    }
+
+    protected function getEntityMapping()
+    {
+        $entity = new $this->entityType;
+        return $entity->getMapping();
     }
 
     public function getMapping(): Mapping
     {
-        $entity = new $this->entityType;
-        return $entity->getMapping();
+        return $this->mapping;
     }
 
     public function getHydrator(): IHydrator
@@ -45,14 +52,9 @@ class Repository
         return $query;
     }
 
-    public function findAll()
+    public function findAll(): EntityCollection
     {
-        $items =  $this->query()->queryAll();
-        $result = [];
-        foreach ($items as $item) {
-            $result[] = $this->hydrator->hydrate($item);
-        }
-        return $result;
+        return $this->query()->findAll();
     }
 
     public function findById($id)
@@ -60,6 +62,7 @@ class Repository
         $query = $this->queryBuilder->getSelectByPrimaryKey($id);
         $query->setConnection($this->database->getReadConnection());
         $query->setHydrator($this->getHydrator());
+        return $query->findAll()->first();
     }
 
     public function findByAttributes(array $attributes)
@@ -86,8 +89,12 @@ class Repository
     public function save($entity)
     {
         $this->ensureEntityType($entity);
-
-        //TODO: Call insert or save
+        $primaryKey = $this->mapping->getPrimaryKeyValueOrNull($entity);
+        if ($primaryKey !== null) {
+            $this->update($entity);
+        } else {
+            $this->insert($entity);
+        }
     }
 
     public function insert($entity)
@@ -100,7 +107,11 @@ class Repository
         $query = $this->queryBuilder->getInsertQuery($entity);
         $query->setConnection($this->database->getWriteConnection());
         $query->setHydrator($this->getHydrator());
-        $query->execute();
+        $command = $query->compileQuery();
+
+        $command->execute();
+        $id = $command->getLastInsertId();
+        $this->mapping->setPrimaryKeyValueOrNull($entity, $id);
     }
 
     public function update($entity)

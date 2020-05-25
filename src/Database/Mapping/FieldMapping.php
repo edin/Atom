@@ -18,8 +18,10 @@ final class FieldMapping
     private ?int $size = null;
     private ?int $precision = null;
     private bool $nullable = false;
-    /* string | ITypeConverter | null */ private $converter = null;
-    /* string | IValueProvider | null */ private $valueProvider = null;
+    /* string | ITypeConverter | null */
+    private $converter = null;
+    /* string | IValueProvider | null */
+    private $valueProvider = null;
     private ?ITypeConverter $converterInstance = null;
     private ?IValueProvider $valueProviderInstance = null;
 
@@ -116,6 +118,12 @@ final class FieldMapping
     public function excludeInUpdate(): self
     {
         $this->includeInUpdate = false;
+        return $this;
+    }
+
+    public function field(string $name): self
+    {
+        $this->fieldName = $name;
         return $this;
     }
 

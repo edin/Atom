@@ -20,12 +20,14 @@ final class MappingHydrator extends AbstractHydrator
     {
         $instance = $this->reflection->newInstanceArgs([]);
 
-        foreach ($this->properties as $prop) {
-            $name = $prop->getName();
-            if (isset($data[$name])) {
-                $prop->setValue($instance, $data[$name]);
+        foreach ($this->mapping->getFieldMapping() as $fieldMapping) {
+            $fieldName = $fieldMapping->getFieldName();
+            if (isset($data[$fieldName])) {
+                $value = $data[$fieldName];
+                $fieldMapping->setPropertyValue($this->reflection, $instance, $value);
             }
         }
+
         return $instance;
     }
 }

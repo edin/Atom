@@ -125,6 +125,11 @@ final class SelectQuery extends Query
         return $this;
     }
 
+    public function findAll()
+    {
+        return $this->compileQuery()->findAll();
+    }
+
     public function queryAll()
     {
         return $this->compileQuery()->queryAll();

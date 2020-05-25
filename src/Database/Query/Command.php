@@ -4,13 +4,16 @@ declare(strict_types=1);
 
 namespace Atom\Database\Query;
 
+use Atom\Database\EntityCollection;
 use Atom\Database\Interfaces\IConnection;
+use Atom\Hydrator\IHydrator;
 
 final class Command
 {
     private ?IConnection $connection;
     private array $parameters = [];
     private string $sql = "";
+    private ?IHydrator $hydrator = null;
 
     private function add(Parameter $parameter): void
     {
@@ -64,6 +67,16 @@ final class Command
         return $this->connection;
     }
 
+    public function setHydrator(?IHydrator $hydrator): void
+    {
+        $this->hydrator = $hydrator;
+    }
+
+    public function getLastInsertId()
+    {
+        return $this->connection->lastInsertId();
+    }
+
     public function execute(): bool
     {
         return $this->connection->execute($this->sql, $this->parameters);
@@ -76,7 +89,19 @@ final class Command
 
     public function queryAll(): array
     {
-        $result =  $this->connection->queryAll($this->sql, $this->parameters);
+        $result = $this->connection->queryAll($this->sql, $this->parameters);
         return $result;
+    }
+
+    public function findAll(): EntityCollection
+    {
+        $items =  $this->queryAll();
+        $result = [];
+
+        foreach ($items as $item) {
+            $result[] = $this->hydrator->hydrate($item);
+        }
+
+        return EntityCollection::from($result);
     }
 }

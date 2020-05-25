@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Atom\Database\Mapping;
 
 use Closure;
-use phpDocumentor\Reflection\Types\Callable_;
+use ReflectionClass;
 
 final class Mapping
 {
@@ -54,6 +54,26 @@ final class Mapping
             return $keys[0];
         }
         return null;
+    }
+
+    public function getPrimaryKeyValueOrNull(object $entity)
+    {
+        $keys = $this->getPrimaryKeys();
+        if (count($keys) === 1) {
+            $primaryKey = $keys[0];
+            $reflection = new ReflectionClass($entity);
+            return $primaryKey->getPropertyValue($reflection, $entity);
+        }
+        return null;
+    }
+    public function setPrimaryKeyValueOrNull(object $entity, $value)
+    {
+        $keys = $this->getPrimaryKeys();
+        if (count($keys) === 1) {
+            $primaryKey = $keys[0];
+            $reflection = new ReflectionClass($entity);
+            $primaryKey->setPropertyValue($reflection, $entity, $value);
+        }
     }
 
     /**

@@ -13,4 +13,5 @@ interface IConnection
     public function execute(string $sql, array $parameters);
     public function queryAll(string $sql, array $parameters);
     public function queryScalar(string $sql, array $parameters);
+    public function lastInsertId();
 }

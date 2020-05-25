@@ -446,7 +446,7 @@ abstract class AbstractCompiler implements IQueryCompiler
     {
         $expression = $node->getExpression();
 
-        if ($expression instanceof SelectQuery) {
+        if (is_object($expression)) {
             $this->visitNode($expression);
         } else {
             $this->emit($this->quoteValue($expression));

@@ -37,6 +37,11 @@ class Connection implements IConnection
         $this->connector->close();
     }
 
+    public function lastInsertId()
+    {
+        return $this->connection->lastInsertId();
+    }
+
     private function prepare(string $sql, array $params): PDOStatement
     {
         $command = $this->getConnection()->prepare($sql);
@@ -62,6 +67,7 @@ class Connection implements IConnection
         $compiler = $this->connector->getQueryCompiler();
         $command = $compiler->compileQuery($query);
         $command->setConnection($this);
+        $command->setHydrator($query->getHydrator());
         return $command;
     }
 
