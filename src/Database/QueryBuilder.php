@@ -29,7 +29,7 @@ class QueryBuilder
         return $this->mapping;
     }
 
-    public function getInsertQuery(): InsertQuery
+    public function getInsertQuery(object $entity): InsertQuery
     {
         $fields = $this->mapping->filter(function (FieldMapping $field) {
             return $field->isIncludedInInsert() && !$field->isPrimaryKey();
@@ -37,15 +37,20 @@ class QueryBuilder
 
         $query = Query::insert()->into($this->mapping->getTableName());
 
+        $reflection = new ReflectionClass($entity);
+
         foreach ($fields as $field) {
-            $parameter = new Parameter($field->getPropertyName(), null, null, Parameter::Input);
+
+            $value = $field->getPropertyValue($reflection, $entity);
+
+            $parameter = new Parameter($field->getFieldName(), $value, null, Parameter::Input);
             $query->setValue($field->getFieldName(), $parameter);
         }
 
         return $query;
     }
 
-    public function getUpdateQuery(): UpdateQuery
+    public function getUpdateQuery(object $entity): UpdateQuery
     {
         $fields = $this->mapping->filter(function (FieldMapping $field) {
             return $field->isIncluedInUpdate() && !$field->isPrimaryKey();
@@ -53,13 +58,17 @@ class QueryBuilder
 
         $query = Query::update()->table($this->mapping->getTableName());
 
+        $reflection = new ReflectionClass($entity);
+
         foreach ($fields as $field) {
-            $parameter = new Parameter($field->getPropertyName(), null, null, Parameter::Input);
+            $value = $field->getPropertyValue($reflection, $entity);
+            $parameter = new Parameter($field->getFieldName(), $value, null, Parameter::Input);
             $query->setValue($field->getFieldName(), $parameter);
         }
 
         foreach ($this->mapping->getPrimaryKeys() as $field) {
-            $parameter = new Parameter($field->getPropertyName(), null, null, Parameter::Input);
+            $value = $field->getPropertyValue($reflection, $entity);
+            $parameter = new Parameter($field->getFieldName(), $value, null, Parameter::Input);
             $query->where($field->getFieldName(), $parameter);
         }
 

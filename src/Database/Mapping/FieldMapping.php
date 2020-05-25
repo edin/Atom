@@ -6,6 +6,7 @@ namespace Atom\Database\Mapping;
 
 use Atom\Database\Interfaces\ITypeConverter;
 use Atom\Database\Interfaces\IValueProvider;
+use Error;
 use InvalidArgumentException;
 use ReflectionClass;
 
@@ -242,7 +243,12 @@ final class FieldMapping
     {
         $property = $classType->getProperty($this->propertyName);
         $property->setAccessible(true);
-        $value = $property->getValue($instance);
+
+        try {
+            $value = $property->getValue($instance);
+        } catch (Error $err) {
+            $value = null;
+        }
 
         $converter = $this->getConverter();
         if ($converter !== null) {

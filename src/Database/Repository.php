@@ -81,7 +81,7 @@ class Repository
             throw new InvalidArgumentException("Parameter entity must an object");
         }
         $reflection = new ReflectionClass($entity);
-        if ($reflection->getName() == $this->entityType) {
+        if ($reflection->getName() != $this->entityType) {
             throw new InvalidArgumentException("Invalid entity type, expected type is {$this->entityType}.");
         }
     }
@@ -90,7 +90,7 @@ class Repository
     {
         $this->ensureEntityType($entity);
         $primaryKey = $this->mapping->getPrimaryKeyValueOrNull($entity);
-        if ($primaryKey !== null) {
+        if (!empty($primaryKey)) {
             $this->update($entity);
         } else {
             $this->insert($entity);
