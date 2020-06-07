@@ -14,18 +14,17 @@ use ReflectionClass;
 class Repository
 {
     private Database $database;
-    private string $entityType;
+    protected string $entityType;
     private QueryBuilder $queryBuilder;
     private IHydrator $hydrator;
     private Mapping $mapping;
 
-    public function __construct(Database $database, string $entityType)
+    public function __construct(Database $database)
     {
         $this->database = $database;
-        $this->entityType = $entityType;
         $this->mapping = $this->getEntityMapping();
         $this->queryBuilder = new QueryBuilder($this->mapping);
-        $this->hydrator = new MappingHydrator($entityType, $this->mapping);
+        $this->hydrator = new MappingHydrator($this->entityType, $this->mapping);
     }
 
     protected function getEntityMapping()
