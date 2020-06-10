@@ -61,8 +61,14 @@ trait RouteTrait
     {
         $prefixPath = ($this->group) ? $this->group->getPath() : "";
         $prefixPath = rtrim($prefixPath, " /");
-        $routePath  = "/" . ltrim($this->path, " /");
+        $routePath  = ltrim($this->path, " /");
+
+        if ($routePath != "") {
+            $routePath  = "/" . $routePath;
+        }
+
         $result = $prefixPath . $routePath;
+
         return $result;
     }
 
