@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Atom\Dispatcher;
 
 use Atom\Container\Container;
+use Exception;
 use Psr\Http\Message\ServerRequestInterface;
+use TypeError;
 
 class RequestTypeFactory
 {
@@ -24,17 +26,22 @@ class RequestTypeFactory
 
         $reflection = new \ReflectionClass($instance);
         $params = $this->request->getQueryParams();
-        $body   = $this->request->getBody()->getContents();
-        $jsonBody = json_decode($body, true);
+        $body = $this->request->getParsedBody();
+
+        $content  = $this->request->getBody()->getContents();
+        $jsonBody = json_decode($content, true);
 
         if (is_array($jsonBody)) {
-            $params = $jsonBody;
+            $body = $jsonBody;
         }
 
         foreach ($reflection->getProperties() as $prop) {
-            if (isset($params[$prop->name])) {
-                $value = $params[$prop->name];
-                $prop->setValue($instance, $value);
+            try {
+                $value = $body[$prop->name] ?? $params[$prop->name] ?? null;
+                if ($value !== null) {
+                    $prop->setValue($instance, $value);
+                }
+            } catch (Exception | TypeError $e) {
             }
         }
         return $instance;

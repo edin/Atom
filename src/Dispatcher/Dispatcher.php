@@ -30,10 +30,8 @@ final class Dispatcher implements RequestHandlerInterface
         $dispatcher = \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $collector) {
             $routes = $this->router->getAllRoutes();
             foreach ($routes as $route) {
-                //echo $route->getMethod(), $route->getFullPath(), "<br/>";
                 $collector->addRoute($route->getMethod(), $route->getFullPath(), $route);
             }
-            //exit();
         });
         return $dispatcher;
     }

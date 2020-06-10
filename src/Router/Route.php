@@ -7,11 +7,11 @@ namespace Atom\Router;
 final class Route
 {
     use RouteTrait;
-    private string $method;
+    private $method;
     private ActionHandler $actionHandler;
     private array $params = [];
 
-    public function __construct(Router $group, string  $method, string $path, ActionHandler $actionHandler)
+    public function __construct(Router $group, $method, string $path, ActionHandler $actionHandler)
     {
         $this->group = $group;
         $this->method = $method;
@@ -41,7 +41,7 @@ final class Route
         return $this;
     }
 
-    public function getMethod(): string
+    public function getMethod()
     {
         return $this->method;
     }

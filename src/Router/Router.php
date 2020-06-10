@@ -86,7 +86,7 @@ class Router
         return $this->routes;
     }
 
-    public function addRoute(string $method, string $path, $controller, $action = null): Route
+    public function addRoute($method, string $path, $controller, $action = null): Route
     {
         if ($action === null && $this->controllerType !== null && is_string($controller)) {
             $action = $controller;
@@ -96,6 +96,11 @@ class Router
         $route = new Route($this, $method, $path, ActionHandler::from($controller, $action));
         $this->routes[] = $route;
         return $route;
+    }
+
+    public function getOrPost(string $path, $controller, $action = null): Route
+    {
+        return $this->addRoute(["GET", "POST"], $path, $controller, $action);
     }
 
     public function get(string $path, $controller, $action = null): Route
