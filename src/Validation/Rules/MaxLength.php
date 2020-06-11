@@ -9,7 +9,7 @@ final class MaxLength extends AbstractRule
     protected string $errorMessage = "Length of the field should be maximum {maxValue} chars";
     protected int $maxValue = 0;
 
-    public function __construct(float $maxValue)
+    public function __construct(int $maxValue)
     {
         $this->maxValue = $maxValue;
     }
