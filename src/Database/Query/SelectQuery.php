@@ -139,4 +139,11 @@ final class SelectQuery extends Query
     {
         return $this->compileQuery()->queryScalar();
     }
+
+    public function getRowCount(): int
+    {
+        $count = (int) $this->count()->queryScalar();
+        $this->count = null;
+        return $count;
+    }
 }

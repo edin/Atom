@@ -76,7 +76,9 @@ final class Dispatcher implements RequestHandlerInterface
 
                 if ($route instanceof Route) {
 
-                    $route->setParams($routeParams);
+                    $route->setRouteParams($routeParams);
+                    $route->setQueryParams($request->getQueryParams());
+
                     $this->container->bind(get_class($route))->toInstance($route);
 
                     $action = new Action($this->container, $route);

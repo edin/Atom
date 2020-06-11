@@ -91,6 +91,7 @@ class Connection implements IConnection
     public function queryScalar(string $sql, array $params = [])
     {
         $command = $this->prepare($sql, $params);
+        $command->execute();
         $result = $command->fetchColumn();
         $command->closeCursor();
         return $result;
