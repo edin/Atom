@@ -69,6 +69,10 @@ trait RouteTrait
 
         $result = $prefixPath . $routePath;
 
+        if ($result == "") {
+            $result = "/";
+        }
+
         return $result;
     }
 
