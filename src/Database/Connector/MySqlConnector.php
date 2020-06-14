@@ -12,7 +12,7 @@ class MySqlConnector extends AbstractConnector
 {
     public function open(): PDO
     {
-        $dsn = "mysql:dbname={$this->database};host={$this->host}";
+        $dsn = "mysql:dbname={$this->database};host={$this->host};charset=utf8";
         $this->connection = new PDO($dsn, $this->user, $this->password);
         $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this->connection->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);

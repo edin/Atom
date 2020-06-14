@@ -7,11 +7,12 @@ namespace Atom\Router;
 final class Route
 {
     use RouteTrait;
-    private string $method;
+    private $method;
     private ActionHandler $actionHandler;
-    private array $params = [];
+    private array $routeParams = [];
+    private array $queryParams = [];
 
-    public function __construct(Router $group, string  $method, string $path, ActionHandler $actionHandler)
+    public function __construct(Router $group, $method, string $path, ActionHandler $actionHandler)
     {
         $this->group = $group;
         $this->method = $method;
@@ -19,14 +20,29 @@ final class Route
         $this->actionHandler = $actionHandler;
     }
 
-    public function setParams(array $params): void
+    public function setRouteParams(array $params): void
     {
-        $this->params = $params;
+        $this->routeParams = $params;
+    }
+
+    public function setQueryParams(array $params): void
+    {
+        $this->queryParams = $params;
+    }
+
+    public function getQueryParams(): array
+    {
+        return $this->queryParams;
     }
 
     public function getParams(): array
     {
-        return $this->params;
+        return array_merge($this->queryParams, $this->routeParams);
+    }
+
+    public function getRouteParams(): array
+    {
+        return $this->routeParams;
     }
 
     public function toController(string $controllerType, string $actionName): self
@@ -41,7 +57,7 @@ final class Route
         return $this;
     }
 
-    public function getMethod(): string
+    public function getMethod()
     {
         return $this->method;
     }

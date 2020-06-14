@@ -9,6 +9,7 @@ use Atom\Router\Router;
 use Atom\Container\Container;
 use Atom\Dispatcher\RouteHandler;
 use Atom\Dispatcher\RequestHandler;
+use Atom\Router\Action;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\RequestHandlerInterface;
@@ -79,12 +80,17 @@ final class Dispatcher implements RequestHandlerInterface
                 $routeParams = $routeInfo[2];
 
                 if ($route instanceof Route) {
-                    $route->setParams($routeParams);
+
+                    $route->setRouteParams($routeParams);
+                    $route->setQueryParams($request->getQueryParams());
 
                     $this->container->bind(get_class($route))->toInstance($route);
 
+                    $action = new Action($this->container, $route);
+                    $this->container->bind(get_class($action))->toInstance($action);
+
                     $middlewares = $this->resolveMiddlewares($route);
-                    $queueHandler = new RequestHandler(new RouteHandler($this->container, $route, $routeParams));
+                    $queueHandler = new RequestHandler(new RouteHandler($this->container, $action));
                     $queueHandler->addMiddlewares($middlewares);
                     return $queueHandler->handle($request);
                 }

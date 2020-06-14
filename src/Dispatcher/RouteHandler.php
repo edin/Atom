@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Atom\Dispatcher;
 
-use Atom\Router\Route;
 use Atom\Router\Action;
 use Atom\Container\Container;
 use Psr\Http\Message\ResponseInterface;
@@ -14,20 +13,16 @@ use Psr\Http\Server\RequestHandlerInterface;
 class RouteHandler implements RequestHandlerInterface
 {
     private Container $container;
-    private Route $route;
 
-    public function __construct(Container $container, Route $route)
+    public function __construct(Container $container, Action $action)
     {
         $this->container = $container;
-        $this->route = $route;
+        $this->action = $action;
     }
 
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $action = new Action($this->container, $this->route);
-
-        $result = $action->execute([]);
-
+        $result = $this->action->execute([]);
         return $this->container->ResultHandler->process($result);
     }
 }
