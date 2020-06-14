@@ -52,6 +52,11 @@ final class Dispatcher implements RequestHandlerInterface
 
         $size = strlen($scriptDir);
         $uriPath = substr($uriPath, $size);
+
+        if ($uriPath === false) {
+            $uriPath = "/";
+        }
+
         $uriPath = rawurldecode($uriPath);
         if ($uriPath == "") {
             $uriPath = "/";
