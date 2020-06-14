@@ -74,16 +74,6 @@ class Repository
         $query->setHydrator($this->getHydrator());
 
         return $query->findAll();
-
-    public function findOneByAttributes(array $attributes)
-    {
-        $query = $this->queryBuilder->getSelectQuery();
-        foreach ($attributes as $key => $value) {
-            $query->where($key, $value);
-        }
-        $query->setConnection($this->database->getReadConnection());
-        $query->setHydrator($this->getHydrator());
-        return $query->limit(1)->findAll()->first();
     }
 
     public function findOneByAttributes(array $attributes)
@@ -98,7 +88,6 @@ class Repository
 
         return $query->findAll()->first();
     }
-
 
     private function ensureEntityType($entity)
     {
