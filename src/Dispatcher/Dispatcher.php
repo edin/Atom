@@ -36,26 +36,22 @@ final class Dispatcher implements RequestHandlerInterface
         return $dispatcher;
     }
 
-    public function handle(ServerRequestInterface $request): ResponseInterface
+    private function getUriPath(ServerRequestInterface $request)
     {
-        $method = $request->getMethod();
         $uri = $request->getUri();
         $serverParams = $request->getServerParams();
 
         $scriptName = $serverParams['SCRIPT_NAME'] ?? "";
         $scriptDir = pathinfo($scriptName, \PATHINFO_DIRNAME);
 
-        $uriPath = $uri->getPath();
+        $path1 = explode("/", $scriptDir);
+        $path2 = explode("/", $uri->getPath());
+        $diff = array_diff_assoc($path2, $path1);
+
+        $uriPath = implode("/", $diff);
 
         if (false !== $pos = strpos($uriPath, '?')) {
             $uriPath = substr($uriPath, 0, $pos);
-        }
-
-        $size = strlen($scriptDir);
-        $uriPath = substr($uriPath, $size);
-
-        if ($uriPath === false) {
-            $uriPath = "/";
         }
 
         $uriPath = rawurldecode($uriPath);
@@ -64,6 +60,14 @@ final class Dispatcher implements RequestHandlerInterface
         } elseif ($uriPath[0] !== "/") {
             $uriPath = "/" . $uriPath;
         }
+
+        return $uriPath;
+    }
+
+    public function handle(ServerRequestInterface $request): ResponseInterface
+    {
+        $method = $request->getMethod();
+        $uriPath = $this->getUriPath($request);
 
         $dispatcher = $this->getRouteDispatcher();
         $routeInfo = $dispatcher->dispatch($method, $uriPath);
@@ -80,7 +84,6 @@ final class Dispatcher implements RequestHandlerInterface
                 $routeParams = $routeInfo[2];
 
                 if ($route instanceof Route) {
-
                     $route->setRouteParams($routeParams);
                     $route->setQueryParams($request->getQueryParams());
 

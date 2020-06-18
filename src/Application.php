@@ -20,7 +20,7 @@ abstract class Application
     private ?Container $container = null;
     private array $plugins = [];
     private array $pluginInstances = [];
-    private string $baseUrl = "";
+    protected string $baseUrl = "";
 
     public function __construct()
     {
