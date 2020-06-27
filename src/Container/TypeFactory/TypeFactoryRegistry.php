@@ -11,7 +11,7 @@ final class TypeFactoryRegistry
 {
     private array $registry = [];
 
-    public function registerFactory($typeFactory, $typeMatcher): void
+    public function register($typeFactory, $typeMatcher): void
     {
         if ($typeMatcher instanceof \Closure) {
             $typeMatcher = new TypeMatcher($typeMatcher);

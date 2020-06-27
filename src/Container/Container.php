@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Atom\Container;
 
+use App\TypeFactory;
 use Atom\Container\Resolver\IDependencyResolver;
+use Atom\Container\TypeFactory\TypeFactoryRegistry;
 use ReflectionClass;
 
 final class Container
@@ -18,6 +20,7 @@ final class Container
     public function __construct()
     {
         $this->dependencyResolver = new DependencyResolver($this);
+        $this->bind(TypeFactoryRegistry::class)->toInstance(new TypeFactoryRegistry());
     }
 
     public function getDependencyResolver(): DependencyResolver
@@ -83,11 +86,8 @@ final class Container
         }
 
         if (!isset($this->resolvers[$typeName]) && !isset($this->registry[$typeName])) {
-            $typeFactory = null;
 
-            if ($this->has("TypeFactory")) {
-                $typeFactory = $this->get("TypeFactory");
-            }
+            $typeFactory = $this->get(TypeFactoryRegistry::class);
 
             if ($typeFactory && $typeFactory->canCreateType($typeName)) {
                 $registration = $this->bind($typeName)->toSelf()->toTypeFactory($typeFactory);

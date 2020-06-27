@@ -104,15 +104,10 @@ abstract class Application
         $this->configure();
 
         foreach ($this->plugins as $pluginType) {
-            $this->pluginInstances[] = $this->container->createType($pluginType);
-        }
-
-        foreach ($this->pluginInstances as $plugin) {
-            $reflection = new \ReflectionClass($plugin);
-            if ($reflection->hasMethod("configureServices")) {
-                $configureServices = $reflection->getMethod("configureServices");
-                $parameters =  $this->container->resolveMethodParameters($configureServices);
-                $configureServices->invokeArgs($plugin, $parameters);
+            if (is_string($pluginType)) {
+                $this->pluginInstances[] = $this->container->resolve($pluginType);
+            } else {
+                $this->pluginInstances[] = $pluginType;
             }
         }
 

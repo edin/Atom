@@ -13,7 +13,7 @@ use Psr\Http\Message\ResponseInterface;
 
 final class DispatcherServices
 {
-    public function configureServices(Container $container)
+    public function __construct(Container $container)
     {
         $container->bind(ServerRequestInterface::class)
             ->withName("Request")

@@ -11,7 +11,7 @@ use function dirname;
 
 class ViewServices
 {
-    public function configureServices(Container $container, Application $app)
+    public function __construct(Container $container, Application $app)
     {
         // TODO: Use configuration to resolve views directory or add getViewsDirectory() virtual method to application
         $reflection = new ReflectionClass($app);
