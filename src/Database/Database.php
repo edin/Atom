@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Atom\Database;
 
-use Atom\Database\Query\Command;
 use Atom\Database\Interfaces\IConnection;
+use Atom\Database\Query\Command;
 use Atom\Database\Query\Query;
 use Atom\Database\Query\SelectQuery;
 
@@ -14,10 +14,10 @@ class Database
     private $writeConnection;
     private $readConnection;
 
-    public function __construct(IConnection $connection /*, IConnection $readConnection = null*/)
+    public function __construct(IConnection $connection, IConnection $readConnection = null)
     {
         $this->writeConnection = $connection;
-        $this->readConnection = /*$readConnection ??*/ $connection;
+        $this->readConnection = $readConnection ?? $connection;
     }
 
     public function getReadConnection(): IConnection
