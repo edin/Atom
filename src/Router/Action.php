@@ -88,6 +88,11 @@ final class Action
         return $this->actionArguments;
     }
 
+    public function setActionArguments(array $arguments): void
+    {
+        $this->actionArguments = $arguments;
+    }
+
     public function getProperties(): array
     {
         return $this->properties;
