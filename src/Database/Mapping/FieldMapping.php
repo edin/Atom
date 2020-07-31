@@ -19,6 +19,8 @@ final class FieldMapping
     private ?int $size = null;
     private ?int $precision = null;
     private bool $nullable = false;
+    private string $label = "";
+
     /* string | ITypeConverter | null */
     private $converter = null;
     /* string | IValueProvider | null */
@@ -31,6 +33,7 @@ final class FieldMapping
     private bool $includeInUpdate = true;
     private bool $isIndexed = false;
     private bool $isUnique = false;
+    private bool $searchable = false;
 
     public function __construct(string $propertyName)
     {
@@ -95,6 +98,24 @@ final class FieldMapping
     public function isUnique(): bool
     {
         return $this->isUnique;
+    }
+
+    public function label(string $label): self {
+        $this->label = $label;
+        return $this;
+    }
+
+    public function getLabel(): string {
+        return $this->label;
+    }
+
+    public function searchable(): self {
+        $this->searchable = true;
+        return $this;
+    }
+
+    public function isSearchable(): bool {
+        return $this->searchable;
     }
 
     public function primaryKey(): self
