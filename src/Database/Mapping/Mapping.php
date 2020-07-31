@@ -10,7 +10,10 @@ use ReflectionClass;
 final class Mapping
 {
     private array $mapping = [];
+    private array $relations = [];
     private ?string $table = null;
+    private string $entityClass;
+    private string $repositoryClass;
 
     public static function create($callable)
     {
@@ -22,6 +25,24 @@ final class Mapping
     public function __get($name)
     {
         return $this->property($name);
+    }
+
+    public function setEnityClass(string $entityClass)
+    {
+        $this->entityClass = $entityClass;
+    }
+
+    public function setEntityClass(): string {
+        return $this->entityClass;
+    }
+
+    public function setRepositoryClass(string $repositoryClass)
+    {
+        $this->repositoryClass = $repositoryClass;
+    }
+
+    public function getRepositoryClass(): string {
+        return $this->repositoryClass;
     }
 
     public function property(string $name): FieldMapping
