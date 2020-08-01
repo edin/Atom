@@ -6,6 +6,7 @@ namespace Atom\Database\Relation;
 
 abstract class Relation
 {
+    private string $relationName;
     protected string $modelClass;
     protected string $relatedModelClass;
     protected ?string $foreignKey = null;

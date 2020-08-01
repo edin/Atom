@@ -27,12 +27,13 @@ final class Mapping
         return $this->property($name);
     }
 
-    public function setEnityClass(string $entityClass)
+    public function setEntityClass(string $entityClass)
     {
         $this->entityClass = $entityClass;
     }
 
-    public function setEntityClass(): string {
+    public function getEntityClass(): string
+    {
         return $this->entityClass;
     }
 
@@ -41,7 +42,8 @@ final class Mapping
         $this->repositoryClass = $repositoryClass;
     }
 
-    public function getRepositoryClass(): string {
+    public function getRepositoryClass(): string
+    {
         return $this->repositoryClass;
     }
 
