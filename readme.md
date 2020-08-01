@@ -144,22 +144,45 @@ Simple user model
 
 namespace App\Models;
 
+use Atom\Database\Mapping\Mapping;
+use Atom\Database\Mapping\DateTimeConverter;
+use Atom\Database\Mapping\CurrentDateTimeProvider;
+
 final class User
 {
-    public $id;
-    public $first_name;
-    public $last_name;
-    public $email;
+    public int $id;
+    public string $first_name;
+    public string $last_name;
+    public string $email;
+    public DateTimeImmutable $created_at;
+    public DateTimeImmutable $updated_at;    
 
-    public static function from($id, $first_name, $last_name, $email)
+    public function getMapping(): Mapping
     {
-        $user = new static();
-        $user->id = $id;
-        $user->first_name = $first_name;
-        $user->last_name = $last_name;
-        $user->email = $email;
-        return $user;
-    }
+        return Mapping::create(function (Mapping $map) {
+            $map->table("users");
+            $map->setEntity(User::class);
+            $map->setRepository(UserRepository::class)
+            $map->property("id")->field("id")->primaryKey()->int();
+            $map->property("first_name")->field("first_name")->string(50);
+            $map->property("last_name")->field("last_name")->string(50);
+            $map->property("email")->field("email")->string(100);
+
+            $map->property("password_hash")
+                ->field("password_hash")
+                ->string(255)
+                ->excludeInSelect();
+
+            $map->property("created_at")->field("created_at")->date()
+                ->excludeInUpdate()
+                ->withValueProvider(CurrentDateTimeProvider::class)
+                ->withConverter(DateTimeConverter::class);
+
+            $map->property("updated_at")->field("updated_at")->date()
+                ->withValueProvider(CurrentDateTimeProvider::class)
+                ->withConverter(DateTimeConverter::class);
+        });
+    }    
 }
 ```
 Simple User repository
@@ -168,33 +191,23 @@ Simple User repository
 
 namespace App\Models;
 
+use Atom\Database\Repository;
 use Atom\Database\Query\Query;
-use Atom\Collections\Collection;
 use Atom\Database\Query\Operator;
+use Atom\Database\EntityCollection;
 
-class UserRepository
+class UserRepository extends Repository
 {
-    public function findAll()
+    protected string $entityType = User::class;
+    
+    public function findAll(): EntityCollection
     {
-        $query = Query::select("users u")
-                ->where("u.id", Operator::greater(2))
-                ->where("u.id", Operator::less(10))
-                ->orWhere("u.id = :id", 100)
-                ->limit(10);
-
-        $items = $query->queryAll();
-
-        //Currently there is no object hydration support but
-        //hopefully there will be simple hydrator so following wont be needed
-
-        return Collection::from($items)->map(function ($item) {
-            return User::from(
-                $item['id'],
-                $item['first_name'],
-                $item['last_name'],
-                $item['email']
-            );
-        });
+        return $this->query()
+                ->where("id", Operator::greater(2))
+                ->where("id", Operator::less(10))
+                ->orWhere("id = :id", 100)
+                ->limit(10)
+                ->findAll();
     }
 }
 ```
