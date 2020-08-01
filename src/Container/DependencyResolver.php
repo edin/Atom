@@ -6,7 +6,7 @@ namespace Atom\Container;
 
 final class DependencyResolver
 {
-    private $container;
+    private Container $container;
 
     public function __construct(Container $container)
     {
