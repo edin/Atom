@@ -6,14 +6,14 @@ namespace Atom\Container;
 
 final class Instance
 {
-    private $name;
+    private string $name;
 
-    public function __construct($name)
+    public function __construct(string $name)
     {
         $this->name = $name;
     }
 
-    public static function of($name): Instance
+    public static function of(string $name): Instance
     {
         return new Instance($name);
     }
