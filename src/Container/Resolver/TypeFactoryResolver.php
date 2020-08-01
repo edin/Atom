@@ -16,7 +16,7 @@ final class TypeFactoryResolver implements IDependencyResolver
         $this->registration = $registration;
     }
 
-    public function resolve(ResolutionContext $context, array $params = [])
+    public function resolve(?ResolutionContext $context = null, array $params = [])
     {
         return $this->registration->factory->createType($this->registration->getContainer(), $this->registration->targetType);
     }

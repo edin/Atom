@@ -18,7 +18,7 @@ final class InstanceResolver implements IDependencyResolver
         $this->instance = $registration->instance;
     }
 
-    public function resolve(ResolutionContext $context, array $params = [])
+    public function resolve(?ResolutionContext $context = null, array $params = [])
     {
         return $this->instance;
     }
