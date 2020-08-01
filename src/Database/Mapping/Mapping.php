@@ -6,6 +6,7 @@ namespace Atom\Database\Mapping;
 
 use Closure;
 use ReflectionClass;
+use Atom\Database\Relation\Relation;
 
 final class Mapping
 {
@@ -125,5 +126,17 @@ final class Mapping
     public function filter(Closure $filter): array
     {
         return array_filter($this->mapping, $filter);
+    }
+
+
+    public function addRelation(string $relationName, Relation $relation): void
+    {
+        $relation->setRelationName($relationName);
+        $this->relations[$relationName] = $relation;
+    }
+
+    public function relation(string $relationName): RelationBuilder
+    {
+        return new RelationBuilder($this, $relationName);
     }
 }

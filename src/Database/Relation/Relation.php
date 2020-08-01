@@ -19,6 +19,16 @@ abstract class Relation
         $this->foreignKey = $foreignKey;
     }
 
+    public function setRelationName(string $relationName): void
+    {
+        $this->relationName = $relationName;
+    }
+
+    public function getRelationName(): string
+    {
+        return $this->relationName;
+    }
+
     public function withCriteria(callable $criteria)
     {
         $this->criteria = $criteria;
