@@ -12,12 +12,14 @@ use Atom\Database\Relation\HasOneRelation;
 final class RelationBuilder
 {
     private Mapping $mapping;
+    private string $modelClass;
     private string $relationName;
 
     public function __construct(Mapping $mapping, string $relationName)
     {
         $this->mapping = $mapping;
         $this->relationName = $relationName;
+        $this->modelClass = $mapping->getEntityClass();
     }
 
     public function hasMany(string $relatedModelClass, string $foreignKey): HasManyRelation

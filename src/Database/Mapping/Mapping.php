@@ -135,6 +135,11 @@ final class Mapping
         $this->relations[$relationName] = $relation;
     }
 
+    public function getRelations(): array
+    {
+        return $this->relations;
+    }
+
     public function relation(string $relationName): RelationBuilder
     {
         return new RelationBuilder($this, $relationName);
