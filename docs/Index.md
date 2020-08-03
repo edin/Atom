@@ -22,10 +22,6 @@
 
 [Validation](Validation.md)
 
-> //TODO: Add validation references
-
 ## Midlewares
 
 [Middlewares](Middlewares.md)
-
-> //TODO: Add middleware reference
