@@ -17,6 +17,7 @@ final class ArrayPropertyAccessor implements IPropertyAccessor
     {
         return $this->model[$name];
     }
+
     public function setProperty($name, $value)
     {
         $this->model[$name] = $value;

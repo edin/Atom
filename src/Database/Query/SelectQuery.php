@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atom\Database\Query;
 
+use Atom\Collections\PagedCollection;
 use Atom\Database\Query\Ast\Column;
 use Atom\Database\Query\Ast\Join;
 use Atom\Database\Query\Ast\SortOrder;
@@ -145,5 +146,22 @@ final class SelectQuery extends Query
         $count = (int) $this->count()->queryScalar();
         $this->count = null;
         return $count;
+    }
+
+    public function toPagedCollection(int $page, int $size = 20): PagedCollection
+    {
+        $page = ($page > 0) ? $page : 1;
+        $skip = ($page - 1) * $size;
+
+        $count = $this->getRowCount();
+        $query = $this->limit($size)->skip($skip);
+        $items = $query->findAll();
+
+        $collection = new PagedCollection($items);
+        $collection->setTotalCount($count);
+        $collection->setPageSize($size);
+        $collection->setCurrentPage($page);
+        $collection->setTotalPages((int) ceil($count / $size));
+        return $collection;
     }
 }

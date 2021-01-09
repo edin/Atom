@@ -26,9 +26,6 @@ class RouteBuilder implements IRouteBuilder
             if ($route) {
                 $methodName = $method->getName();
                 $router->addRoute($route->method, $route->path, $this->controllerType, $methodName);
-            } else {
-                $methodName = $method->getName();
-                $router->addRoute("GET", $methodName, $this->controllerType, $methodName);
             }
         }
     }

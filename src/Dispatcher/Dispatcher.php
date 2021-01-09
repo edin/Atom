@@ -25,7 +25,7 @@ final class Dispatcher implements RequestHandlerInterface
         $this->router = $container->Router;
     }
 
-    final private function getRouteDispatcher()
+    private function getRouteDispatcher()
     {
         $dispatcher = \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $collector) {
             $routes = $this->router->getAllRoutes();

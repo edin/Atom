@@ -61,13 +61,13 @@ class PagedCollection extends ReadOnlyCollection
         $this->currentPage = $currentPage;
     }
 
-    public static function from(iterable $items, int $count, int $pageNumber, int $pageSize): self
-    {
-        $result = new PagedCollection($items);
-        $result->setTotalCount($count);
-        $result->setPageSize($pageSize);
-        $result->setCurrentPage($pageNumber);
-        $result->setTotalPages((int) ceil($count / $pageSize));
-        return $result;
-    }
+    // public static function from(iterable $items, int $count, int $pageNumber, int $pageSize): self
+    // {
+    //     $result = new PagedCollection($items);
+    //     $result->setTotalCount($count);
+    //     $result->setPageSize($pageSize);
+    //     $result->setCurrentPage($pageNumber);
+    //     $result->setTotalPages((int) ceil($count / $pageSize));
+    //     return $result;
+    // }
 }
