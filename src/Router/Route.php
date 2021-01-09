@@ -62,6 +62,16 @@ final class Route
         return $this->method;
     }
 
+    public function getMethodList(): string
+    {
+        if (is_array($this->method)) {
+            return implode("|", $this->method);
+        } elseif (is_string($this->method)) {
+            return $this->method;
+        }
+        return "";
+    }
+
     public function getActionHandler()
     {
         return $this->actionHandler;

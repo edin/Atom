@@ -21,6 +21,9 @@ class Router
         return $group;
     }
 
+    /**
+     * @return Route[]
+     */
     public function getAllRoutes(): array
     {
         $stack = new \SplStack;

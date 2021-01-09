@@ -33,6 +33,9 @@ final class Container
         return $this->registry[$name];
     }
 
+    /**
+     * @return ComponentRegistration[]
+     */
     public function getRegistry()
     {
         return $this->registry;

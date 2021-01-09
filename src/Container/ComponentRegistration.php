@@ -39,6 +39,22 @@ final class ComponentRegistration
         return $this->container;
     }
 
+    public function getRegistrationTypeName(): string
+    {
+        switch ($this->type) {
+            case self::CLASS_NAME:
+                return "Class";
+            case self::FACTORY_METHOD:
+                return "Factory";
+            case self::INSTANCE:
+                return "Instance";
+            case self::TYPE_FACTORY:
+                return "TypeFactory";
+            default:
+                return "";
+        }
+    }
+
     public function to(string $targetType): self
     {
         $this->type = self::CLASS_NAME;
