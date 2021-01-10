@@ -100,21 +100,25 @@ final class FieldMapping
         return $this->isUnique;
     }
 
-    public function label(string $label): self {
+    public function label(string $label): self
+    {
         $this->label = $label;
         return $this;
     }
 
-    public function getLabel(): string {
+    public function getLabel(): string
+    {
         return $this->label;
     }
 
-    public function searchable(): self {
+    public function searchable(): self
+    {
         $this->searchable = true;
         return $this;
     }
 
-    public function isSearchable(): bool {
+    public function isSearchable(): bool
+    {
         return $this->searchable;
     }
 

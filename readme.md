@@ -4,9 +4,9 @@ Simple PHP Framework
 
 ```
     git clone https://github.com/edin/AtomApp.git
-    composer update
-    php -S localhost:3000
-    http://localhost:3000/public
+    composer update 
+    php -S localhost:5000 -t public
+    http://localhost:5000
 ```
 
 # Project goals
