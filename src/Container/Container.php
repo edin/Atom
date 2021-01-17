@@ -8,6 +8,7 @@ use App\TypeFactory;
 use Atom\Container\Resolver\IDependencyResolver;
 use Atom\Container\TypeFactory\TypeFactoryRegistry;
 use ReflectionClass;
+use RuntimeException;
 
 final class Container
 {
@@ -100,12 +101,15 @@ final class Container
                 $this->registerResolver($registration);
             }
         }
-
         return $this->resolvers[$typeName];
     }
 
     public function alias(string $alias, string $target)
     {
+        if (isset($this->alias[$alias])) {
+            throw new RuntimeException("Definition for component '$alias' already exists");
+        }
+
         $this->alias[$alias] = $target;
     }
 

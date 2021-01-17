@@ -115,12 +115,46 @@ final class ContainerTest extends TestCase
         $container->bind("B")->to(Database::class)->asShared();
 
         $result1 = $container->resolve("A");
-        $result2= $container->resolve("B");
+        $result2 = $container->resolve("B");
 
         $this->assertInstanceOf(Database::class, $result1);
         $this->assertInstanceOf(Database::class, $result2);
 
         $this->assertNotSame($result1, $result2);
-    }  
+    }
+
+
+    public function testAlias(): void
+    {
+        $container = new Container;
+        $container->bind(Database::class)->toSelf()->withName("db")->asShared();
+
+        $result1 = $container->get("db");
+        $result2 = $container->get(Database::class);
+        $result3 = $container->get("db");
+
+        $this->assertInstanceOf(Database::class, $result1);
+        $this->assertInstanceOf(Database::class, $result2);
+        $this->assertInstanceOf(Database::class, $result3);
+
+        $this->assertSame($result1, $result2);
+        $this->assertSame($result2, $result3);
+    }
+
+    public function testAliasGetByClassFirst(): void
+    {
+        $container = new Container;
+        $container->bind(Database::class)->toSelf()->withName("db")->asShared();
+
+        $result1 = $container->get(Database::class);
+        $result2 = $container->get("db");
+        $result3 = $container->get(Database::class);
+
+        $this->assertInstanceOf(Database::class, $result1);
+        $this->assertInstanceOf(Database::class, $result2);
+        $this->assertInstanceOf(Database::class, $result3);
+
+        $this->assertSame($result1, $result2);
+        $this->assertSame($result2, $result3);
+    }
 }
- 

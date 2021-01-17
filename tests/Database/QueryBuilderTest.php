@@ -2,6 +2,7 @@
 
 namespace Atom\Tests\Database;
 
+use Atom\Database\Query\Command;
 use Atom\Database\Query\Query;
 use PHPUnit\Framework\TestCase;
 use Atom\Database\Query\Criteria;
@@ -12,6 +13,10 @@ final class QueryBuilderTest extends TestCase
 {
     private function clean($text)
     {
+        if ($text instanceof Command) {
+            $text = $text->getSql();
+        }
+
         $text = str_replace('\n', ' ', $text);
         $text = preg_replace('/\s+/', ' ', $text);
         $text = str_replace('( ', '(', $text);
@@ -43,8 +48,8 @@ final class QueryBuilderTest extends TestCase
     public function testSimpleSelectWithColumns(): void
     {
         $query = Query::select()
-                ->from("users u")
-                ->columns(['u.id id', 'u.first_name firstName']);
+            ->from("users u")
+            ->columns(['u.id id', 'u.first_name firstName']);
 
         $this->assertQuery("SELECT `u`.`id` `id`, `u`.`first_name` `firstName` FROM `users` `u`", $query);
     }
@@ -88,11 +93,11 @@ final class QueryBuilderTest extends TestCase
     public function testSimpleSelectWithOperator(): void
     {
         $query = Query::select()
-        ->from("users u")
-        ->where(function (Criteria $criteria) {
-            $criteria->where("u.id", Operator::greaterOrEqual(1));
-            $criteria->where("u.id", Operator::lessOrEqual(100));
-        });
+            ->from("users u")
+            ->where(function (Criteria $criteria) {
+                $criteria->where("u.id", Operator::greaterOrEqual(1));
+                $criteria->where("u.id", Operator::lessOrEqual(100));
+            });
 
         $expected = "SELECT * FROM `users` `u` WHERE `u`.`id` >= 1 AND `u`.`id` <= 100";
         $this->assertQuery($expected, $query);
@@ -101,11 +106,11 @@ final class QueryBuilderTest extends TestCase
     public function testSimpleSelectWithArrayValue(): void
     {
         $query = Query::select()
-        ->from("users u")
-        ->where(function (Criteria $criteria) {
-            $criteria->where("u.id", [1,2,3]);
-            $criteria->orWhere("u.id", [4,5,6]);
-        });
+            ->from("users u")
+            ->where(function (Criteria $criteria) {
+                $criteria->where("u.id", [1, 2, 3]);
+                $criteria->orWhere("u.id", [4, 5, 6]);
+            });
 
         $expected = "SELECT * FROM `users` `u` WHERE `u`.`id` IN (1, 2, 3) OR `u`.`id` IN (4, 5, 6)";
         $this->assertQuery($expected, $query);
@@ -114,10 +119,10 @@ final class QueryBuilderTest extends TestCase
     public function testSimpleSelectWithStringArrayValue(): void
     {
         $query = Query::select()
-        ->from("users u")
-        ->where(function (Criteria $criteria) {
-            $criteria->where("u.id", ['a', 'b']);
-        });
+            ->from("users u")
+            ->where(function (Criteria $criteria) {
+                $criteria->where("u.id", ['a', 'b']);
+            });
 
         $expected = "SELECT * FROM `users` `u` WHERE `u`.`id` IN ('a', 'b')";
         $this->assertQuery($expected, $query);
@@ -126,10 +131,10 @@ final class QueryBuilderTest extends TestCase
     public function testSimpleSelectWithOperatorLike(): void
     {
         $query = Query::select()
-        ->from("users u")
-        ->where(function (Criteria $criteria) {
-            $criteria->where("u.first_name", Operator::like('name'));
-        });
+            ->from("users u")
+            ->where(function (Criteria $criteria) {
+                $criteria->where("u.first_name", Operator::like('name'));
+            });
 
         $expected = "SELECT * FROM `users` `u` WHERE `u`.`first_name` LIKE 'name'";
         $this->assertQuery($expected, $query);
