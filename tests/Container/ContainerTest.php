@@ -157,4 +157,20 @@ final class ContainerTest extends TestCase
         $this->assertSame($result1, $result2);
         $this->assertSame($result2, $result3);
     }
+
+    public function testAliasAndConstructorArguments(): void
+    {
+        $container = new Container;
+        $container->bind(IDatabase::class)->to(Database::class)->withName("db")->asShared();
+        $container->bind(IRepository::class)->to(Repository::class);
+
+        $repository = $container->get(IRepository::class);
+        $db = $container->get(IDatabase::class);
+
+        $this->assertInstanceOf(Database::class, $db);
+        $this->assertInstanceOf(Repository::class, $repository);
+        $this->assertInstanceOf(Database::class, $repository->database);
+
+        $this->assertSame($db, $repository->database);
+    }
 }

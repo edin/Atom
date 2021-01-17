@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Atom\Container;
 
-use App\TypeFactory;
 use Atom\Container\Resolver\IDependencyResolver;
 use Atom\Container\TypeFactory\TypeFactoryRegistry;
 use ReflectionClass;
@@ -54,13 +53,12 @@ final class Container
         $args = [];
         $dependencies = $this->dependencyResolver->getConstructorDependencies($targetType);
         foreach ($dependencies as $index => $parameter) {
-            //$value = $params[$parameter->name] ?? null;
             if ($parameter->resolvedType) {
                 $args[$index] = $this->getResolver($parameter->resolvedType)->resolve($context, []);
             } elseif ($parameter->typeName && !$parameter->isBuiltinType) {
                 $args[$index] = $this->getResolver($parameter->typeName)->resolve($context, []);
             } else {
-                $args[$index] = /*$value ??*/ $parameter->defaultValue;
+                $args[$index] = $parameter->defaultValue;
             }
         }
 

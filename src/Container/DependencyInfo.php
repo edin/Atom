@@ -12,4 +12,5 @@ final class DependencyInfo
     public $typeName;
     public $resolvedType;
     public $isBuiltinType;
+    public $useResolvedType = false;
 }

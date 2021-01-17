@@ -31,6 +31,7 @@ final class ClassResolver implements IDependencyResolver
             if ($value !== null) {
                 if ($value instanceof Instance) {
                     $parameter->resolvedType = $value->getName();
+                    $parameter->useResolvedType = true;
                 } else {
                     $parameter->defaultValue = $value;
                 }
@@ -66,12 +67,12 @@ final class ClassResolver implements IDependencyResolver
         foreach ($this->dependencies as $index => $parameter) {
             $value = $params[$parameter->name] ?? null;
 
-            if ($parameter->resolvedType) {
-                $args[$index] = $this->container->getResolver($parameter->resolvedType)->resolve($context);
-            } elseif ($parameter->typeName && !$parameter->isBuiltinType) {
-                $args[$index] = $this->container->getResolver($parameter->typeName)->resolve($context);
-            } else {
+            if ($parameter->isBuiltinType) {
                 $args[$index] = $value ?? $parameter->defaultValue;
+            } elseif ($parameter->resolvedType && $parameter->useResolvedType) {
+                $args[$index] = $this->container->resolveInContext($context, $parameter->typeName);
+            } elseif ($parameter->typeName) {
+                $args[$index] = $this->container->resolveInContext($context, $parameter->typeName);
             }
         }
 
