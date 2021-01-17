@@ -11,7 +11,7 @@ class Router
     use RouteTrait;
     private $routes = [];
     private $groups = [];
-    private $controllerType;
+    private ?string $controllerType = null;
 
     public static function fromGroupAndPath(Router $router, string $path): Router
     {
@@ -89,51 +89,66 @@ class Router
         return $this->routes;
     }
 
-    public function addRoute($method, string $path, $controller, $action = null): Route
+    public function add(Route $route): Route
     {
-        if ($action === null && $this->controllerType !== null && is_string($controller)) {
-            $action = $controller;
-            $controller = $this->controllerType;
-        }
-
-        $route = new Route($this, $method, $path, ActionHandler::from($controller, $action));
         $this->routes[] = $route;
         return $route;
     }
 
-    public function getOrPost(string $path, $controller, $action = null): Route
+    /**
+     * @var string|array $method
+     * @var string|array|ActionHandler $handler
+     */
+    public function addRoute($method, string $path, $handler = null): Route
     {
-        return $this->addRoute(["GET", "POST"], $path, $controller, $action);
+        if (!($handler instanceof ActionHandler)) {
+            if ($handler == null) {
+                $handler = [$this->controllerType, $path];
+            } elseif (is_string($handler)) {
+                $handler = [$this->controllerType, $handler];
+            }
+
+
+            $handler = ActionHandler::from($handler);
+        }
+
+        $route = new Route($this, $method, $path, $handler);
+        return $this->add($route);
     }
 
-    public function get(string $path, $controller, $action = null): Route
+    public function getOrPost(string $path, $handler = null): Route
     {
-        return $this->addRoute("GET", $path, $controller, $action);
+        return $this->addRoute(["GET", "POST"], $path, $handler);
     }
 
-    public function post(string $path, $controller, $action = null): Route
+    public function get(string $path, $handler = null): Route
     {
-        return $this->addRoute("POST", $path, $controller, $action);
+        return $this->addRoute("GET", $path, $handler);
     }
 
-    public function put(string $path, $controller, $action = null): Route
+    public function post(string $path, $handler = null): Route
     {
-        return $this->addRoute("PUT", $path, $controller, $action);
+        return $this->addRoute("POST", $path, $handler);
     }
 
-    public function patch(string $path, $controller, $action = null): Route
+    public function put(string $path, $handler = null): Route
     {
-        return $this->addRoute("PATCH", $path, $controller, $action);
+        return $this->addRoute("PUT", $path, $handler);
     }
 
-    public function delete(string $path, $controller, $action = null): Route
+    public function patch(string $path, $handler = null): Route
     {
-        return $this->addRoute("DELETE", $path, $controller, $action);
+        return $this->addRoute("PATCH", $path, $handler);
     }
 
-    public function options(string $path, $controller, $action = null): Route
+    public function delete(string $path, $handler = null): Route
     {
-        return $this->addRoute("OPTIONS", $path, $controller, $action);
+        return $this->addRoute("DELETE", $path, $handler);
+    }
+
+    public function options(string $path, $handler = null): Route
+    {
+        return $this->addRoute("OPTIONS", $path, $handler);
     }
 
     public function attach(IRouteBuilder $builder): self

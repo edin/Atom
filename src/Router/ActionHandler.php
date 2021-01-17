@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Atom\Router;
 
+use Closure;
+
 final class ActionHandler
 {
     private ?string $controller;
@@ -17,15 +19,18 @@ final class ActionHandler
         $this->closure = $closure;
     }
 
-    public static function from($controller, ?string $method = null): self
+    public static function from($handler): self
     {
-        if (is_callable($controller)) {
-            return ActionHandler::fromClosure($controller);
-        }
-
-        if (is_string($controller)) {
+        if (is_array($handler) && count($handler) == 2) {
+            $controller = $handler[0];
+            $method = $handler[1];
             return ActionHandler::fromMethod($controller, $method, null);
         }
+
+        if ($handler instanceof Closure) {
+            return ActionHandler::fromClosure($handler);
+        }
+
         throw new \InvalidArgumentException("Failed to construct ActionHandler from given parameters.");
     }
 
