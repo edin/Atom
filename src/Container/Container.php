@@ -113,6 +113,7 @@ final class Container
 
     public function bind(string $typeName): ComponentRegistration
     {
+        //TODO: Check if registration already exists
         $this->registry[$typeName] = $registration = new ComponentRegistration($typeName, $this);
         return $registration;
     }
