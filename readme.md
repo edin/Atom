@@ -73,8 +73,8 @@ class Routes
 {
     public function configure(Router $router)
     {
-        $router->addGroup("/", function (Router $group) {
-            $group->addMiddleware(LogMiddleware::class);
+        $router->group("/", function (Router $group) {
+            $group->middleware(LogMiddleware::class);
             $group->setController(HomeController::class);
 
             $group->get("", "index")->withName("home");

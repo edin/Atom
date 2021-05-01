@@ -1,1 +1,0 @@
-.\vendor\bin\phpstan analyse src tests
