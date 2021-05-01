@@ -14,19 +14,19 @@ trait RouteTrait
     private $middlewares = [];
     private $metadata = [];
 
-    public function withName(string $name): self
+    public function name(string $name): self
     {
         $this->name = $name;
         return $this;
     }
 
-    public function withTitle(string $title): self
+    public function title(string $title): self
     {
         $this->title = $title;
         return $this;
     }
 
-    public function withDescription(string $description): self
+    public function description(string $description): self
     {
         $this->description = $description;
         return $this;
@@ -86,13 +86,13 @@ trait RouteTrait
         $this->group = $group;
     }
 
-    public function addMiddleware($middleware): self
+    public function middleware($middleware): self
     {
         $this->middlewares[] = $middleware;
         return $this;
     }
 
-    public function addMetadata(object $instance): self
+    public function metadata(object $instance): self
     {
         $this->metadata[] = $instance;
         return $this;

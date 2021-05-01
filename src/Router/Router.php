@@ -47,7 +47,7 @@ class Router
         return $result;
     }
 
-    public function addGroup(string $path = "", ?Closure $routeBuilder = null): self
+    public function group(string $path = "", ?Closure $routeBuilder = null): self
     {
         $this->groups[] = $group = Router::fromGroupAndPath($this, $path);
         if ($routeBuilder !== null) {
@@ -159,7 +159,7 @@ class Router
 
     public function attachTo(string $path, IRouteBuilder $builder): self
     {
-        $group = $this->addGroup($path);
+        $group = $this->group($path);
         $builder->build($group);
         return $group;
     }
