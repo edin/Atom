@@ -6,6 +6,7 @@ namespace Atom\View\Parser;
 
 use Atom\View\Ast\ElementNode;
 use Atom\View\Ast\ExpressionNode;
+use Atom\View\Ast\FragmentNode;
 use Atom\View\Ast\ForEachNode;
 use Atom\View\Ast\IfBranchNode;
 use Atom\View\Ast\IfNode;
@@ -125,10 +126,43 @@ final class ViewParser
             return new ElementNode($token->value, $token->attributes, selfClosing: true);
         }
 
+        $children = $this->parseChildren($token->value);
+
         return new ElementNode(
             $token->value,
             $token->attributes,
-            $this->parseChildren($token->value)
+            $this->parseFragments($token->value, $children)
+        );
+    }
+
+    /**
+     * @param ViewNode[] $children
+     * @return ViewNode[]
+     */
+    private function parseFragments(string $owner, array $children): array
+    {
+        return array_map(
+            fn(ViewNode $child): ViewNode => $child instanceof ElementNode && $this->isFragmentElement($owner, $child)
+                ? $this->toFragment($owner, $child)
+                : $child,
+            $children
+        );
+    }
+
+    private function isFragmentElement(string $owner, ElementNode $node): bool
+    {
+        return str_starts_with($node->name, $owner . ".")
+            && strlen($node->name) > strlen($owner) + 1;
+    }
+
+    private function toFragment(string $owner, ElementNode $node): FragmentNode
+    {
+        return new FragmentNode(
+            $owner,
+            substr($node->name, strlen($owner) + 1),
+            $node->attributes,
+            $node->children,
+            $node->selfClosing
         );
     }
 

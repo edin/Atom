@@ -65,6 +65,10 @@ final class Injector
     public function get(string $token, ?InjectionContext $context = null): mixed
     {
         $context ??= new InjectionContext();
+        if ($context->has($token)) {
+            return $context->get($token);
+        }
+
         $provider = $this->findProvider($token);
 
         if ($provider === null) {

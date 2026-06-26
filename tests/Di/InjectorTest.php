@@ -116,6 +116,20 @@ final class InjectorTest extends TestCase
         $this->assertSame($controller->state, $methodState);
     }
 
+    public function testContextInstanceCanBeResolvedWithoutProvider(): void
+    {
+        $injector = Injector::create();
+        $context = new InjectionContext();
+        $request = new DiRequest(["name" => "Context"]);
+        $context->set(DiRequest::class, $request);
+
+        $this->assertSame($request, $injector->get(DiRequest::class, $context));
+        $this->assertSame($request, $injector->invoke(
+            fn(DiRequest $request): DiRequest => $request,
+            context: $context
+        ));
+    }
+
     public function testScopedProviderCreatesNewInstanceForDifferentContext(): void
     {
         $injector = Injector::create([

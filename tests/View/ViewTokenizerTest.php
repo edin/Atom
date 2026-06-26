@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atom\Tests\View;
 
 use Atom\View\Ast\AttributeSpreadNode;
+use Atom\View\Ast\ExpressionNode;
 use Atom\View\Parser\Token\ViewTokenType;
 use Atom\View\Parser\ViewParseException;
 use Atom\View\Parser\ViewTokenizer;
@@ -25,7 +26,6 @@ final class ViewTokenizerTest extends TestCase
         $this->assertSame("data-id", $tokens[0]->attributes[1]->name);
         $this->assertSame("42", $tokens[0]->attributes[1]->value);
         $this->assertTrue($tokens[0]->attributes[2]->value);
-        $this->assertFalse($tokens[0]->attributes[0]->bound);
 
         $this->assertSame(ViewTokenType::Comment, $tokens[1]->type);
         $this->assertSame(" ignored ", $tokens[1]->value);
@@ -38,6 +38,28 @@ final class ViewTokenizerTest extends TestCase
         $this->assertSame("div", $tokens[4]->value);
     }
 
+    public function testTokenizesDeclarationAsText(): void
+    {
+        $tokens = (new ViewTokenizer())->tokenize('<!doctype html><html></html>');
+
+        $this->assertSame(ViewTokenType::Text, $tokens[0]->type);
+        $this->assertSame("<!doctype html>", $tokens[0]->value);
+        $this->assertSame(ViewTokenType::StartTag, $tokens[1]->type);
+        $this->assertSame("html", $tokens[1]->value);
+    }
+
+    public function testTokenizesHtmlVoidElementsAsSelfClosing(): void
+    {
+        $tokens = (new ViewTokenizer())->tokenize('<head><meta charset="utf-8"><link href="/style.css"></head>');
+
+        $this->assertSame("meta", $tokens[1]->value);
+        $this->assertTrue($tokens[1]->selfClosing);
+        $this->assertSame("link", $tokens[2]->value);
+        $this->assertTrue($tokens[2]->selfClosing);
+        $this->assertSame(ViewTokenType::EndTag, $tokens[3]->type);
+        $this->assertSame("head", $tokens[3]->value);
+    }
+
     public function testTokenizesBoundAttributes(): void
     {
         $tokens = (new ViewTokenizer())->tokenize(
@@ -48,13 +70,12 @@ final class ViewTokenizerTest extends TestCase
         $this->assertSame("MyButton", $tokens[0]->value);
         $this->assertSame("text", $tokens[0]->attributes[0]->name);
         $this->assertSame("Save", $tokens[0]->attributes[0]->value);
-        $this->assertFalse($tokens[0]->attributes[0]->bound);
         $this->assertSame("disabled", $tokens[0]->attributes[1]->name);
-        $this->assertSame('$isDisabled', $tokens[0]->attributes[1]->value);
-        $this->assertTrue($tokens[0]->attributes[1]->bound);
+        $this->assertInstanceOf(ExpressionNode::class, $tokens[0]->attributes[1]->value);
+        $this->assertSame('$isDisabled', $tokens[0]->attributes[1]->value->expression);
         $this->assertSame("variant", $tokens[0]->attributes[2]->name);
-        $this->assertSame('$style', $tokens[0]->attributes[2]->value);
-        $this->assertTrue($tokens[0]->attributes[2]->bound);
+        $this->assertInstanceOf(ExpressionNode::class, $tokens[0]->attributes[2]->value);
+        $this->assertSame('$style', $tokens[0]->attributes[2]->value->expression);
     }
 
     public function testTokenizesAttributeSpreads(): void

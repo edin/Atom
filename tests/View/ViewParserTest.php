@@ -7,6 +7,7 @@ namespace Atom\Tests\View;
 use Atom\View\Ast\ElementNode;
 use Atom\View\Ast\AttributeSpreadNode;
 use Atom\View\Ast\ExpressionNode;
+use Atom\View\Ast\FragmentNode;
 use Atom\View\Ast\ForEachNode;
 use Atom\View\Ast\IfNode;
 use Atom\View\Ast\RawTextNode;
@@ -32,7 +33,6 @@ final class ViewParserTest extends TestCase
         $this->assertSame("42", $div->attributes[1]->value);
         $this->assertSame("disabled", $div->attributes[2]->name);
         $this->assertTrue($div->attributes[2]->value);
-        $this->assertFalse($div->attributes[2]->bound);
 
         $heading = $div->children[0];
         $input = $div->children[1];
@@ -56,10 +56,9 @@ final class ViewParserTest extends TestCase
         $this->assertInstanceOf(ElementNode::class, $button);
         $this->assertSame("text", $button->attributes[0]->name);
         $this->assertSame("Save", $button->attributes[0]->value);
-        $this->assertFalse($button->attributes[0]->bound);
         $this->assertSame("disabled", $button->attributes[1]->name);
-        $this->assertSame('$isDisabled', $button->attributes[1]->value);
-        $this->assertTrue($button->attributes[1]->bound);
+        $this->assertInstanceOf(ExpressionNode::class, $button->attributes[1]->value);
+        $this->assertSame('$isDisabled', $button->attributes[1]->value->expression);
     }
 
     public function testParsesAttributeSpreads(): void
@@ -121,6 +120,38 @@ HTML;
         $this->assertSame("my-card", $card->name);
         $this->assertInstanceOf(ElementNode::class, $card->children[0]);
         $this->assertSame("span", $card->children[0]->name);
+    }
+
+    public function testParsesOwnedFragmentElements(): void
+    {
+        $template = (new ViewParser())->parse(
+            '<Table :items="$users"><Table.Header><th>Name</th></Table.Header><Table.Body as="$user"><td>{{ $user->name }}</td></Table.Body></Table>'
+        );
+
+        $table = $template->children[0];
+
+        $this->assertInstanceOf(ElementNode::class, $table);
+        $this->assertCount(2, $table->children);
+        $this->assertInstanceOf(FragmentNode::class, $table->children[0]);
+        $this->assertSame("Table", $table->children[0]->owner);
+        $this->assertSame("Header", $table->children[0]->name);
+        $this->assertInstanceOf(ElementNode::class, $table->children[0]->children[0]);
+        $this->assertSame("th", $table->children[0]->children[0]->name);
+        $this->assertInstanceOf(FragmentNode::class, $table->children[1]);
+        $this->assertSame("Body", $table->children[1]->name);
+        $this->assertSame("as", $table->children[1]->attributes[0]->name);
+        $this->assertSame('$user', $table->children[1]->attributes[0]->value);
+    }
+
+    public function testKeepsUnownedDottedElementsAsElements(): void
+    {
+        $template = (new ViewParser())->parse('<Table><Other.Body>Body</Other.Body></Table>');
+
+        $table = $template->children[0];
+
+        $this->assertInstanceOf(ElementNode::class, $table);
+        $this->assertInstanceOf(ElementNode::class, $table->children[0]);
+        $this->assertSame("Other.Body", $table->children[0]->name);
     }
 
     public function testSkipsComments(): void

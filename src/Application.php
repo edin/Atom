@@ -16,6 +16,7 @@ use Atom\Console\ConsoleServices;
 use Atom\Http\Request;
 use Atom\Http\Response;
 use Atom\Http\RequestHandlerInterface;
+use Atom\Page\PageServices;
 use Atom\Router\MatchedRoute;
 use Atom\Router\Route;
 use Atom\Router\Router;
@@ -96,6 +97,7 @@ abstract class Application
         $providers
             ->add(ConsoleServices::class)
             ->add(DispatcherServices::class)
+            ->add(PageServices::class)
             ->add(ViewServices::class);
     }
 

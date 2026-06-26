@@ -8,8 +8,7 @@ final readonly class AttributeNode
 {
     public function __construct(
         public string $name,
-        public string|bool $value = true,
-        public bool $bound = false
+        public string|bool|ExpressionNode $value = true
     ) {
     }
 }

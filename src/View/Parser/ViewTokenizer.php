@@ -6,6 +6,7 @@ namespace Atom\View\Parser;
 
 use Atom\View\Ast\AttributeNode;
 use Atom\View\Ast\AttributeSpreadNode;
+use Atom\View\Ast\ExpressionNode;
 use Atom\View\Parser\Token\ViewToken;
 
 final class ViewTokenizer
@@ -27,6 +28,11 @@ final class ViewTokenizer
         while (!$this->eof()) {
             if ($this->startsWith("<!--")) {
                 $tokens[] = $this->readComment();
+                continue;
+            }
+
+            if ($this->startsWith("<!")) {
+                $tokens[] = $this->readDeclaration();
                 continue;
             }
 
@@ -80,7 +86,7 @@ final class ViewTokenizer
 
             if ($this->startsWith(">")) {
                 $this->position++;
-                return ViewToken::startTag($name, $attributes, false, $position);
+                return ViewToken::startTag($name, $attributes, $this->isVoidElement($name), $position);
             }
 
             $attributes[] = $this->startsWith("{{")
@@ -105,8 +111,8 @@ final class ViewTokenizer
     private function readAttribute(): AttributeNode
     {
         $name = $this->readName();
-        $bound = str_starts_with($name, ":");
-        if ($bound) {
+        $expressionBinding = str_starts_with($name, ":");
+        if ($expressionBinding) {
             $name = substr($name, 1);
 
             if ($name === "") {
@@ -117,7 +123,7 @@ final class ViewTokenizer
         $this->skipWhitespace();
 
         if (!$this->startsWith("=")) {
-            if ($bound) {
+            if ($expressionBinding) {
                 throw new ViewParseException("Bound attribute '{$name}' requires a value.");
             }
 
@@ -128,11 +134,11 @@ final class ViewTokenizer
         $this->skipWhitespace();
 
         $value = $this->readAttributeValue();
-        if ($bound && trim($value) === "") {
+        if ($expressionBinding && trim($value) === "") {
             throw new ViewParseException("Bound attribute '{$name}' requires an expression.");
         }
 
-        return new AttributeNode($name, $value, $bound);
+        return new AttributeNode($name, $expressionBinding ? new ExpressionNode(trim($value)) : $value);
     }
 
     private function readAttributeSpread(): AttributeSpreadNode
@@ -278,6 +284,21 @@ final class ViewTokenizer
         return ViewToken::comment($text, $position);
     }
 
+    private function readDeclaration(): ViewToken
+    {
+        $position = $this->position;
+        $end = strpos($this->source, ">", $this->position + 2);
+
+        if ($end === false) {
+            throw new ViewParseException("Unclosed declaration.");
+        }
+
+        $text = substr($this->source, $this->position, $end - $this->position + 1);
+        $this->position = $end + 1;
+
+        return ViewToken::text($text, $position);
+    }
+
     private function readName(): string
     {
         $start = $this->position;
@@ -320,6 +341,26 @@ final class ViewTokenizer
     private function isRawTextElement(string $name): bool
     {
         return in_array(strtolower($name), ["script", "style"], true);
+    }
+
+    private function isVoidElement(string $name): bool
+    {
+        return in_array(strtolower($name), [
+            "area",
+            "base",
+            "br",
+            "col",
+            "embed",
+            "hr",
+            "img",
+            "input",
+            "link",
+            "meta",
+            "param",
+            "source",
+            "track",
+            "wbr",
+        ], true);
     }
 
     private function skipWhitespace(): void

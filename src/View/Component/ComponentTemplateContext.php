@@ -1,0 +1,53 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Atom\View\Component;
+
+final readonly class ComponentTemplateContext
+{
+    public function encode(mixed $value): string
+    {
+        return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, "UTF-8");
+    }
+
+    /**
+     * @param array<string, mixed> $variables
+     */
+    public function fragment(?Fragment $fragment, array $variables = []): string
+    {
+        return $fragment?->render($variables) ?? "";
+    }
+
+    /**
+     * @param array<string, mixed> $attributes
+     */
+    public function attributes(array $attributes): string
+    {
+        return (new AttributeBag($attributes))->render();
+    }
+
+    /**
+     * @param array<int|string, mixed> $classes
+     */
+    public function classes(array $classes): string
+    {
+        $result = [];
+
+        foreach ($classes as $class => $enabled) {
+            if (is_int($class)) {
+                if (is_string($enabled) && $enabled !== "") {
+                    $result[] = $enabled;
+                }
+
+                continue;
+            }
+
+            if ($enabled) {
+                $result[] = $class;
+            }
+        }
+
+        return implode(" ", $result);
+    }
+}
