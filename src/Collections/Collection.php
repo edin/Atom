@@ -4,36 +4,29 @@ declare(strict_types=1);
 
 namespace Atom\Collections;
 
-use Atom\Collections\Interfaces\ICollection;
+use ArrayAccess;
 
-class Collection extends ReadOnlyCollection implements ICollection
+class Collection extends ReadOnlyCollection implements ArrayAccess
 {
-    /**
-     * @return self
-     */
-    public static function from(iterable $items)
-    {
-        return new self($items);
-    }
-
-    public function add($value): void
+    public function add(mixed $value): void
     {
         $this->items[] = $value;
     }
 
-    public function removeFirst($value): void
+    public function removeFirst(mixed $value): void
     {
         $key = array_search($value, $this->items, true);
         if ($key !== false) {
             unset($this->items[$key]);
+            $this->items = array_values($this->items);
         }
     }
 
-    public function removeAll($value): void
+    public function removeAll(mixed $value): void
     {
-        $this->items = array_filter($this->items, function ($it) use ($value) {
+        $this->items = array_values(array_filter($this->items, function (mixed $it) use ($value): bool {
             return $it !== $value;
-        });
+        }));
     }
 
     public function clear(): void
@@ -41,14 +34,15 @@ class Collection extends ReadOnlyCollection implements ICollection
         $this->items = [];
     }
 
-    public function removeKey($key): void
+    public function removeKey(mixed $key): void
     {
         unset($this->items[$key]);
+        $this->items = array_values($this->items);
     }
 
     public function remove(callable $predicate): void
     {
-        $this->items = array_filter($this->items, $predicate);
+        $this->items = array_values(array_filter($this->items, $predicate));
     }
 
     public function include(iterable $source): void
@@ -61,41 +55,41 @@ class Collection extends ReadOnlyCollection implements ICollection
     {
         $items = is_array($source) ? $source : iterator_to_array($source);
 
-        $this->items = array_filter($this->items, function ($it) use ($items) {
-            return array_search($it, $items, true) !== false;
-        });
+        $this->items = array_values(array_filter($this->items, function (mixed $it) use ($items): bool {
+            return array_search($it, $items, true) === false;
+        }));
     }
 
-    public function offsetSet($offset, $value)
+    public function offsetSet(mixed $offset, mixed $value): void
     {
-        if (is_null($offset)) {
+        if ($offset === null) {
             $this->items[] = $value;
         } else {
             $this->items[$offset] = $value;
         }
     }
 
-    public function offsetExists($offset)
+    public function offsetExists(mixed $offset): bool
     {
-        return isset($this->items[$offset]);
+        return array_key_exists($offset, $this->items);
     }
 
-    public function offsetUnset($offset)
+    public function offsetUnset(mixed $offset): void
     {
         unset($this->items[$offset]);
     }
 
-    public function offsetGet($offset)
+    public function offsetGet(mixed $offset): mixed
     {
-        return isset($this->items[$offset]) ? $this->items[$offset] : null;
+        return $this->items[$offset] ?? null;
     }
 
-    public function sort(?callable $comaparator = null): void
+    public function sort(?callable $comparator = null): void
     {
-        if ($comaparator === null) {
+        if ($comparator === null) {
             sort($this->items);
         } else {
-            usort($this->items, $comaparator);
+            usort($this->items, $comparator);
         }
     }
 }

@@ -4,30 +4,24 @@ declare(strict_types=1);
 
 namespace Atom\Dispatcher;
 
-use Psr\Http\Message\ResponseInterface;
+use Atom\Http\Response;
 
-class ResponseEmitter implements IResponseEmitter
+class ResponseEmitter implements ResponseEmitterInterface
 {
-    public function emit(ResponseInterface $response): void
+    public function emit(Response $response): void
     {
         $http_line = sprintf(
             'HTTP/%s %s %s',
-            $response->getProtocolVersion(),
-            $response->getStatusCode(),
+            "1.1",
+            $response->getStatus(),
             $response->getReasonPhrase()
         );
-        header($http_line, true, $response->getStatusCode());
+        header($http_line, true, $response->getStatus());
         foreach ($response->getHeaders() as $name => $values) {
             foreach ($values as $value) {
                 header("$name: $value", false);
             }
         }
-        $stream = $response->getBody();
-        if ($stream->isSeekable()) {
-            $stream->rewind();
-        }
-        while (!$stream->eof()) {
-            echo $stream->read(1024 * 8);
-        }
+        $response->sendContent();
     }
 }

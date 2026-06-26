@@ -4,26 +4,22 @@ declare(strict_types=1);
 
 namespace Atom\Validation\Rules;
 
-final class Numeric extends AbstractRule
+use Attribute;
+use Atom\Validation\ValidationContext;
+use Atom\Validation\ValidationError;
+
+#[Attribute(Attribute::TARGET_PROPERTY)]
+final readonly class Numeric extends AbstractRule
 {
-    protected string $errorMessage = "The field should have numeric value";
-
-    public function isValid($value): bool
+    public function validate(mixed $value, ValidationContext $context): ?ValidationError
     {
-        if (is_int($value) || is_float($value)) {
-            return true;
+        if ($this->isEmpty($value)) {
+            return null;
         }
 
-        $value = filter_var($value, FILTER_VALIDATE_INT);
-        if ($value == false) {
-            $value = filter_var($value, FILTER_VALIDATE_FLOAT);
-        }
-
-        if ($value !== false) {
-            $this->setResultValue($value);
-            return true;
-        }
-
-        return false;
+        return is_numeric($value)
+            ? null
+            : $this->error($context, "numeric", "The field must be numeric.");
     }
 }
+

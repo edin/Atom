@@ -4,44 +4,60 @@ declare(strict_types=1);
 
 namespace Atom\Dispatcher;
 
-use Atom\Container\Container;
-use Atom\Container\ResolutionContext;
-use Nyholm\Psr7\Factory\Psr17Factory;
-use Nyholm\Psr7Server\ServerRequestCreator;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Message\ResponseInterface;
+use Atom\Di\Bindings;
+use Atom\Di\InjectionContext;
+use Atom\Di\Injector;
+use Atom\Di\ServiceProviderInterface;
+use Atom\Http\Request;
+use Atom\Http\RequestHandlerInterface;
+use Atom\Http\Response;
+use Atom\Router\Router;
 
-final class DispatcherServices
+final class DispatcherServices implements ServiceProviderInterface
 {
-    public function __construct(Container $container)
+    public function register(Bindings $bindings): void
     {
-        $container->bind(ServerRequestInterface::class)
-            ->withName("Request")
-            ->toFactory(function () {
-                $factory = new Psr17Factory();
-                $creator = new ServerRequestCreator($factory, $factory, $factory, $factory);
-                $serverRequest = $creator->fromGlobals();
-                return $serverRequest;
-            });
+        $bindings->bind(Injector::class)
+            ->toFactory(fn(Injector $injector) => $injector)
+            ->singleton();
 
-        $container->bind(ResponseInterface::class)
-            ->withName("Response")
-            ->toFactory(function () {
-                $factory = new Psr17Factory();
-                return $factory->createResponse();
-            });
+        $bindings->bind(InjectionContext::class)
+            ->toFactory(fn(Injector $injector, InjectionContext $context) => $context)
+            ->scoped();
 
-        $container->bind(IResponseEmitter::class)
-            ->withName("ResponseEmitter")
-            ->to(ResponseEmitter::class)
-            ->asShared();
-
-        $container->bind(ResolutionContext::class)
-            ->withName("RequestScope")
+        $bindings->bind(Router::class)
             ->toSelf()
-            ->asShared();
+            ->singleton();
 
-        $container->Dispatcher = Dispatcher::class;
-        $container->ResultHandler = ResultHandler::class;
+        $bindings->bind(Request::class)
+            ->toFactory(fn() => Request::fromGlobals())
+            ->scoped();
+
+        $bindings->bind(Response::class)
+            ->toFactory(fn() => new Response())
+            ->scoped();
+
+        $bindings->bind(ResponseEmitterInterface::class)
+            ->to(ResponseEmitter::class)
+            ->singleton();
+
+        $bindings->bind(ResultHandlerRegistry::class)
+            ->toSelf()
+            ->scoped();
+
+        $bindings->bind(ResultConverter::class)
+            ->toSelf()
+            ->scoped();
+
+        $bindings->bind(RouteInvoker::class)
+            ->toSelf()
+            ->scoped();
+
+        $bindings->bind(Dispatcher::class)
+            ->toSelf()
+            ->scoped();
+
+        $bindings->bind(RequestHandlerInterface::class)
+            ->toExisting(Dispatcher::class);
     }
 }

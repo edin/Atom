@@ -2,7 +2,6 @@
 
 namespace Atom\Tests\Collections;
 
-use Atom\Collections\Interfaces\IStack;
 use Atom\Collections\Stack;
 use PHPUnit\Framework\TestCase;
 
@@ -17,7 +16,6 @@ final class StackTest extends TestCase
 
     public function testInstanceType()
     {
-        $this->assertInstanceOf(IStack::class, $this->stack);
         $this->assertInstanceOf(Stack::class, $this->stack);
         $this->assertCount(4, $this->stack);
     }

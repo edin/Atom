@@ -4,33 +4,27 @@ declare(strict_types=1);
 
 namespace Atom\Validation\Rules;
 
-final class Pattern extends AbstractRule
+use Attribute;
+use Atom\Validation\ValidationContext;
+use Atom\Validation\ValidationError;
+
+#[Attribute(Attribute::TARGET_PROPERTY)]
+final readonly class Pattern extends AbstractRule
 {
-    protected string $errorMessage = "The field does not match to specified pattern";
-    private string $pattern;
-
-    public function __construct(string $pattern)
+    public function __construct(public string $pattern, ?string $message = null)
     {
-        $this->pattern = $pattern;
+        parent::__construct($message);
     }
 
-    public function getAttributes(): array
+    public function validate(mixed $value, ValidationContext $context): ?ValidationError
     {
-        return [
-            "pattern" => $this->pattern
-        ];
-    }
-
-    public function isValid($value): bool
-    {
-        if (is_null($value)) {
-            return false;
+        if ($this->isEmpty($value)) {
+            return null;
         }
 
-        if (is_scalar(($value))) {
-            $value = (string) $value;
-        }
-
-        return preg_match($this->pattern, $value) === 1;
+        return is_scalar($value) && preg_match($this->pattern, (string) $value) === 1
+            ? null
+            : $this->error($context, "pattern", "The field format is invalid.", ["pattern" => $this->pattern]);
     }
 }
+

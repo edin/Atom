@@ -1,4 +1,4 @@
-# Atom Frmework
+# Atom Framework
 
 ## Dependency Injection
 
@@ -12,16 +12,14 @@
 
 [Database](Database.md)
 
-> //TODO: Add database references
-
-> //TODO: Add model references
-
-> //TODO: Add repository references
-
 ## Validation
 
 [Validation](Validation.md)
 
-## Midlewares
+## Console
+
+[Console](Console.md)
+
+## Middlewares
 
 [Middlewares](Middlewares.md)

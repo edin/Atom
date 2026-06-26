@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace Atom\View;
 
+use Atom\Application;
+use Atom\Di\Injector;
 use Atom\Interfaces\IViewEngine;
 use Atom\Interfaces\IViewInfo;
-use Atom\Container\Container;
 
 final class View
 {
     private string $viewsDir;
-    private Container $di;
     private array $engines = [];
 
-    public function __construct(Container $di)
+    public function __construct(private Injector $injector, private Application $app)
     {
-        $this->di = $di;
     }
 
     public function getDefaultExtension(): string
@@ -46,8 +45,8 @@ final class View
         $viewEngine = $this->getViewEngine($ext);
 
         $parameters = $view->getModel();
-        $parameters['baseUrl'] = $this->di->Application->getBaseUrl();
-        $parameters['container'] = $this->di;
+        $parameters['baseUrl'] = $this->app->getBaseUrl();
+        $parameters['injector'] = $this->injector;
 
         $viewEngine->setParams($parameters);
         return $viewEngine->render($view->getViewName(), $parameters);
@@ -59,7 +58,7 @@ final class View
         if ($viewEngine == null) {
             throw new \RuntimeException("Can't find view engine for file type '{$extension}'");
         }
-        return $this->di->{$viewEngine};
+        return $this->injector->get($viewEngine);
     }
 
     public function setEngines(array $engines)

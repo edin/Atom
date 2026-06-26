@@ -4,40 +4,53 @@ declare(strict_types=1);
 
 namespace Atom\Collections;
 
-use Atom\Collections\Interfaces\ISet;
-
-class Set extends Collection implements ISet
+class Set extends ReadOnlyCollection
 {
-    public static function from(iterable $items): self
+    public function __construct(iterable $items)
     {
-        return new self($items);
+        parent::__construct($items);
+        $this->items = array_values(array_unique($this->items));
     }
 
-    public function union(iterable $set): ISet
+    public function add(mixed $value): void
+    {
+        if (!$this->contains($value)) {
+            $this->items[] = $value;
+        }
+    }
+
+    public function remove(mixed $value): void
+    {
+        $this->items = array_values(array_filter($this->items, function (mixed $it) use ($value): bool {
+            return $it !== $value;
+        }));
+    }
+
+    public function union(iterable $set): static
     {
         $items = $this->concat($set)->unique();
-        return new Set($items);
+        return new static($items);
     }
 
-    public function intersect(iterable $set): ISet
+    public function intersect(iterable $set): static
     {
-        $collection = Set::from($set);
+        $collection = static::from($set);
 
-        $items = $this->filter(function ($it) use ($collection) {
+        $items = $this->filter(function (mixed $it) use ($collection): bool {
             return $collection->contains($it);
         })->unique();
 
-        return new Set($items);
+        return new static($items);
     }
 
-    public function except(iterable $set): ISet
+    public function except(iterable $set): static
     {
-        $collection = Set::from($set);
+        $collection = static::from($set);
 
-        $items = $this->filter(function ($it) use ($collection) {
+        $items = $this->filter(function (mixed $it) use ($collection): bool {
             return !$collection->contains($it);
         })->unique();
 
-        return new Set($items);
+        return new static($items);
     }
 }

@@ -9,113 +9,101 @@ use JsonSerializable;
 
 final class ValidationResult implements Countable, JsonSerializable
 {
-    private array $modelErrors = [];
+    /** @var ValidationError[] */
     private array $errors = [];
-    private $value = null;
-    private bool $hasValue = false;
-    private $index = null;
-    private bool $isArrayResult = false;
 
-    public function addModelError(ErrorMessage $errorMessage)
+    public static function valid(): self
     {
-        $this->modelErrors[] = $errorMessage;
+        return new self();
     }
 
-    public function addError(ErrorMessage $errorMessage)
+    public function add(ValidationError $error): self
     {
-        $this->errors[] = $errorMessage;
+        $this->errors[] = $error;
+        return $this;
     }
 
-    public function addValidationResult(string $fieldName, ValidationResult $validationResult)
+    public function merge(self $result): self
     {
-        $fieldName = (string) $fieldName;
-        $this->errors[$fieldName] = $validationResult;
-    }
+        foreach ($result->all() as $error) {
+            $this->add($error);
+        }
 
-    public function setArrayResults(): void
-    {
-        $this->isArrayResult = true;
-    }
-
-    public function isArrayResult(): bool
-    {
-        return $this->isArrayResult;
-    }
-
-    public function hasErrorsFor(string $fieldName): bool
-    {
-        return isset($this->errors[$fieldName]);
-    }
-
-    public function getErrorsFor(string $fieldName)
-    {
-        return $this->errors[$fieldName];
-    }
-
-    public function setValue($value): void
-    {
-        $this->hasValue = true;
-        $this->value = $value;
-    }
-
-    public function setIndex($value): void
-    {
-        $this->index = $value;
-    }
-
-    public function getIndex()
-    {
-        return $this->index;
-    }
-
-    public function hasValue(): bool
-    {
-        return $this->hasValue;
-    }
-
-    public function getValue()
-    {
-        return $this->value;
+        return $this;
     }
 
     public function isValid(): bool
     {
-        return count($this->errors) === 0 &&
-            count($this->modelErrors) == 0;
+        return $this->errors === [];
     }
 
-    public function hasAnyErrors(): bool
+    public function passed(): bool
+    {
+        return $this->isValid();
+    }
+
+    public function failed(): bool
     {
         return !$this->isValid();
     }
 
-    public function hasIndex(): bool
+    public function hasErrorsFor(string $field): bool
     {
-        return $this->index !== null;
+        return $this->errorsFor($field) !== [];
     }
 
-    public function jsonSerialize()
+    /**
+     * @return ValidationError[]
+     */
+    public function errorsFor(string $field): array
     {
-        $result = [];
-        if (count($this->modelErrors)) {
-            $result['modelErrors'] = $this->modelErrors;
-        }
-
-        if ($this->hasIndex()) {
-            $result['index'] = $this->index;
-        }
-
-        if ($this->isArrayResult) {
-            $result['errors'] = (object) $this->errors;
-        } else {
-            $result['errors'] = $this->errors;
-        }
-
-        return $result;
+        return array_values(array_filter(
+            $this->errors,
+            static fn(ValidationError $error): bool => $error->field === $field
+        ));
     }
 
-    public function count()
+    public function first(string $field): ?string
     {
-        return count($this->errors) + count($this->modelErrors);
+        return $this->errorsFor($field)[0]->message ?? null;
+    }
+
+    /**
+     * @return ValidationError[]
+     */
+    public function all(): array
+    {
+        return $this->errors;
+    }
+
+    /**
+     * @return array<string, string[]>
+     */
+    public function messages(): array
+    {
+        $messages = [];
+
+        foreach ($this->errors as $error) {
+            $messages[$error->field][] = $error->message;
+        }
+
+        return $messages;
+    }
+
+    public function count(): int
+    {
+        return count($this->errors);
+    }
+
+    /**
+     * @return array{valid: bool, errors: array<string, string[]>}
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            "valid" => $this->isValid(),
+            "errors" => $this->messages(),
+        ];
     }
 }
+

@@ -4,24 +4,24 @@ declare(strict_types=1);
 
 namespace Atom\Dispatcher;
 
-use Atom\Container\Container;
-use Atom\Dispatcher\ResultHandler\ArrayResultHandler;
+use Atom\Di\InjectionContext;
+use Atom\Di\Injector;
+use Atom\Dispatcher\ResultHandler\JsonResultHandler;
 use Atom\Dispatcher\ResultHandler\StringResultHandler;
 use Atom\Dispatcher\ResultHandler\ViewInfoResultHandler;
-use Atom\Interfaces\IResultHandler;
 
 class ResultHandlerRegistry
 {
-    private Container $container;
     private array $handlers = [];
+    /** @var array<class-string<ResultHandlerInterface>, ResultHandlerInterface> */
+    private array $instances = [];
 
-    public function __construct(Container $container, ?array $handlers = null)
+    public function __construct(private Injector $injector, ?array $handlers = null)
     {
-        $this->container = $container;
         $this->handlers = $handlers ?? [
             ViewInfoResultHandler::class,
             StringResultHandler::class,
-            ArrayResultHandler::class,
+            JsonResultHandler::class,
         ];
     }
 
@@ -40,14 +40,21 @@ class ResultHandlerRegistry
         $this->handlers[] = $handler;
     }
 
-    public function getHandler($result): ?IResultHandler
+    public function getHandler(mixed $result, ?InjectionContext $context = null): ?ResultHandlerInterface
     {
+        $context ??= new InjectionContext();
+
         foreach ($this->handlers as $handlerType) {
-            $handler = $this->container->resolve($handlerType);
+            $handler = $this->resolveHandler($handlerType, $context);
             if ($handler->isMatch($result)) {
                 return $handler;
             }
         }
         return null;
+    }
+
+    private function resolveHandler(string $handlerType, InjectionContext $context): ResultHandlerInterface
+    {
+        return $this->instances[$handlerType] ??= $this->injector->get($handlerType, $context);
     }
 }

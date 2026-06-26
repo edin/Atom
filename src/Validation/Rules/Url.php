@@ -4,14 +4,22 @@ declare(strict_types=1);
 
 namespace Atom\Validation\Rules;
 
-final class Url extends AbstractRule
-{
-    protected string $errorMessage = "The field value should be valid url";
+use Attribute;
+use Atom\Validation\ValidationContext;
+use Atom\Validation\ValidationError;
 
-    public function isValid($value): bool
+#[Attribute(Attribute::TARGET_PROPERTY)]
+final readonly class Url extends AbstractRule
+{
+    public function validate(mixed $value, ValidationContext $context): ?ValidationError
     {
-        $result = filter_var($value, FILTER_VALIDATE_URL);
-        $this->setResultValue($result);
-        return $result !== false;
+        if ($this->isEmpty($value)) {
+            return null;
+        }
+
+        return filter_var($value, FILTER_VALIDATE_URL) === false
+            ? $this->error($context, "url", "The field must be a valid URL.")
+            : null;
     }
 }
+

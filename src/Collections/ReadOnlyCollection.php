@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Atom\Collections;
 
 use ArrayIterator;
-use Atom\Collections\Interfaces\IReadOnlyCollection;
+use Countable;
+use IteratorAggregate;
+use JsonSerializable;
+use Traversable;
 
-class ReadOnlyCollection implements IReadOnlyCollection
+class ReadOnlyCollection implements Countable, IteratorAggregate, JsonSerializable
 {
     protected array $items = [];
 
@@ -16,17 +19,36 @@ class ReadOnlyCollection implements IReadOnlyCollection
         $this->items = is_array($items) ? $items : iterator_to_array($items);
     }
 
-    /**
-     * @return self
-     */
-    public static function from(iterable $items)
+    public static function from(iterable $items): static
     {
-        return new self($items);
+        return new static($items);
     }
 
-    public function contains($value): bool
+    public function contains(mixed $value): bool
     {
         return in_array($value, $this->items, true);
+    }
+
+    public function containsAny(iterable $values): bool
+    {
+        foreach ($values as $value) {
+            if ($this->contains($value)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function containsAll(iterable $values): bool
+    {
+        foreach ($values as $value) {
+            if (!$this->contains($value)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function count(): int
@@ -36,7 +58,7 @@ class ReadOnlyCollection implements IReadOnlyCollection
 
     public function isEmpty(): bool
     {
-        return count($this->items) == 0;
+        return count($this->items) === 0;
     }
 
     public function hasAny(): bool
@@ -49,20 +71,19 @@ class ReadOnlyCollection implements IReadOnlyCollection
         return $this->items;
     }
 
-    public function filter(callable $predicate): IReadOnlyCollection
+    public function filter(callable $predicate): static
     {
-        $items = array_filter($this->items, $predicate);
-        //$items = array_values($items);
-        return new self($items);
+        $items = array_values(array_filter($this->items, $predicate));
+        return new static($items);
     }
 
-    public function map(callable $mapper): IReadOnlyCollection
+    public function map(callable $mapper): static
     {
         $items = array_map($mapper, $this->items);
-        return new self($items);
+        return new static($items);
     }
 
-    public function flatMap(callable $mapper): IReadOnlyCollection
+    public function flatMap(callable $mapper): static
     {
         $items = array_map($mapper, $this->items);
         $result = [];
@@ -75,26 +96,31 @@ class ReadOnlyCollection implements IReadOnlyCollection
                 $result[] = $item;
             }
         }
-        return new self($result);
+        return new static($result);
     }
 
-    public function reduce(callable $reducer, $intial = null)
+    public function reduce(callable $reducer, mixed $initial = null): mixed
     {
-        return array_reduce($this->items, $reducer, $intial);
+        return array_reduce($this->items, $reducer, $initial);
     }
 
-    public function reversed(): IReadOnlyCollection
+    public function reversed(): static
     {
         $items = array_reverse($this->items, false);
-        return new self($items);
+        return new static($items);
     }
 
-    public function first()
+    public function first(): mixed
     {
         return $this->items[0] ?? null;
     }
 
-    public function last()
+    public function at(int $index, mixed $default = null): mixed
+    {
+        return $this->items[$index] ?? $default;
+    }
+
+    public function last(): mixed
     {
         if (count($this->items) > 0) {
             $end = end($this->items);
@@ -104,14 +130,29 @@ class ReadOnlyCollection implements IReadOnlyCollection
         return null;
     }
 
-    public function concat(iterable $list): IReadOnlyCollection
+    public function concat(iterable $list): static
     {
         $items = is_array($list) ? $list : iterator_to_array($list);
         $items = array_merge($this->items, $items);
-        return new self($items);
+        return new static($items);
     }
 
-    public function getIterator()
+    public function slice(int $offset, ?int $length = null): static
+    {
+        return new static(array_slice($this->items, $offset, $length));
+    }
+
+    public function take(int $count): static
+    {
+        return $this->slice(0, $count);
+    }
+
+    public function skip(int $count): static
+    {
+        return $this->slice($count);
+    }
+
+    public function getIterator(): Traversable
     {
         return new ArrayIterator($this->items);
     }
@@ -126,38 +167,38 @@ class ReadOnlyCollection implements IReadOnlyCollection
         return array_values($this->items);
     }
 
-    public function unique(): IReadOnlyCollection
+    public function unique(): static
     {
-        return new self(array_unique($this->items));
+        return new static(array_values(array_unique($this->items)));
     }
 
-    public function implode(string $saprator): string
+    public function implode(string $separator): string
     {
-        return implode($saprator, $this->items);
+        return implode($separator, $this->items);
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return $this->items;
     }
 
-    public function chunkBy(int $size): IReadOnlyCollection
+    public function chunkBy(int $size): static
     {
-        return new self(array_chunk($this->items, $size));
+        return new static(array_chunk($this->items, $size));
     }
 
-    public function sorted(?callable $comaparator = null): IReadOnlyCollection
+    public function sorted(?callable $comparator = null): static
     {
         $items = $this->items;
-        if ($comaparator === null) {
+        if ($comparator === null) {
             sort($items);
         } else {
-            usort($items, $comaparator);
+            usort($items, $comparator);
         }
-        return new self($items);
+        return new static($items);
     }
 
-    public function each(callable $callback): IReadOnlyCollection
+    public function each(callable $callback): static
     {
         foreach ($this->items as $key => $value) {
             $callback($value, $key, $this);

@@ -2,9 +2,9 @@
 
 namespace Atom\Interfaces;
 
-use Psr\Http\Message\ResponseInterface;
+use Atom\Http\Response;
 
 interface IResponsable
 {
-    public function toResponse($context): ResponseInterface;
+    public function toResponse($context): Response;
 }

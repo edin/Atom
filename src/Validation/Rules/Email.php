@@ -4,14 +4,22 @@ declare(strict_types=1);
 
 namespace Atom\Validation\Rules;
 
-final class Email extends AbstractRule
-{
-    protected string $errorMessage = "Value is not valid Email address";
+use Attribute;
+use Atom\Validation\ValidationContext;
+use Atom\Validation\ValidationError;
 
-    public function isValid($value): bool
+#[Attribute(Attribute::TARGET_PROPERTY)]
+final readonly class Email extends AbstractRule
+{
+    public function validate(mixed $value, ValidationContext $context): ?ValidationError
     {
-        $result = filter_var($value, FILTER_VALIDATE_EMAIL);
-        $this->setResultValue($result);
-        return $result !== false;
+        if ($this->isEmpty($value)) {
+            return null;
+        }
+
+        return filter_var($value, FILTER_VALIDATE_EMAIL) === false
+            ? $this->error($context, "email", "The field must be a valid email address.")
+            : null;
     }
 }
+

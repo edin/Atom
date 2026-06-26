@@ -4,35 +4,32 @@ declare(strict_types=1);
 
 namespace Atom\Validation\Rules;
 
-final class MaxLength extends AbstractRule
+use Attribute;
+use Atom\Validation\ValidationContext;
+use Atom\Validation\ValidationError;
+
+#[Attribute(Attribute::TARGET_PROPERTY)]
+final readonly class MaxLength extends AbstractRule
 {
-    protected string $errorMessage = "Length of the field should be maximum {maxValue} chars";
-    protected int $maxValue = 0;
-
-    public function __construct(int $maxValue)
+    public function __construct(public int $value, ?string $message = null)
     {
-        $this->maxValue = $maxValue;
+        parent::__construct($message);
     }
 
-    public function getAttributes(): array
+    public function validate(mixed $value, ValidationContext $context): ?ValidationError
     {
-        return [
-            "maxValue" => $this->maxValue
-        ];
+        if ($this->isEmpty($value)) {
+            return null;
+        }
+
+        return is_string($value) && $this->length($value) <= $this->value
+            ? null
+            : $this->error($context, "max_length", "The field must be at most {max} characters.", ["max" => $this->value]);
     }
 
-    public function isValid($value): bool
+    private function length(string $value): int
     {
-        if (!is_string($value)) {
-            return false;
-        }
-
-        if (function_exists("mb_strlen")) {
-            $result = mb_strlen($value);
-        } else {
-            $result = strlen($value);
-        }
-
-        return ($result <= $this->maxValue);
+        return function_exists("mb_strlen") ? mb_strlen($value) : strlen($value);
     }
 }
+

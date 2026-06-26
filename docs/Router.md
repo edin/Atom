@@ -2,150 +2,166 @@
 
 [Atom Framework](Index.md)
 
+The router is a small route tree. It stores route entries and child routers.
 
-Class synopsis
+## Class Synopsis
 
 ```php
 class Router
 {
-    use RouteTrait;
-    public static function fromGroupAndPath(Router $router, string $path): Router;
+    public function __construct(string $path = "");
     public function getAllRoutes(): array;
-    public function addGroup(string $path = "", ?Closure $routeBuilder = null): self;
-    public function controller(string $controller, Closure $routeBuilder);
-    public function setController(string $controller);
-    public function getController(): ?string;
-    public function getGroups(): array;
+    public function getItems(): array;
     public function getRoutes(): array;
-    public function addRoute($method, string $path, $controller, $action = null): Route;
-    public function getOrPost(string $path, $controller, $action = null): Route;
-    public function get(string $path, $controller, $action = null): Route;
-    public function post(string $path, $controller, $action = null): Route;
-    public function put(string $path, $controller, $action = null): Route;
-    public function patch(string $path, $controller, $action = null): Route;
-    public function delete(string $path, $controller, $action = null): Route;
-    public function options(string $path, $controller, $action = null): Route;
-    public function attach(IRouteBuilder $builder): self;
-    public function attachTo(string $path, IRouteBuilder $builder): self;
-}
+    public function add(RouteEntry|Router $item): RouteEntry|Router;
 
-
-trait RouteTrait
-{
-    public function withName(string $name): self;
-    public function withTitle(string $title): self;
-    public function withDescription(string $description): self;
-    public function getName(): ?string;
-    public function getTitle(): ?string;
-    public function getDescription(): ?string;
     public function getPath(): string;
-    public function setPath(string $path): void;
     public function getFullPath(): string;
-    public function getGroup(): ?Router;
-    public function setGroup(Router $group): void;
-    public function addMiddleware($middleware): self;
-    public function addMetadata(object $instance): self;
-    public function getMetadata();
-    public function getMetadataOfType(string $typeName);
-    public function getMetadataArrayOfType(string $typeName);
+
+    public function middleware(string|MiddlewareInterface $middleware): self;
     public function getOwnMiddlewares(): array;
     public function getMiddlewares(): array;
 }
 
-final class Route
+final class RouteEntry
 {
-    use RouteTrait;
-    public function __construct(Router $group, $method, string $path, ActionHandler $actionHandler);
-    public function setRouteParams(array $params): void;
-    public function setQueryParams(array $params): void;
-    public function getQueryParams(): array;
-    public function getParams(): array;
-    public function getRouteParams(): array;
+    public static function route($method, string $path, RouteAction $routeAction): self;
+
+    public function getRouter(): ?Router;
+
+    public function name(string $name): self;
+    public function title(string $title): self;
+    public function description(string $description): self;
+    public function middleware(string|MiddlewareInterface $middleware): self;
+    public function metadata(object $instance): self;
+
+    public function getName(): ?string;
+    public function getTitle(): ?string;
+    public function getDescription(): ?string;
+    public function getPath(): string;
+    public function getFullPath(): string;
+    public function getOwnMiddlewares(): array;
+    public function getMiddlewares(): array;
+    public function getMetadata(): array;
+    public function getMetadataOfType(string $typeName): ?object;
+    public function getMetadataArrayOfType(string $typeName): array;
+
     public function toController(string $controllerType, string $actionName): self;
     public function toClosure(callable $closure): self;
-    public function getMethod();
-    public function getActionHandler();
+    public function getMethod(): string|array;
+    public function getMethodList(): string;
+    public function getRouteAction(): RouteAction;
     public function getController(): ?string;
     public function getMethodName(): ?string;
     public function getClosure(): ?callable;
     public function isClosure(): bool;
 }
 
-final class ActionHandler
+final readonly class MatchedRoute
 {
-    public function __construct(?string $controller, ?string $methodName, ?callable $closure);
-    public static function from($controller, ?string $method = null): self;
-    public static function fromMethod(string $controller, string $methodName): self;
-    public static function fromClosure(callable $closure): self;
-    public function setController(string $controller, string $methodName): void;
-    public function getController(): ?string;
-    public function getMethodName(): ?string;
-    public function setClosure(callable $closure): void;
-    public function getClosure(): ?callable;
-    public function isClosure(): bool;
+    public function __construct(RouteEntry $route, array $routeParams = [], array $queryParams = []);
+    public function getRouteEntry(): RouteEntry;
+    public function getQueryParams(): array;
+    public function getRouteParams(): array;
+    public function getParams(): array;
+    public function getMiddlewares(): array;
+    public function getRouteAction(): RouteAction;
 }
 
-interface IRouteBuilder
+final class RouteMatcher
 {
-    public function build(Router $router);
+    public function __construct(Router $router);
+    public function match(string $method, string $path, array $queryParams = []): RouteMatchResult;
 }
 
+final readonly class RouteMatchResult
+{
+    public ?MatchedRoute $matchedRoute;
+    public array $allowedMethods;
+
+    public function isFound(): bool;
+    public function isMethodNotAllowed(): bool;
+}
+
+final class Route
+{
+    public static function setRouter(Router $router): void;
+    public static function clearRouter(): void;
+    public static function getRouter(): Router;
+
+    public static function addRoute($method, string $path, $handler = null): RouteEntry;
+    public static function getOrPost(string $path, $handler = null): RouteEntry;
+    public static function get(string $path, $handler = null): RouteEntry;
+    public static function post(string $path, $handler = null): RouteEntry;
+    public static function put(string $path, $handler = null): RouteEntry;
+    public static function patch(string $path, $handler = null): RouteEntry;
+    public static function delete(string $path, $handler = null): RouteEntry;
+    public static function head(string $path, $handler = null): RouteEntry;
+    public static function options(string $path, $handler = null): RouteEntry;
+
+    public static function group(string $path = "", ?Closure $routeBuilder = null): Router;
+    public static function controller(string $controller, ?Closure $routeBuilder = null): Router;
+    public static function attach(string $controller): Router;
+    public static function attachTo(string $path, string $controller): Router;
+}
 ```
 
 ## Examples
 
-* Grouping routes
+Register routes through the shared facade:
 
 ```php
-<?php
+Route::group("/admin", function (Router $router) {
+    $router->middleware(AuthMiddleware::class);
 
-$router->addGroup("/", function (Router $group) {
-    // Add middleware to group 
-    $group->addMiddleware(LogMiddleware::class);
-    // Set default controller for successive calls
-    $group->setController(UserController::class); 
-    // Bind routes to actions
-    $group->get("", "findAll");
-    $group->get("{id}", "findById");
-    $group->post("{id}", "create");
-    $group->put("{id}", "update");
-    $group->delete("{id}", "delete");
+    Route::controller(AdminController::class, function () {
+        Route::get("users", "users")->name("admin.users");
+        Route::post("users", "create");
+    });
 });
 ```
 
-* Attaching routes from doc blocks 
+Use a controller-only group when the routes do not need a path prefix:
 
 ```php
-$router->attach(RouteBuilder::fromController(SomeController::class));
-```
-
-* Attach closure to route
-
-```php
-$router->get("/api/users-all", function (UserRepository $users) {
-    return $users->findAll();
+Route::controller(AdminController::class, function () {
+    Route::get("/dashboard", "dashboard");
 });
 ```
 
-To add routes to an application define service provider like Routes and register service provider in application class.
+Mount routes from controller method attributes:
 
 ```php
-<?php
+use Atom\Router\Attributes\Get;
+use Atom\Router\Attributes\Post;
+use Atom\Router\Attributes\Controller;
 
-namespace App;
-
-class Application extends \Atom\Application
+#[Controller("/api")]
+final class ApiController
 {
-    public function configure()
+    #[Get("/users")]
+    public function users(): array
     {
-        $this->use(Routes::class);
+        return [];
+    }
+
+    #[Post("/users")]
+    public function create(): array
+    {
+        return [];
     }
 }
 
-class Routes
-{
-    public function configure(Router $router) {
-        // Configure router here
-    }
-}
+Route::attach(ApiController::class);
+Route::attachTo("/v1", ApiController::class);
+```
+
+Add an entry directly to a router:
+
+```php
+$router->add(RouteEntry::route(
+    "GET",
+    "/health",
+    RouteAction::fromClosure(fn () => "ok")
+));
 ```

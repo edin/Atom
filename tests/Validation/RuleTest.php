@@ -1,140 +1,114 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Atom\Tests\Validation;
 
-use Atom\Validation\Rules\Ip;
-use Atom\Validation\Rules\Url;
+use Atom\Validation\Rules\Between;
+use Atom\Validation\Rules\Boolean;
 use Atom\Validation\Rules\Date;
-use Atom\Validation\Rules\Enum;
-use PHPUnit\Framework\TestCase;
 use Atom\Validation\Rules\Email;
+use Atom\Validation\Rules\In;
+use Atom\Validation\Rules\Ip;
 use Atom\Validation\Rules\Length;
+use Atom\Validation\Rules\Max;
+use Atom\Validation\Rules\MaxLength;
+use Atom\Validation\Rules\Min;
+use Atom\Validation\Rules\MinLength;
+use Atom\Validation\Rules\Numeric;
 use Atom\Validation\Rules\Pattern;
 use Atom\Validation\Rules\Required;
-use Atom\Validation\Rules\MaxLength;
-use Atom\Validation\Rules\MinLength;
-use Atom\Validation\Rules\NumericMax;
-use Atom\Validation\Rules\NumericMin;
+use Atom\Validation\Rules\Url;
+use Atom\Validation\ValidationContext;
+use PHPUnit\Framework\TestCase;
 
 final class RuleTest extends TestCase
 {
-    private function isSuccess($rule, $value): void
+    private ValidationContext $context;
+
+    protected function setUp(): void
     {
-        $this->assertTrue($rule->validate($value)->isSuccess());
+        $this->context = new ValidationContext("field", []);
     }
 
-    private function isFailure($rule, $value): void
+    private function assertRulePasses(object $rule, mixed $value): void
     {
-        $result = $rule->validate($value);
-        $this->assertTrue($result->isFailure());
+        $this->assertNull($rule->validate($value, $this->context));
     }
 
-    public function testDateRule(): void
+    private function assertRuleFails(object $rule, mixed $value, string $code): void
     {
-        $r = new Date();
-        $this->isSuccess($r, "2020-03-11T18:51:02.295Z");
-        $this->isSuccess($r, "2020-03-11T18:51:02");
-        $this->isSuccess($r, "2020-03-11 18:51:02");
-        $this->isSuccess($r, "2020-03-11");
+        $error = $rule->validate($value, $this->context);
 
-        $this->isFailure($r, " 2020-03-11");
-        $this->isFailure($r, "2020-20-20");
+        $this->assertNotNull($error);
+        $this->assertSame($code, $error->code);
     }
 
-    public function testEmailRule(): void
+    public function testRequiredRule(): void
     {
-        $r = new Email();
-        $this->isSuccess($r, "edin.omeragic@gmail.com");
-        $this->isFailure($r, "edin.omeragic");
-        $this->isFailure($r, "@gmail.com");
+        $rule = new Required();
+
+        $this->assertRulePasses($rule, "0");
+        $this->assertRulePasses($rule, 0);
+        $this->assertRulePasses($rule, false);
+        $this->assertRuleFails($rule, "", "required");
+        $this->assertRuleFails($rule, "   ", "required");
+        $this->assertRuleFails($rule, null, "required");
+        $this->assertRuleFails($rule, [], "required");
     }
 
-    public function testIpRule(): void
+    public function testStringRules(): void
     {
-        $r = new Ip();
-        $this->isSuccess($r, "127.0.0.1");
-        $this->isFailure($r, "127.0.0.1.0");
-        $this->isFailure($r, "300.0.0.0");
+        $this->assertRulePasses(new MinLength(3), "abc");
+        $this->assertRuleFails(new MinLength(3), "ab", "min_length");
+
+        $this->assertRulePasses(new MaxLength(3), "abc");
+        $this->assertRuleFails(new MaxLength(3), "abcd", "max_length");
+
+        $this->assertRulePasses(new Length(2, 4), "abcd");
+        $this->assertRuleFails(new Length(2, 4), "abcde", "length");
     }
 
-    public function testEnumRule(): void
+    public function testFormatRules(): void
     {
-        $r = new Enum(["a", "b", "c"]);
-        $this->isSuccess($r, "a");
-        $this->isSuccess($r, "b");
-        $this->isSuccess($r, "c");
+        $this->assertRulePasses(new Email(), "edin@example.com");
+        $this->assertRuleFails(new Email(), "edin", "email");
 
-        $this->isFailure($r, "x");
+        $this->assertRulePasses(new Url(), "https://example.com");
+        $this->assertRuleFails(new Url(), "example.com", "url");
+
+        $this->assertRulePasses(new Ip(), "127.0.0.1");
+        $this->assertRuleFails(new Ip(), "300.0.0.1", "ip");
+
+        $this->assertRulePasses(new Pattern("/^AT-/"), "AT-123");
+        $this->assertRuleFails(new Pattern("/^AT-/"), "BT-123", "pattern");
     }
 
-    public function testLengthRule(): void
+    public function testNumericRules(): void
     {
-        $r = new Length(3, 5);
-        $this->isSuccess($r, "abc");
-        $this->isSuccess($r, "abcd");
-        $this->isSuccess($r, "abcde");
+        $this->assertRulePasses(new Numeric(), "10.5");
+        $this->assertRuleFails(new Numeric(), "abc", "numeric");
 
-        $this->isFailure($r, "ab");
-        $this->isFailure($r, "ababab");
+        $this->assertRulePasses(new Min(5), 5);
+        $this->assertRuleFails(new Min(5), 4, "min");
+
+        $this->assertRulePasses(new Max(5), 5);
+        $this->assertRuleFails(new Max(5), 6, "max");
+
+        $this->assertRulePasses(new Between(2, 5), 3);
+        $this->assertRuleFails(new Between(2, 5), 6, "between");
     }
 
-    public function testMinValue(): void
+    public function testOtherRules(): void
     {
-        $r = new NumericMin(5);
-        $this->isSuccess($r, 7);
-        $this->isSuccess($r, 6);
-        $this->isSuccess($r, 5);
-        $this->isFailure($r, 4);
-        $this->isFailure($r, 3);
-    }
+        $this->assertRulePasses(new Boolean(), "false");
+        $this->assertRuleFails(new Boolean(), "maybe", "boolean");
 
-    public function testMaxValue(): void
-    {
-        $r = new NumericMax(5);
-        $this->isSuccess($r, 4);
-        $this->isSuccess($r, 5);
-        $this->isFailure($r, 6);
-        $this->isFailure($r, 7);
-    }
+        $this->assertRulePasses(new In(["a", "b"]), "a");
+        $this->assertRuleFails(new In(["a", "b"]), "c", "in");
 
-    public function testMinLength(): void
-    {
-        $r = new MinLength(5);
-        $this->isFailure($r, "1234");
-        $this->isSuccess($r, "12345");
-        $this->isSuccess($r, "123456");
-    }
-
-    public function testMaxLength(): void
-    {
-        $r = new MaxLength(5);
-        $this->isSuccess($r, "1234");
-        $this->isSuccess($r, "12345");
-        $this->isFailure($r, "123456");
-    }
-
-    public function testPattern(): void
-    {
-        $r = new Pattern("/\\d+/");
-        $this->isSuccess($r, "100");
-    }
-
-    public function testRequired(): void
-    {
-        $r = new Required();
-        $this->isSuccess($r, "100");
-        $this->isFailure($r, "");
-        $this->isFailure($r, false);
-        $this->isFailure($r, null);
-        $this->isFailure($r, 0);
-    }
-
-    public function testUrl(): void
-    {
-        $r = new Url();
-        $this->isSuccess($r, "http://google.com/");
-        $this->isSuccess($r, "https://google.com/");
-        $this->isFailure($r, "google.com");
-        $this->isFailure($r, "smugoogle");
+        $this->assertRulePasses(new Date("Y-m-d"), "2026-06-25");
+        $this->assertRuleFails(new Date("Y-m-d"), "25.06.2026", "date");
     }
 }
+

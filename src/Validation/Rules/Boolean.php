@@ -4,17 +4,22 @@ declare(strict_types=1);
 
 namespace Atom\Validation\Rules;
 
-final class Boolean extends AbstractRule
-{
-    protected string $errorMessage = "The field value is not valid";
+use Attribute;
+use Atom\Validation\ValidationContext;
+use Atom\Validation\ValidationError;
 
-    public function isValid($value): bool
+#[Attribute(Attribute::TARGET_PROPERTY)]
+final readonly class Boolean extends AbstractRule
+{
+    public function validate(mixed $value, ValidationContext $context): ?ValidationError
     {
-        $value = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
-        if ($value !== null) {
-            $this->setResultValue($value);
-            return true;
+        if ($this->isEmpty($value)) {
+            return null;
         }
-        return false;
+
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) === null
+            ? $this->error($context, "boolean", "The field must be true or false.")
+            : null;
     }
 }
+

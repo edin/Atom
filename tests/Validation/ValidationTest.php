@@ -1,67 +1,99 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Atom\Tests\Validation;
 
-use Atom\Tests\Validation\Types\Address;
-use Atom\Tests\Validation\Types\Customer;
+use Atom\Tests\Validation\Types\CreateArticleDto;
+use Atom\Validation\Schema;
 use Atom\Validation\Validation;
+use Atom\Validation\Validator;
 use PHPUnit\Framework\TestCase;
 
 final class ValidationTest extends TestCase
 {
-    private $customer;
-    private $validator;
-
-    protected function setUp(): void
+    public function testFluentSchemaValidation(): void
     {
-        $this->customer = new Customer;
-        $this->customer->firstName = "Edin";
-        $this->customer->lastName = " Omeragic ";
-        $this->customer->email = "edin.omeragic@gmail.com";
-        $this->customer->phones = ["", "", "Phone"];
+        $schema = Schema::make()
+            ->field("title")->required()->maxLength(10)
+            ->field("body")->required()->minLength(5)
+            ->field("status")->required()->in(["draft", "published"])
+            ->field("categoryId")->numeric()->min(1)
+            ->schema();
 
-        $this->customer->address = new Address;
-        $this->customer->address->city = "";
-        $this->customer->address->street = " Street Address ";
+        $result = $schema->validate([
+            "title" => "This title is too long",
+            "body" => "Body",
+            "status" => "archived",
+            "categoryId" => 0,
+        ]);
 
-        $this->validator = Validation::create(function (Validation $rule) {
-            $rule->firstName->required()->trim()->length(20, 30);
-            $rule->lastName->required()->trim()->length(20, 30);
-            $rule->email->required()->email();
-            $rule->address->asObject(function (Validation $rule) {
-                $rule->city->trim()->required();
-                $rule->street->trim()->required();
-            });
-            $rule->phones->asArray()->required();
+        $this->assertTrue($result->failed());
+        $this->assertTrue($result->hasErrorsFor("title"));
+        $this->assertSame("max_length", $result->errorsFor("title")[0]->code);
+        $this->assertSame("min_length", $result->errorsFor("body")[0]->code);
+        $this->assertSame("in", $result->errorsFor("status")[0]->code);
+        $this->assertSame("min", $result->errorsFor("categoryId")[0]->code);
+    }
+
+    public function testAttributeValidation(): void
+    {
+        $dto = new CreateArticleDto();
+        $dto->title = "";
+        $dto->body = "Article body";
+        $dto->status = "archived";
+        $dto->categoryId = "0";
+
+        $result = Validator::for(CreateArticleDto::class)->validate($dto);
+
+        $this->assertTrue($result->failed());
+        $this->assertSame("required", $result->errorsFor("title")[0]->code);
+        $this->assertSame("in", $result->errorsFor("status")[0]->code);
+        $this->assertSame("min", $result->errorsFor("categoryId")[0]->code);
+    }
+
+    public function testAttributeValidationCanInferClassFromObject(): void
+    {
+        $dto = new CreateArticleDto();
+        $dto->title = "Valid title";
+        $dto->body = "Long enough body";
+        $dto->status = "published";
+        $dto->categoryId = 1;
+
+        $result = Validator::for()->validate($dto);
+
+        $this->assertTrue($result->passed());
+    }
+
+    public function testLegacyValidationBuilderStillWorksForSimpleRules(): void
+    {
+        $validation = Validation::create(function (Validation $rules): void {
+            $rules->title->required()->maxLength(10);
+            $rules->body->required();
         });
+
+        $result = $validation->validate([
+            "title" => "Too long for this field",
+            "body" => "",
+        ]);
+
+        $this->assertTrue($result->failed());
+        $this->assertSame("max_length", $result->errorsFor("title")[0]->code);
+        $this->assertSame("required", $result->errorsFor("body")[0]->code);
     }
 
-    public function testValidationBuilder(): void
+    public function testResultMessagesAreFormFriendly(): void
     {
-        $result = $this->validator->validate($this->customer);
-        $this->assertFalse($result->isValid());
-    }
+        $schema = Schema::make()
+            ->field("title")->required("Give this article a title.")
+            ->schema();
 
-    public function testFilteringValues(): void
-    {
-        $result = $this->validator->validate($this->customer);
-        $this->assertEquals("Omeragic", $this->customer->lastName);
-    }
+        $result = $schema->validate(["title" => ""]);
 
-    public function testNestedFilteringValues(): void
-    {
-        $result = $this->validator->validate($this->customer);
-        $this->assertEquals("Street Address", $this->customer->address->street);
-    }
-
-    public function testArrayValues(): void
-    {
-        $result = $this->validator->validate($this->customer);
-
-        $hasErrors = $result->hasErrorsFor("phones");
-        $errors = $result->getErrorsFor("phones");
-       
-        $this->assertTrue($hasErrors);
-        $this->assertCount(2, $errors);
+        $this->assertSame("Give this article a title.", $result->first("title"));
+        $this->assertSame([
+            "title" => ["Give this article a title."],
+        ], $result->messages());
     }
 }
+

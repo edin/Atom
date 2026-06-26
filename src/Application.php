@@ -4,22 +4,32 @@ declare(strict_types=1);
 
 namespace Atom;
 
+use Atom\Di\Bindings;
+use Atom\Di\InjectionContext;
+use Atom\Di\Injector;
+use Atom\Di\ServiceProviderRegistry;
+use Atom\Dispatcher\Dispatcher;
+use Atom\Dispatcher\DispatcherServices;
+use Atom\Dispatcher\ResponseEmitterInterface;
+use Atom\Console\ConsoleApplication;
+use Atom\Console\ConsoleServices;
+use Atom\Http\Request;
+use Atom\Http\Response;
+use Atom\Http\RequestHandlerInterface;
+use Atom\Router\MatchedRoute;
 use Atom\Router\Route;
 use Atom\Router\Router;
 use Atom\View\ViewServices;
-use Atom\Container\Container;
-use Atom\Dispatcher\DispatcherServices;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
 use RuntimeException;
 
 abstract class Application
 {
     public static ?Application $app = null;
-    private ?Container $container = null;
-    private array $plugins = [];
-    private array $pluginInstances = [];
+    private ?ServiceProviderRegistry $providers = null;
+    private ?Bindings $bindings = null;
+    private ?Injector $injector = null;
+    private ?InjectionContext $currentContext = null;
+    private bool $initialized = false;
     protected string $baseUrl = "";
 
     public function __construct()
@@ -28,69 +38,73 @@ abstract class Application
             throw new RuntimeException("Application was already initialized");
         }
         static::$app = $this;
-
-        $this->container = new Container();
-        $this->container->bind(Application::class)->toInstance($this);
-        $this->container->bind(static::class)
-            ->withName("Application")
-            ->toInstance($this);
-
-        $this->container->bind(Container::class)
-            ->withName("Container")
-            ->toInstance($this->container);
     }
 
-    final public function getContainer(): Container
+    final public function getProviders(): ServiceProviderRegistry
     {
-        return $this->container;
+        return $this->providers ?? throw new RuntimeException("Application has not been initialized.");
+    }
+
+    final public function getBindings(): Bindings
+    {
+        return $this->bindings ?? throw new RuntimeException("Application has not been initialized.");
+    }
+
+    final public function getInjector(): Injector
+    {
+        return $this->injector ?? throw new RuntimeException("Application has not been initialized.");
     }
 
     final public function getRouter(): Router
     {
-        return $this->container->Router;
+        return $this->getInjector()->get(Router::class, $this->currentContext);
     }
 
-    final public function getCurrentRoute(): ?Route
+    final public function getCurrentRoute(): ?MatchedRoute
     {
-        return $this->container->CurrentRoute;
+        $route = $this->currentContext?->get(MatchedRoute::class);
+        return $route instanceof MatchedRoute ? $route : null;
     }
 
-    final public function getRequest(): ServerRequestInterface
+    final public function getRequest(): Request
     {
-        return $this->container->Request;
+        return $this->getInjector()->get(Request::class, $this->currentContext);
     }
 
-    final public function getResponse(): ResponseInterface
+    final public function getResponse(): Response
     {
-        return $this->container->Response;
+        return $this->getInjector()->get(Response::class, $this->currentContext);
     }
 
     final public function getDispatcher(): RequestHandlerInterface
     {
-        return $this->container->Dispatcher;
+        return $this->getInjector()->get(Dispatcher::class, $this->currentContext);
     }
 
-    final public function getResponseEmitter()
+    final public function getResponseEmitter(): ResponseEmitterInterface
     {
-        return $this->container->ResponseEmitter;
+        return $this->getInjector()->get(ResponseEmitterInterface::class, $this->currentContext);
     }
 
-    public function registerDefaultServices()
+    final public function getConsole(): ConsoleApplication
     {
-        $this->container->bind(Router::class)
-            ->withName("Router")
-            ->toSelf()
-            ->asShared();
-
-        $this->use(DispatcherServices::class);
-        $this->use(ViewServices::class);
+        return $this->getInjector()->get(ConsoleApplication::class);
     }
 
-    abstract public function configure();
-
-    public function use($plugin): void
+    final protected function registerDefaultServices(ServiceProviderRegistry $providers): void
     {
-        $this->plugins[] = $plugin;
+        $providers
+            ->add(ConsoleServices::class)
+            ->add(DispatcherServices::class)
+            ->add(ViewServices::class);
+    }
+
+    protected function services(ServiceProviderRegistry $providers): void
+    {
+    }
+
+    protected function bootstrap(Injector $injector): void
+    {
     }
 
     public function getBaseUrl(): string
@@ -98,33 +112,46 @@ abstract class Application
         return $this->baseUrl;
     }
 
-    public function initialize()
+    final public function initialize(): void
     {
-        $this->registerDefaultServices();
-        $this->configure();
-
-        foreach ($this->plugins as $pluginType) {
-            if (is_string($pluginType)) {
-                $this->pluginInstances[] = $this->container->resolve($pluginType);
-            } else {
-                $this->pluginInstances[] = $pluginType;
-            }
+        if ($this->initialized) {
+            return;
         }
 
-        foreach ($this->pluginInstances as $plugin) {
-            $reflection = new \ReflectionClass($plugin);
-            if ($reflection->hasMethod("configure")) {
-                $configure = $reflection->getMethod("configure");
-                $parameters =  $this->container->resolveMethodParameters($configure);
-                $configure->invokeArgs($plugin, $parameters);
-            }
+        $providers = ServiceProviderRegistry::create();
+        $this->registerDefaultServices($providers);
+        $this->services($providers);
+
+        $bindings = $providers->bindings();
+        $bindings->value(Application::class, $this);
+        if (static::class !== Application::class) {
+            $bindings->value(static::class, $this);
         }
+        $bindings->value(ServiceProviderRegistry::class, $providers);
+        $bindings->value(Bindings::class, $bindings);
+
+        $this->providers = $providers;
+        $this->bindings = $bindings;
+        $this->injector = new Injector($bindings);
+
+        Route::setRouter($this->injector->get(Router::class));
+        $this->bootstrap($this->injector);
+
+        $this->initialized = true;
     }
 
-    public function run()
+    final public function run(?Request $request = null): Response
     {
         $this->initialize();
+
+        $this->currentContext = new InjectionContext();
+        if ($request !== null) {
+            $this->currentContext->set(Request::class, $request);
+        }
+
         $response = $this->getDispatcher()->handle($this->getRequest());
         $this->getResponseEmitter()->emit($response);
+
+        return $response;
     }
 }

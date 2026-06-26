@@ -4,25 +4,31 @@ declare(strict_types=1);
 
 namespace Atom\Dispatcher\ResultHandler;
 
-use Atom\Interfaces\IResultHandler;
-use Psr\Http\Message\ResponseInterface;
+use Atom\Di\Injector;
+use Atom\Dispatcher\ResultHandlerInterface;
+use Atom\Http\Response;
+use Atom\Interfaces\IViewInfo;
+use Atom\View\View;
 
-class ViewInfoResultHandler implements IResultHandler
+class ViewInfoResultHandler extends AbstractResultHandler implements ResultHandlerInterface
 {
-    use ResultHandlerTrait;
-
-    public function isMatch(/*any*/$result): bool
+    public function __construct(Response $response, private Injector $injector)
     {
-        return $result instanceof \Atom\Interfaces\IViewInfo;
+        parent::__construct($response);
     }
 
-    public function process($result): ResponseInterface
+    public function isMatch(mixed $result): bool
     {
-        $view = $this->getContainer()->View;
+        return $result instanceof IViewInfo;
+    }
+
+    public function process(mixed $result): Response
+    {
+        $view = $this->injector->get(View::class);
         $content = $view->render($result);
 
         $response = $this->getResponse();
-        $response->getBody()->write($content);
+        $response->write($content);
         return $response;
     }
 }

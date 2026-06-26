@@ -4,38 +4,34 @@ declare(strict_types=1);
 
 namespace Atom\Validation\Rules;
 
-final class Length extends AbstractRule
+use Attribute;
+use Atom\Validation\ValidationContext;
+use Atom\Validation\ValidationError;
+
+#[Attribute(Attribute::TARGET_PROPERTY)]
+final readonly class Length extends AbstractRule
 {
-    protected string $errorMessage = "Length should be between {minValue} and {maxValue} chars";
-    protected int $minValue = 0;
-    protected int $maxValue = 0;
-
-    public function __construct(int $minValue, int $maxValue)
+    public function __construct(public int $min, public int $max, ?string $message = null)
     {
-        $this->minValue = $minValue;
-        $this->maxValue = $maxValue;
+        parent::__construct($message);
     }
 
-    public function getAttributes(): array
+    public function validate(mixed $value, ValidationContext $context): ?ValidationError
     {
-        return [
-            "minValue" => $this->minValue,
-            "maxValue" => $this->maxValue,
-        ];
-    }
-
-    public function isValid($value): bool
-    {
-        if (!is_string($value)) {
-            return false;
+        if ($this->isEmpty($value)) {
+            return null;
         }
 
-        if (function_exists("mb_strlen")) {
-            $result = mb_strlen($value);
-        } else {
-            $result = strlen($value);
-        }
+        $length = is_string($value)
+            ? (function_exists("mb_strlen") ? mb_strlen($value) : strlen($value))
+            : null;
 
-        return ($result >= $this->minValue) && ($result <= $this->maxValue);
+        return $length !== null && $length >= $this->min && $length <= $this->max
+            ? null
+            : $this->error($context, "length", "The field must be between {min} and {max} characters.", [
+                "min" => $this->min,
+                "max" => $this->max,
+            ]);
     }
 }
+

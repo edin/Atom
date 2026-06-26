@@ -4,163 +4,104 @@ declare(strict_types=1);
 
 namespace Atom\Router;
 
-use Closure;
+use Atom\Http\MiddlewareInterface;
 
 class Router
 {
-    use RouteTrait;
-    private $routes = [];
-    private $groups = [];
-    private ?string $controllerType = null;
+    private string $path = "";
+    private ?Router $parent = null;
+    /** @var array<class-string<MiddlewareInterface>|MiddlewareInterface> */
+    private array $middlewares = [];
+    /** @var array<RouteEntry|Router> */
+    private array $items = [];
 
-    public static function fromGroupAndPath(Router $router, string $path): Router
+    public function __construct(string $path = "")
     {
-        $group = new Router;
-        $group->setGroup($router);
-        $group->setPath($path);
-        return $group;
+        $this->path = $path;
     }
 
     /**
-     * @return Route[]
+     * @return RouteEntry[]
      */
     public function getAllRoutes(): array
     {
-        $stack = new \SplStack;
         $result = [];
 
-        foreach ($this->getGroups() as $group) {
-            $stack->push($group);
-        }
-
-        while (!$stack->isEmpty()) {
-            $group = $stack->pop();
-
-            foreach ($group->getRoutes() as $route) {
-                $result[] = $route;
-            }
-
-            foreach ($group->getGroups() as $group) {
-                $stack->push($group);
+        foreach ($this->items as $item) {
+            if ($item instanceof RouteEntry) {
+                $result[] = $item;
+            } else {
+                foreach ($item->getAllRoutes() as $entry) {
+                    $result[] = $entry;
+                }
             }
         }
+
         return $result;
     }
 
-    public function group(string $path = "", ?Closure $routeBuilder = null): self
+    public function getPath(): string
     {
-        $this->groups[] = $group = Router::fromGroupAndPath($this, $path);
-        if ($routeBuilder !== null) {
-            $routeBuilder($group);
-        }
-        return $group;
+        return $this->path;
     }
 
-    public function controller(string $controller, Closure $routeBuilder)
+    public function getFullPath(): string
     {
-        $this->groups[] = $group = Router::fromGroupAndPath($this, $this->getPath());
-        $group->setController($controller);
-        $routeBuilder($group);
-    }
+        $prefixPath = rtrim($this->parent?->getFullPath() ?? "", " /");
+        $routerPath = ltrim($this->path, " /");
 
-    public function setController(string $controller)
-    {
-        $this->controllerType = $controller;
-    }
-
-    public function getController(): ?string
-    {
-        return $this->controllerType;
-    }
-
-    /**
-     * @return Router[]
-     */
-    public function getGroups(): array
-    {
-        return $this->groups;
-    }
-
-    /**
-     * @return Route[]
-     */
-    public function getRoutes(): array
-    {
-        return $this->routes;
-    }
-
-    public function add(Route $route): Route
-    {
-        $this->routes[] = $route;
-        return $route;
-    }
-
-    /**
-     * @var string|array $method
-     * @var string|array|ActionHandler $handler
-     */
-    public function addRoute($method, string $path, $handler = null): Route
-    {
-        if (!($handler instanceof ActionHandler)) {
-            if ($handler == null) {
-                $handler = [$this->controllerType, $path];
-            } elseif (is_string($handler)) {
-                $handler = [$this->controllerType, $handler];
-            }
-
-
-            $handler = ActionHandler::from($handler);
+        if ($routerPath != "") {
+            $routerPath = "/" . $routerPath;
         }
 
-        $route = new Route($this, $method, $path, $handler);
-        return $this->add($route);
+        $result = $prefixPath . $routerPath;
+
+        return $result == "" ? "/" : $result;
     }
 
-    public function getOrPost(string $path, $handler = null): Route
+    public function middleware(string|MiddlewareInterface $middleware): self
     {
-        return $this->addRoute(["GET", "POST"], $path, $handler);
-    }
-
-    public function get(string $path, $handler = null): Route
-    {
-        return $this->addRoute("GET", $path, $handler);
-    }
-
-    public function post(string $path, $handler = null): Route
-    {
-        return $this->addRoute("POST", $path, $handler);
-    }
-
-    public function put(string $path, $handler = null): Route
-    {
-        return $this->addRoute("PUT", $path, $handler);
-    }
-
-    public function patch(string $path, $handler = null): Route
-    {
-        return $this->addRoute("PATCH", $path, $handler);
-    }
-
-    public function delete(string $path, $handler = null): Route
-    {
-        return $this->addRoute("DELETE", $path, $handler);
-    }
-
-    public function options(string $path, $handler = null): Route
-    {
-        return $this->addRoute("OPTIONS", $path, $handler);
-    }
-
-    public function attach(IRouteBuilder $builder): self
-    {
-        $builder->build($this);
+        $this->middlewares[] = $middleware;
         return $this;
     }
 
-    public function attachTo(string $path, IRouteBuilder $builder): self
+    public function getOwnMiddlewares(): array
     {
-        $group = $this->group($path);
-        $builder->build($group);
-        return $group;
+        return $this->middlewares;
+    }
+
+    public function getMiddlewares(): array
+    {
+        return array_merge($this->parent?->getMiddlewares() ?? [], $this->middlewares);
+    }
+
+    /**
+     * @return array<RouteEntry|Router>
+     */
+    public function getItems(): array
+    {
+        return $this->items;
+    }
+
+    /**
+     * @return RouteEntry[]
+     */
+    public function getRoutes(): array
+    {
+        return array_values(array_filter($this->items, function (RouteEntry|Router $item): bool {
+            return $item instanceof RouteEntry;
+        }));
+    }
+
+    public function add(RouteEntry|Router $item): RouteEntry|Router
+    {
+        if ($item instanceof RouteEntry) {
+            $item->bindRouter($this);
+        } else {
+            $item->parent = $this;
+        }
+
+        $this->items[] = $item;
+        return $item;
     }
 }

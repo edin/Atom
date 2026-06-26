@@ -4,31 +4,32 @@ declare(strict_types=1);
 
 namespace Atom\View;
 
-use Atom\Application;
-use Atom\Container\Container;
+use Atom\Di\Bindings;
+use Atom\Di\ServiceProviderInterface;
 use ReflectionClass;
 use function dirname;
 
-class ViewServices
+final class ViewServices implements ServiceProviderInterface
 {
-    public function __construct(Container $container, Application $app)
+    public function register(Bindings $bindings): void
     {
-        // TODO: Use configuration to resolve views directory or add getViewsDirectory() virtual method to application
-        $reflection = new ReflectionClass($app);
-        $viewsDir = dirname($reflection->getFileName()) . "/Views";
+        $bindings->bind(View::class)
+            ->toFactory(function ($injector) {
+                $app = $injector->get(\Atom\Application::class);
+                $reflection = new ReflectionClass($app);
+                $viewsDir = dirname($reflection->getFileName()) . "/Views";
 
-        $container->ViewEngine = ViewEngine::class;
-
-        $container->bind(\Atom\View\View::class)
-            ->withName("View")
-            ->asShared()
-            ->toFactory(function () use ($container, $viewsDir) {
-                $view = new \Atom\View\View($container);
+                $view = new View($injector, $app);
                 $view->setViewsDir($viewsDir);
                 $view->setEngines([
-                    ".php" => "ViewEngine",
+                    ".php" => ViewEngine::class,
                 ]);
                 return $view;
-            });
+            })
+            ->singleton();
+
+        $bindings->bind(ViewEngine::class)
+            ->toSelf()
+            ->scoped();
     }
 }

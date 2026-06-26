@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Atom\Router;
 
-use Atom\Container\Container;
-use Atom\Container\ResolutionContext;
-use Atom\Container\Resolver\ClassResolver;
-use Atom\Router\Route;
+use Atom\Di\InjectionContext;
+use Atom\Di\Injector;
 use ReflectionClass;
 use ReflectionFunction;
 use ReflectionFunctionAbstract;
@@ -16,98 +14,112 @@ use RuntimeException;
 
 final class Action
 {
-    private Container $container;
-    private Route $route;
     private ?object $controller = null;
     private ReflectionFunctionAbstract $handler;
+    /** @var array<int, mixed> */
     private array $actionArguments = [];
-    private array $constructorArguments = [];
-    private array $properties = [];
-    private ResolutionContext $resolutionContext;
-    private $controllerFactory;
 
-    public function __construct(Container $container, Route $route)
-    {
-        $this->container = $container;
-        $this->route = $route;
-        $this->resolutionContext = new ResolutionContext();
-
-        $actionHandler = $this->route->getActionHandler();
-
-        if ($actionHandler->isClosure()) {
-            $this->handler = new ReflectionFunction($actionHandler->getClosure());
-        } else {
-            $controllerType = $actionHandler->getController();
-            $methodName = $actionHandler->getMethodName();
-            $this->ensureMethodExists($controllerType, $methodName);
-
-            $resolver = $container->getResolver($controllerType);
-
-            if ($resolver instanceof ClassResolver) {
-                $this->controllerFactory = $resolver->getFactory($this->resolutionContext, $this->route->getParams());
-                $this->handler = $this->controllerFactory->getMethod($methodName);
-                $this->constructorArguments = $this->controllerFactory->getConstructorArguments();
-                $this->properties = $this->controllerFactory->getProperties();
-            } else {
-                $this->controller =  $resolver->resolve($this->resolutionContext, $this->route->getParams());
-                $reflection = new ReflectionClass($this->controller);
-                $this->handler = $reflection->getMethod($methodName);
-            }
-        }
-        $this->actionArguments = $this->container->resolveMethodParameters($this->handler, $this->route->getParams());
+    public function __construct(
+        private Injector $injector,
+        private MatchedRoute $route,
+        private InjectionContext $context = new InjectionContext()
+    ) {
+        $this->handler = $this->reflectHandler($route->getRouteAction());
     }
 
-    private function ensureMethodExists($controller, string $methodName): void
+    private function reflectHandler(RouteAction $routeAction): ReflectionFunctionAbstract
     {
-        $reflection = new ReflectionClass($controller);
+        if ($routeAction->isClosure()) {
+            return new ReflectionFunction($routeAction->closure);
+        }
+
+        return $this->resolveControllerMethod($routeAction);
+    }
+
+    private function resolveControllerMethod(RouteAction $routeAction): ReflectionMethod
+    {
+        $controllerType = $routeAction->controllerType;
+        $methodName = $routeAction->methodName;
+
+        if ($controllerType === null || $methodName === null) {
+            throw new RuntimeException("Controller action must define controller type and method name.");
+        }
+
+        $reflection = new ReflectionClass($controllerType);
         if (!$reflection->hasMethod($methodName)) {
             throw new RuntimeException("Controller {$reflection->getName()} does not have method {$methodName}.");
         }
+
+        return $reflection->getMethod($methodName);
     }
 
-    public function getRoute(): Route
+    public function getRoute(): MatchedRoute
     {
         return $this->route;
     }
 
     public function getController(): ?object
     {
-        if ($this->controller == null) {
-            $this->controller = $this->controllerFactory->createInstance();
+        if ($this->controller === null && $this->route->getRouteAction()->isControllerMethod()) {
+            $controllerType = $this->route->getRouteAction()->controllerType;
+            if ($controllerType !== null) {
+                $this->controller = $this->injector->instantiate($controllerType, $this->route->getParams(), $this->context);
+            }
         }
+
         return $this->controller;
     }
 
-    public function getHandler(): \ReflectionFunctionAbstract
+    public function getHandler(): ReflectionFunctionAbstract
     {
         return $this->handler;
     }
 
+    /**
+     * @return array<int, mixed>
+     */
     public function getActionArguments(): array
     {
         return $this->actionArguments;
     }
 
+    /**
+     * @param array<int, mixed> $arguments
+     */
     public function setActionArguments(array $arguments): void
     {
         $this->actionArguments = $arguments;
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getProperties(): array
     {
-        return $this->properties;
+        return [];
     }
 
+    /**
+     * @return array<int, mixed>
+     */
     public function getConstructorArguments(): array
     {
-        return $this->constructorArguments;
+        return [];
     }
 
-    public function execute()
+    public function execute(?array $arguments = null): mixed
     {
+        $arguments ??= $this->actionArguments !== [] ? $this->actionArguments : $this->route->getParams();
+
         if ($this->handler instanceof ReflectionMethod) {
-            return $this->handler->invokeArgs($this->getController(), $this->actionArguments);
+            return $this->injector->invoke([$this->getController(), $this->handler->getName()], $arguments, $this->context);
         }
-        return $this->handler->invokeArgs($this->actionArguments);
+
+        $closure = $this->route->getRouteAction()->closure;
+        if ($closure === null) {
+            throw new RuntimeException("Closure action must define a callable handler.");
+        }
+
+        return $this->injector->invoke($closure, $arguments, $this->context);
     }
 }

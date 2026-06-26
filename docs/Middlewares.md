@@ -2,7 +2,7 @@
 
 [Atom Framework](Index.md)
 
-Midlewares are based on [PSR15 Middlewares](https://www.php-fig.org/psr/psr-15/)
+Middlewares use Atom's small request/response wrappers and a simple request-handler pipeline.
 
 ## Example
 
@@ -13,20 +13,21 @@ Midlewares are based on [PSR15 Middlewares](https://www.php-fig.org/psr/psr-15/)
 
 namespace App\Middlewares;
 
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
-use Psr\Http\Server\MiddlewareInterface;
+use Atom\Http\MiddlewareInterface;
+use Atom\Http\Request;
+use Atom\Http\RequestHandlerInterface;
+use Atom\Http\Response;
 
 final class LogPathMiddleware implements MiddlewareInterface
 {
     public function process(
-        ServerRequestInterface $request, 
-        RequestHandlerInterface $handler) : ResponseInterface
+        Request $request,
+        RequestHandlerInterface $handler
+    ): Response
     {
-        $path = $request->getUri()->getPath();
-        $result =  $handler->handle($request);
-        return $result->withAddedHeader("X-Path", $path);
+        $path = $request->getPath();
+        $response = $handler->handle($request);
+        return $response->addHeader("X-Path", $path);
     }
 }
 ```
@@ -38,34 +39,40 @@ final class LogPathMiddleware implements MiddlewareInterface
 
 namespace App;
 
-class Routes
+use Atom\Router\Route;
+use Atom\Router\Router;
+
+class Application extends \Atom\Application
 {
-    public function configure(Router $router)
+    protected function bootstrap(\Atom\Di\Injector $injector): void
     {
-        $router->addGroup("/", function (Router $group) {
-            $group->addMiddleware(LogPathMiddleware::class);
+        Route::group("/", function (Router $group) {
+            $group->middleware(LogPathMiddleware::class);
 
-            $group->get("hello", fn() => "Hello");
+            Route::get("hello", fn() => "Hello");
 
-            $group->get("world", fn() => "World")
-                  ->addMiddleware(SomeMiddleware::class);
+            Route::get("world", fn() => "World")
+                ->middleware(SomeMiddleware::class);
         });
     }
 }
 ```
 
-* Register routes whitin application 
+* Register middleware routes within application 
 
 ```php
 <?php
 
 namespace App;
 
+use Atom\Router\Route;
+
 class Application extends \Atom\Application
 {
-    public function configure()
+    protected function bootstrap(\Atom\Di\Injector $injector): void
     {
-        $this->use(Routes::class);
+        Route::get("hello", fn() => "Hello")
+            ->middleware(LogPathMiddleware::class);
     }
 }
 ```

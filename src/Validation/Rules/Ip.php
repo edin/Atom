@@ -4,14 +4,22 @@ declare(strict_types=1);
 
 namespace Atom\Validation\Rules;
 
-final class Ip extends AbstractRule
-{
-    protected string $errorMessage = "Value is not a valid IP address";
+use Attribute;
+use Atom\Validation\ValidationContext;
+use Atom\Validation\ValidationError;
 
-    public function isValid($value): bool
+#[Attribute(Attribute::TARGET_PROPERTY)]
+final readonly class Ip extends AbstractRule
+{
+    public function validate(mixed $value, ValidationContext $context): ?ValidationError
     {
-        $result = filter_var($value, FILTER_VALIDATE_IP);
-        $this->setResultValue($result);
-        return $result !== false;
+        if ($this->isEmpty($value)) {
+            return null;
+        }
+
+        return filter_var($value, FILTER_VALIDATE_IP) === false
+            ? $this->error($context, "ip", "The field must be a valid IP address.")
+            : null;
     }
 }
+

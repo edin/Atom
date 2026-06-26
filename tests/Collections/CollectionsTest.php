@@ -2,8 +2,9 @@
 
 namespace Atom\Tests\Collections;
 
-use Atom\Collections\Interfaces\IReadOnlyCollection;
+use Atom\Collections\Collection;
 use Atom\Collections\ReadOnlyCollection;
+use Atom\Collections\Queue;
 use PHPUnit\Framework\TestCase;
 
 final class CollectionsTest extends TestCase
@@ -17,7 +18,6 @@ final class CollectionsTest extends TestCase
 
     public function testInstanceType()
     {
-        $this->assertInstanceOf(IReadOnlyCollection::class, $this->collection);
         $this->assertInstanceOf(ReadOnlyCollection::class, $this->collection);
         $this->assertCount(5, $this->collection);
     }
@@ -42,6 +42,20 @@ final class CollectionsTest extends TestCase
         $this->assertFalse($this->collection->contains(6));
     }
 
+    public function testContainsAnyAndContainsAll(): void
+    {
+        $this->assertTrue($this->collection->containsAny([0, 3]));
+        $this->assertFalse($this->collection->containsAny([0, 6]));
+        $this->assertTrue($this->collection->containsAll([1, 3, 5]));
+        $this->assertFalse($this->collection->containsAll([1, 6]));
+    }
+
+    public function testAtReturnsItemByIndexOrDefault(): void
+    {
+        $this->assertSame(3, $this->collection->at(2));
+        $this->assertSame("missing", $this->collection->at(10, "missing"));
+    }
+
     public function testFilter()
     {
         $collection = $this->collection->filter(function ($x) {
@@ -49,6 +63,26 @@ final class CollectionsTest extends TestCase
         });
         $this->assertCount(4, $collection);
         $this->assertFalse($collection->contains(1));
+    }
+
+    public function testFilterKeepsCollectionListLike(): void
+    {
+        $collection = ReadOnlyCollection::from([1, 2, 3])->filter(function (int $x): bool {
+            return $x > 1;
+        });
+
+        $this->assertSame([2, 3], $collection->toArray());
+        $this->assertSame(2, $collection->first());
+    }
+
+    public function testTransformsKeepConcreteCollectionType(): void
+    {
+        $queue = Queue::from([1, 2, 3])->filter(function (int $x): bool {
+            return $x > 1;
+        });
+
+        $this->assertInstanceOf(Queue::class, $queue);
+        $this->assertSame(2, $queue->peek());
     }
 
     public function testMap()
@@ -95,6 +129,23 @@ final class CollectionsTest extends TestCase
     {
         $collection = $this->collection->concat([6, 7]);
         $this->assertEquals([1, 2, 3, 4, 5, 6, 7], $collection->toArray());
+    }
+
+    public function testSliceTakeAndSkip(): void
+    {
+        $this->assertSame([2, 3], $this->collection->slice(1, 2)->toArray());
+        $this->assertSame([1, 2], $this->collection->take(2)->toArray());
+        $this->assertSame([4, 5], $this->collection->skip(3)->toArray());
+    }
+
+    public function testExcludeRemovesProvidedValuesAndKeepsListLikeIndexes(): void
+    {
+        $collection = Collection::from([1, 2, 3, 4, 5]);
+
+        $collection->exclude([2, 4]);
+
+        $this->assertSame([1, 3, 5], $collection->toArray());
+        $this->assertSame(1, $collection->first());
     }
 
     public function testImplode()

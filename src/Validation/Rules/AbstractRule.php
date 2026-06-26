@@ -4,52 +4,34 @@ declare(strict_types=1);
 
 namespace Atom\Validation\Rules;
 
-use Atom\Validation\IRule;
-use Atom\Validation\RuleResult;
+use Atom\Validation\ValidationContext;
+use Atom\Validation\ValidationError;
+use Atom\Validation\ValidationRuleInterface;
 
-abstract class AbstractRule implements IRule
+abstract readonly class AbstractRule implements ValidationRuleInterface
 {
-    protected string $errorMessage;
-    private /*any*/ $resultValue;
-
-    public function setErrorMessage(string $errorMessage): void
+    public function __construct(protected ?string $message = null)
     {
-        $this->errorMessage = $errorMessage;
     }
 
-    public function getErrorMessage(): string
+    protected function isEmpty(mixed $value): bool
     {
-        return $this->errorMessage;
+        return $value === null ||
+            (is_string($value) && trim($value) === "") ||
+            (is_array($value) && $value === []);
     }
 
-    protected function hasValue($value): bool
+    /**
+     * @param array<string, mixed> $parameters
+     */
+    protected function error(ValidationContext $context, string $code, string $message, array $parameters = []): ValidationError
     {
-        return !empty($value);
+        return new ValidationError(
+            $context->field,
+            $this->message ?? $message,
+            $code,
+            $parameters
+        );
     }
-
-    public function getAttributes(): array
-    {
-        return [];
-    }
-
-    public function validate($value): RuleResult
-    {
-        $this->resultValue = $value;
-        if ($this->hasValue($value)) {
-            $isValid = $this->isValid($value);
-            if (!$isValid) {
-                $attributes = $this->getAttributes();
-                $attributes['value'] = $value;
-                return RuleResult::failure($this->resultValue, $this->getErrorMessage(), $attributes);
-            }
-        }
-        return RuleResult::success($this->resultValue);
-    }
-
-    public function setResultValue($value): void
-    {
-        $this->resultValue = $value;
-    }
-
-    abstract public function isValid($value): bool;
 }
+

@@ -11,6 +11,21 @@ class PagedCollection extends ReadOnlyCollection
     private int $pageSize = 0;
     private int $totalCount = 0;
 
+    public static function fromPage(iterable $items, int $totalCount, int $currentPage, int $pageSize): static
+    {
+        if ($pageSize <= 0) {
+            throw new \InvalidArgumentException("Page size must be greater than zero.");
+        }
+
+        $collection = new static($items);
+        $collection->totalCount = $totalCount;
+        $collection->pageSize = $pageSize;
+        $collection->currentPage = max(1, $currentPage);
+        $collection->totalPages = (int) ceil($totalCount / $pageSize);
+
+        return $collection;
+    }
+
     public function hasPrevious(): bool
     {
         return $this->currentPage > 1;
@@ -41,7 +56,7 @@ class PagedCollection extends ReadOnlyCollection
         return $this->pageSize;
     }
 
-    public function getTotalPages()
+    public function getTotalPages(): int
     {
         return $this->totalPages;
     }
@@ -60,14 +75,4 @@ class PagedCollection extends ReadOnlyCollection
     {
         $this->currentPage = $currentPage;
     }
-
-    // public static function from(iterable $items, int $count, int $pageNumber, int $pageSize): self
-    // {
-    //     $result = new PagedCollection($items);
-    //     $result->setTotalCount($count);
-    //     $result->setPageSize($pageSize);
-    //     $result->setCurrentPage($pageNumber);
-    //     $result->setTotalPages((int) ceil($count / $pageSize));
-    //     return $result;
-    // }
 }

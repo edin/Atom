@@ -2,26 +2,62 @@
 
 [Atom Framework](Index.md)
 
-## Example
+Validation supports two styles: fluent schemas for manual validation and attributes for DTO validation.
+
+## Fluent Schema
 
 ```php
-class Model {
-    public ?int $Id;
-    public string $Title;
-    public string $Description;
+use Atom\Validation\Schema;
+
+$schema = Schema::make()
+    ->field("title")->required()->maxLength(120)
+    ->field("body")->required()->minLength(10)
+    ->field("status")->required()->in(["draft", "published"])
+    ->schema();
+
+$result = $schema->validate([
+    "title" => "",
+    "body" => "Short",
+    "status" => "archived",
+]);
+
+if ($result->failed()) {
+    $message = $result->first("title");
 }
 ```
 
-Building validator and validating model:
+## Attribute Validation
 
 ```php
-$validation = Validation::create(function (Validation $rule) {
-    $rule->field("Title")->required()->trim()->length(1, 100);
-    $rule->field("Description")->trim()->maxLength(1000);
-});
+use Atom\Validation\Rules\In;
+use Atom\Validation\Rules\MaxLength;
+use Atom\Validation\Rules\Required;
+use Atom\Validation\Validator;
 
-$model = new Model();
-$result = $validation->validate($model);
+final class CreateArticleDto
+{
+    #[Required]
+    #[MaxLength(120)]
+    public string $title = "";
+
+    #[Required]
+    public string $body = "";
+
+    #[Required]
+    #[In(["draft", "published"])]
+    public string $status = "draft";
+}
+
+$result = Validator::for(CreateArticleDto::class)->validate($dto);
 ```
 
-> //TODO: Add more examples
+Validation errors are grouped by field:
+
+```php
+$result->passed();
+$result->failed();
+$result->hasErrorsFor("title");
+$result->first("title");
+$result->messages();
+```
+

@@ -1,143 +1,248 @@
-# Dependency Injection Container
+# Dependency Injection
 
 [Atom Framework](Index.md)
 
-## Component registration
+Atom uses a small constructor-injection container under `Atom\Di`.
 
-Component registration class synopsis
+The main pieces are:
+
+- `Bindings` for registering providers
+- `Injector` for resolving and invoking services
+- `InjectionContext` for scoped services within a request/action
+- `ServiceProviderInterface` and `ServiceProviderRegistry` for application-level registration
+
+## Basic Usage
 
 ```php
-final class ComponentRegistration {
-    public function to(string $targetType): self;
-    public function toSelf(): self;
-    public function toInstance($instance): self;
-    public function toFactory(callable $factory): self;
-    public function toTypeFactory(object $factory): self;
-    public function withConstructorArguments(array $constructorArguments): self;
-    public function withName(string $name): self;
-    public function asShared(): self;
-    public function withProperties(array $properties): self;
-    public function getResolver(): IDependencyResolver;
-}
+use Atom\Di\Bindings;
+use Atom\Di\Injector;
+
+$bindings = Bindings::create();
+
+$bindings->bind(UserRepositoryInterface::class)
+    ->to(DatabaseUserRepository::class);
+
+$bindings->bind(UserService::class)
+    ->toSelf();
+
+$injector = Injector::create($bindings);
+
+$service = $injector->get(UserService::class);
 ```
 
-Container class synopsis
+If a concrete class is not registered, the injector still tries to autowire it by resolving constructor dependencies.
+
+## Bindings
+
+Register a type:
 
 ```php
-final class Container {
-    public function getDependencyResolver(): DependencyResolver;
-    public function getDefinition($name): ComponentRegistration;
-    public function getRegistry();
-    public function createType(string $targetType): object;
-    public function getResolver($typeName): IDependencyResolver;
-    public function alias(string $alias, string $target);
-    public function bind(string $typeName): ComponentRegistration;
-    public function setInstance(string $name, $value);
-    public function resolveType(string $typeName);
-    public function resolve(string $typeName, $params = []);
-    public function resolveWithProperties(string $typeName, $params = []);
-    public function resolveMethodParameters(
-        ?\ReflectionFunctionAbstract $method, 
-        array $params = [], 
-        ?ResolutionContext $context = null
-    ): array
-    public function resolveInContext(
-        ResolutionContext $context, 
-        string $typeName, 
-        array $params = []
-    );
-    public function has($name): bool;
-    public function get($name);
-    public function set($name, $definition);
-}
+$bindings->bind(UserRepositoryInterface::class)
+    ->to(DatabaseUserRepository::class);
+
+$bindings->bind(UserService::class)
+    ->toSelf();
 ```
 
-Dependency resolvers 
+Short form:
 
 ```php
-interface IDependencyResolver
+$bindings->type(UserService::class);
+$bindings->type(UserRepositoryInterface::class, DatabaseUserRepository::class);
+```
+
+Register a value:
+
+```php
+$bindings->value("config", [
+    "name" => "Atom",
+]);
+```
+
+Register a factory:
+
+```php
+use Atom\Di\InjectionContext;
+use Atom\Di\Injector;
+
+$bindings->factory("app.name", function (Injector $injector, InjectionContext $context): string {
+    $config = $injector->get("config", $context);
+
+    return $config["name"];
+});
+```
+
+Register an alias to an existing token:
+
+```php
+$bindings->existing("primaryDatabase", DatabaseConnection::class);
+```
+
+## Lifetimes
+
+Providers are transient by default.
+
+```php
+$bindings->bind(RequestState::class)
+    ->toSelf()
+    ->transient();
+```
+
+Singleton services are shared for the lifetime of the injector:
+
+```php
+$bindings->bind(DatabaseConnection::class)
+    ->toSelf()
+    ->singleton();
+```
+
+Scoped services are shared inside one `InjectionContext`:
+
+```php
+use Atom\Di\InjectionContext;
+
+$bindings->bind(RequestState::class)
+    ->toSelf()
+    ->scoped();
+
+$injector = Injector::create($bindings);
+$context = new InjectionContext();
+
+$first = $injector->get(RequestState::class, $context);
+$second = $injector->get(RequestState::class, $context);
+
+// $first === $second
+```
+
+A different context receives a different scoped instance.
+
+## Constructor Injection
+
+Constructor parameters are resolved by type:
+
+```php
+final readonly class UserController
 {
-    public function resolve(ResolutionContext $context, array $params = []);
-    public function getDependencies(): array;
-    public function resolveType(): ?string;
-    public function getRegistration(): ComponentRegistration;
+    public function __construct(private UserRepositoryInterface $users)
+    {
+    }
 }
-
-final class ClassResolver implements IDependencyResolver {}
-final class InstanceResolver implements IDependencyResolver {}
-final class TypeFactoryResolver implements IDependencyResolver {}
-final class FactoryResolver implements IDependencyResolver {}
 ```
 
-Delayed object construction.
+Manual parameters can be supplied when instantiating a class:
 
 ```php
-final class ClassTypeFactory {}
+$controller = $injector->instantiate(UserController::class, [
+    "id" => 10,
+]);
 ```
 
-## Examples
+## Invoke Methods and Closures
 
-* Registering and resolving type
+The injector can call closures and methods while resolving typed parameters:
 
 ```php
-$container = new Container();
-
-//Bind IRepository interface to Repository class
-$container->bind(IUserRepository::class)->to(UserRepository::class);
-
-//Resolve instance
-$repository = $conainer->resolve(IRepository::class);
+$result = $injector->invoke(
+    [$controller, "show"],
+    ["id" => 10],
+    $context
+);
 ```
 
+Explicit parameters win by name. Missing class-typed parameters are resolved from the container.
 
-* Registering instance
+## Named Tokens
+
+Use `#[Inject]` when a parameter should come from a string token instead of a class name:
 
 ```php
-$container->bind(IRepository::class)
-          ->toInstance(new Repository());
+use Atom\Di\Attributes\Inject;
+
+final readonly class ConfiguredService
+{
+    public function __construct(
+        #[Inject("config")]
+        public array $config
+    ) {
+    }
+}
 ```
 
-* Registering factory
+## Type Factories
+
+Type factories create unregistered classes that match a predicate. This is useful for framework-level patterns such as DTOs.
 
 ```php
-$container->bind(IRepository::class)
-          ->toFactory(function() {
-              return new Repository();
-          });
+use Atom\Di\InjectionContext;
+use Atom\Di\Injector;
+use Atom\Di\TypeFactory;
+use Atom\Di\TypeInfo;
+
+$bindings->addTypeFactory(TypeFactory::match(
+    fn(TypeInfo $type): bool => $type->hasAttribute(Dto::class),
+    function (string $className, Injector $injector, InjectionContext $context): object {
+        $request = $injector->get(Request::class, $context);
+
+        return new $className($request->post()->string("name"));
+    }
+));
 ```
 
-* Registering shared class 
+Explicit providers always win over type factories.
+
+## Child Injectors
+
+Child injectors inherit parent providers and type factories, but can override tokens locally:
 
 ```php
-$container->bind(UserRepository::class)
-          ->toSelf()
-          ->asShared()
-          ->withName("userRepository");
+$parent = Injector::create([
+    Provider::value("name", "parent"),
+]);
+
+$child = $parent->createChild([
+    Provider::value("name", "child"),
+]);
+
+$parent->get("name"); // parent
+$child->get("name");  // child
 ```
 
-* Providing properties and constructor arguments
+## Service Providers
+
+Service providers group bindings:
 
 ```php
-$container->bind(Connection::class)
-          ->toSelf()
-          ->asShared()
-          ->withProperties([
-              'property' => 'value'
-          ])
-          ->withConstructorArguments([
-              'host' => '',
-              'database' => '',
-              'username' => '',
-              'password' => ''
-          ]);
+use Atom\Di\Bindings;
+use Atom\Di\ServiceProviderInterface;
+
+final class BlogServices implements ServiceProviderInterface
+{
+    public function register(Bindings $bindings): void
+    {
+        $bindings->bind(PostRepository::class)
+            ->toSelf()
+            ->singleton();
+    }
+}
 ```
 
-* Providing component reference using Instance::of
+Register providers in the application:
 
 ```php
-$container->bind(SomeType::class)
-          ->toSelf()
-          ->withProperties([
-              'property' => Instance::of('componentName')
-          ]);
+use Atom\Di\ServiceProviderRegistry;
+
+final class Application extends \Atom\Application
+{
+    protected function services(ServiceProviderRegistry $providers): void
+    {
+        $providers->add(BlogServices::class);
+    }
+}
 ```
+
+`ServiceProviderRegistry` accepts provider classes or provider instances.
+
+## Errors
+
+The injector throws `DependencyResolutionException` when it cannot resolve a dependency, and `CircularDependencyException` when it detects a cycle.
+

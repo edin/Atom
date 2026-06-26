@@ -4,26 +4,19 @@ declare(strict_types=1);
 
 namespace Atom\Collections;
 
-use Atom\Collections\Interfaces\IQueue;
-
-class Queue extends ReadOnlyCollection implements IQueue
+class Queue extends ReadOnlyCollection
 {
-    public static function from(iterable $items): self
-    {
-        return new self($items);
-    }
-
-    public function enqueue($value): void
+    public function enqueue(mixed $value): void
     {
         $this->items[] = $value;
     }
 
-    public function dequeue()
+    public function dequeue(): mixed
     {
         return array_shift($this->items);
     }
 
-    public function peek()
+    public function peek(): mixed
     {
         return $this->first();
     }

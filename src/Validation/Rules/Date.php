@@ -4,33 +4,46 @@ declare(strict_types=1);
 
 namespace Atom\Validation\Rules;
 
-use DateTime;
+use Attribute;
+use Atom\Validation\ValidationContext;
+use Atom\Validation\ValidationError;
+use DateTimeImmutable;
 use DateTimeInterface;
 
-final class Date extends AbstractRule
+#[Attribute(Attribute::TARGET_PROPERTY)]
+final readonly class Date extends AbstractRule
 {
-    protected string $errorMessage = "Value is not in valid date format";
-    private array $formats = [
-        DateTime::ISO8601,
-        'Y-m-d\TH:i:s.u\Z',
-        'Y-m-d\TH:i:s+',
-        'Y-m-d H:i:s',
-        'Y-m-d'
-    ];
-
-    public function isValid($value): bool
+    public function __construct(public ?string $format = null, ?string $message = null)
     {
-        if ($value instanceof DateTimeInterface) {
-            return true;
+        parent::__construct($message);
+    }
+
+    public function validate(mixed $value, ValidationContext $context): ?ValidationError
+    {
+        if ($this->isEmpty($value) || $value instanceof DateTimeInterface) {
+            return null;
         }
-        foreach ($this->formats as $format) {
-            $date = DateTime::createFromFormat($format, $value);
-            $lastErrors = DateTime::getLastErrors();
-            $hasErrors = $lastErrors['warning_count'] + $lastErrors['error_count'];
-            if ($date !== false && $hasErrors === 0) {
-                return true;
-            }
+
+        if (!is_scalar($value)) {
+            return $this->error($context, "date", "The field must be a valid date.");
         }
-        return false;
+
+        if ($this->format !== null) {
+            $date = DateTimeImmutable::createFromFormat($this->format, (string) $value);
+            $errors = DateTimeImmutable::getLastErrors();
+            $errorCount = $errors === false ? 0 : $errors["warning_count"] + $errors["error_count"];
+
+            return $date !== false && $errorCount === 0
+                ? null
+                : $this->error($context, "date", "The field must match date format {format}.", ["format" => $this->format]);
+        }
+
+        try {
+            new DateTimeImmutable((string) $value);
+            return null;
+        } catch (\Exception) {
+            return $this->error($context, "date", "The field must be a valid date.");
+        }
     }
 }
+

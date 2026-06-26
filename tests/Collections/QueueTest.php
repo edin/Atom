@@ -2,7 +2,6 @@
 
 namespace Atom\Tests\Collections;
 
-use Atom\Collections\Interfaces\IQueue;
 use Atom\Collections\Queue;
 use PHPUnit\Framework\TestCase;
 
@@ -17,7 +16,6 @@ final class QueueTest extends TestCase
 
     public function testInstanceType()
     {
-        $this->assertInstanceOf(IQueue::class, $this->queue);
         $this->assertInstanceOf(Queue::class, $this->queue);
         $this->assertCount(4, $this->queue);
     }

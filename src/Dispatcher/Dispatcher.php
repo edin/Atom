@@ -4,48 +4,34 @@ declare(strict_types=1);
 
 namespace Atom\Dispatcher;
 
-use Atom\Router\Route;
 use Atom\Router\Router;
-use Atom\Container\Container;
-use Atom\Dispatcher\RouteHandler;
-use Atom\Dispatcher\RequestHandler;
-use Atom\Router\Action;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
-use Psr\Http\Server\RequestHandlerInterface;
+use Atom\Di\InjectionContext;
+use Atom\Di\Injector;
+use Atom\Router\MatchedRoute;
+use Atom\Router\RouteMatcher;
+use Atom\Http\Request;
+use Atom\Http\Response;
+use Atom\Http\MiddlewareInterface;
+use Atom\Http\RequestHandlerInterface;
 
 final class Dispatcher implements RequestHandlerInterface
 {
-    private Container $container;
-    private Router $router;
-
-    public function __construct(Container $container)
-    {
-        $this->container = $container;
-        $this->router = $container->Router;
+    public function __construct(
+        private Router $router,
+        private Injector $injector,
+        private RouteInvoker $routeInvoker,
+        private ResultConverter $resultConverter,
+        private InjectionContext $context
+    ) {
     }
 
-    private function getRouteDispatcher()
+    private function getUriPath(Request $request): string
     {
-        $dispatcher = \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $collector) {
-            $routes = $this->router->getAllRoutes();
-            foreach ($routes as $route) {
-                $collector->addRoute($route->getMethod(), $route->getFullPath(), $route);
-            }
-        });
-        return $dispatcher;
-    }
-
-    private function getUriPath(ServerRequestInterface $request)
-    {
-        $uri = $request->getUri();
-        $serverParams = $request->getServerParams();
-
-        $scriptName = $serverParams['SCRIPT_NAME'] ?? "";
+        $scriptName = $request->server()->string("SCRIPT_NAME");
         $scriptDir = pathinfo($scriptName, \PATHINFO_DIRNAME);
 
         $path1 = explode("/", $scriptDir);
-        $path2 = explode("/", $uri->getPath());
+        $path2 = explode("/", $request->getPath());
         $diff = array_diff_assoc($path2, $path1);
 
         $uriPath = implode("/", $diff);
@@ -64,53 +50,45 @@ final class Dispatcher implements RequestHandlerInterface
         return $uriPath;
     }
 
-    public function handle(ServerRequestInterface $request): ResponseInterface
+    public function handle(Request $request): Response
     {
         $method = $request->getMethod();
         $uriPath = $this->getUriPath($request);
 
-        $dispatcher = $this->getRouteDispatcher();
-        $routeInfo = $dispatcher->dispatch($method, $uriPath);
+        $match = (new RouteMatcher($this->router))->match($method, $uriPath, $request->query()->toArray());
 
-        switch ($routeInfo[0]) {
-            case \FastRoute\Dispatcher::NOT_FOUND:
-                throw new \RuntimeException("Route '$uriPath' was not found.");
-            case \FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
-                $allowedMethods = $routeInfo[1];
-                $allowedMethodsStr = implode(", ", $allowedMethods);
-                throw new \RuntimeException("Method $method is not allowed. Allowed methods are $allowedMethodsStr.");
-            case \FastRoute\Dispatcher::FOUND:
-                $route = $routeInfo[1];
-                $routeParams = $routeInfo[2];
-
-                if ($route instanceof Route) {
-                    $route->setRouteParams($routeParams);
-                    $route->setQueryParams($request->getQueryParams());
-
-                    $this->container->bind(get_class($route))->toInstance($route);
-
-                    $action = new Action($this->container, $route);
-                    $this->container->bind(get_class($action))->toInstance($action);
-
-                    $middlewares = $this->resolveMiddlewares($route);
-                    $queueHandler = new RequestHandler(new RouteHandler($this->container, $action));
-                    $queueHandler->addMiddlewares($middlewares);
-                    return $queueHandler->handle($request);
-                }
+        if ($match->isMethodNotAllowed()) {
+            $allowedMethodsStr = implode(", ", $match->allowedMethods);
+            throw new \RuntimeException("Method $method is not allowed. Allowed methods are $allowedMethodsStr.");
         }
-        throw new \RuntimeException("Failed to handle request to '$uriPath' path.");
+
+        if (!$match->isFound()) {
+            throw new \RuntimeException("Route '$uriPath' was not found.");
+        }
+
+        $matchedRoute = $match->matchedRoute;
+        $context = $this->context;
+        $context->set(Request::class, $request);
+        $context->set(MatchedRoute::class, $matchedRoute);
+
+        $middlewares = $this->resolveMiddlewares($matchedRoute, $context);
+        return (new MiddlewarePipeline(
+            $middlewares,
+            new MatchedRouteHandler($matchedRoute, $this->routeInvoker, $this->resultConverter, $context)
+        ))->handle($request);
     }
 
-    private function resolveMiddlewares(Route $route): array
+    private function resolveMiddlewares(MatchedRoute $route, InjectionContext $context): array
     {
-        $context = $this->container->RequestScope;
         $middlewares = $route->getMiddlewares();
         $results = [];
 
         foreach ($middlewares as $middleware) {
             if (is_string($middleware)) {
-                $results[] = $this->container->resolveInContext($context, $middleware);
-            } elseif (is_object($middleware)) {
+                $middleware = $this->injector->get($middleware, $context);
+            }
+
+            if ($middleware instanceof MiddlewareInterface) {
                 $results[] = $middleware;
             } else {
                 throw new \RuntimeException("Can't initialize middleware, unsupported definition.");

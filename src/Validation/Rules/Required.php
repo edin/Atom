@@ -4,28 +4,18 @@ declare(strict_types=1);
 
 namespace Atom\Validation\Rules;
 
-final class Required extends AbstractRule
+use Attribute;
+use Atom\Validation\ValidationContext;
+use Atom\Validation\ValidationError;
+
+#[Attribute(Attribute::TARGET_PROPERTY)]
+final readonly class Required extends AbstractRule
 {
-    protected string $errorMessage = "The field value is required";
-
-    protected function hasValue($value): bool
+    public function validate(mixed $value, ValidationContext $context): ?ValidationError
     {
-        return true;
-    }
-
-    public function isValid($value): bool
-    {
-        if (is_null($value)) {
-            return false;
-        }
-
-        if (is_string($value)) {
-            $value = trim($value);
-            if ($value !== "") {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->isEmpty($value)
+            ? $this->error($context, "required", "The field is required.")
+            : null;
     }
 }
+

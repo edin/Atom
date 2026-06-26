@@ -16,8 +16,8 @@ Simple PHP Framework
 - Simple dependency injection container
 - Simple templates
 - Simple validation
-- PSR-7 HTTP Message interfaces
-- PSR-15 Middleware support
+- Small HTTP request/response wrappers
+- Middleware pipeline support
 
 # Basic concepts
 
@@ -42,19 +42,21 @@ Simple PHP Framework
 
 namespace App;
 
-use Atom\View\ViewServices;
-use Atom\Dispatcher\DispatcherServices;
+use Atom\Di\ServiceProviderRegistry;
+use Atom\Di\Injector;
+use Atom\Router\Route;
 
 class Application extends \Atom\Application
 {
-    public function configure()
+    protected function services(ServiceProviderRegistry $providers): void
     {
-        // Register some service providers
-        $this->use(DispatcherServices::class);
-        $this->use(ViewServices::class);
-        $this->use(Routes::class);
-        $this->use(TypeFactory::class);
-        $this->use(Services::class);
+        // Dispatcher and views are registered by the base application.
+        $providers->add(Services::class);
+    }
+
+    protected function bootstrap(Injector $injector): void
+    {
+        Route::get("/", [HomeController::class, "index"]);
     }
 }
 ```
@@ -67,34 +69,31 @@ class Application extends \Atom\Application
 namespace App;
 
 use Atom\Router\Router;
-use Atom\Router\RouteBuilder;
+use Atom\Router\Route;
 
 class Routes
 {
-    public function configure(Router $router)
+    public function __invoke(): void
     {
-        $router->group("/", function (Router $group) {
+        Route::group("/", function (Router $group) {
             $group->middleware(LogMiddleware::class);
-            $group->setController(HomeController::class);
 
-            $group->get("", "index")->withName("home");
-            $group->get("item", "item");
-            $group->get("json", "json");
-            $group->get("filter", "index");
-            $group->get("validation", ValidationController::class, "index");
+            Route::controller(HomeController::class, function () {
+                Route::get("", "index")->name("home");
+                Route::get("item", "item");
+                Route::get("json", "json");
+                Route::get("filter", "index");
+            });
 
-            $group->attach(
-                RouteBuilder::fromController(AccountController::class)
-            );
+            Route::get("validation", [ValidationController::class, "index"]);
+
+            Route::attach(AccountController::class);
         });
 
-        //Build routes from simple annotation definitions
-        $router->attachTo(
-            "/api",
-            RouteBuilder::fromController(ApiController::class)
-        );
+        // Build routes from method attributes
+        Route::attachTo("/api", ApiController::class);
 
-        $router->get(
+        Route::get(
             "/api/users-all",
             function (UserRepository $users) {
                 return $users->findAll();
@@ -111,11 +110,14 @@ class Routes
 
 namespace App\Controllers;
 
-use Atom\Router\Route;
+use Atom\Router\MatchedRoute;
+use Atom\Router\Attributes\Controller;
+use Atom\Router\Attributes\Get;
 use Atom\View\ViewInfo;
 use App\Models\UserRepository;
 use App\Messages\FormPostMessage;
 
+#[Controller("/")]
 final class HomeController
 {
     private $userRepository;
@@ -125,7 +127,8 @@ final class HomeController
         $this->userRepository = $userRepository;
     }
 
-    final public function index($id = 0, FormPostMessage $post, Route $route)
+    #[Get("")]
+    final public function index($id = 0, FormPostMessage $post, MatchedRoute $route)
     {
         return new ViewInfo('home/index', [
             'items' => $this->userRepository->findAll(),
@@ -144,70 +147,60 @@ Simple user model
 
 namespace App\Models;
 
-use Atom\Database\Mapping\Mapping;
-use Atom\Database\Mapping\DateTimeConverter;
-use Atom\Database\Mapping\CurrentDateTimeProvider;
+use Atom\Database\Orm\Attributes\Column;
+use Atom\Database\Orm\Attributes\PrimaryKey;
+use Atom\Database\Orm\Attributes\Table;
+use Atom\Database\Orm\Provider\NowProvider;
 
+#[Table("users")]
 final class User
 {
+    #[PrimaryKey("id")]
     public int $id;
-    public string $first_name;
-    public string $last_name;
+
+    #[Column("first_name")]
+    public string $firstName;
+
+    #[Column("last_name")]
+    public string $lastName;
+
+    #[Column("email")]
     public string $email;
-    public DateTimeImmutable $created_at;
-    public DateTimeImmutable $updated_at;    
 
-    public function getMapping(): Mapping
-    {
-        return Mapping::create(function (Mapping $map) {
-            $map->table("users");
-            $map->setEntity(User::class);
-            $map->setRepository(UserRepository::class)
-            $map->property("id")->field("id")->primaryKey()->int();
-            $map->property("first_name")->field("first_name")->string(50);
-            $map->property("last_name")->field("last_name")->string(50);
-            $map->property("email")->field("email")->string(100);
+    #[Column("created_at", onInsert: NowProvider::class)]
+    public DateTimeImmutable $createdAt;
 
-            $map->property("password_hash")
-                ->field("password_hash")
-                ->string(255)
-                ->excludeInSelect();
-
-            $map->property("created_at")->field("created_at")->date()
-                ->excludeInUpdate()
-                ->withValueProvider(CurrentDateTimeProvider::class)
-                ->withConverter(DateTimeConverter::class);
-
-            $map->property("updated_at")->field("updated_at")->date()
-                ->withValueProvider(CurrentDateTimeProvider::class)
-                ->withConverter(DateTimeConverter::class);
-        });
-    }    
+    #[Column("updated_at", onInsert: NowProvider::class, onUpdate: NowProvider::class)]
+    public DateTimeImmutable $updatedAt;
 }
 ```
-Simple User repository
+Simple database usage
 ```php
 <?php
 
 namespace App\Models;
 
-use Atom\Database\Repository;
-use Atom\Database\Query\Query;
-use Atom\Database\Query\Operator;
-use Atom\Database\EntityCollection;
+use Atom\Database\Db;
+use Atom\Database\Sql\Op;
 
-class UserRepository extends Repository
+final class UserRepository
 {
-    protected string $entityType = User::class;
-    
-    public function findAll(): EntityCollection
+    public function __construct(private Db $db)
     {
-        return $this->query()
-                ->where("id", Operator::greater(2))
-                ->where("id", Operator::less(10))
-                ->orWhere("id = :id", 100)
-                ->limit(10)
-                ->findAll();
+    }
+
+    /**
+     * @return list<User>
+     */
+    public function findAll(): array
+    {
+        return $this->db
+            ->select(User::class)
+            ->where("id", Op::gt(2))
+            ->where("id", Op::lt(10))
+            ->orWhereExp("id = :id", ["id" => 100])
+            ->limit(10)
+            ->all();
     }
 }
 ```

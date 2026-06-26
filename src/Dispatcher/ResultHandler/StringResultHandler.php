@@ -4,22 +4,20 @@ declare(strict_types=1);
 
 namespace Atom\Dispatcher\ResultHandler;
 
-use Atom\Interfaces\IResultHandler;
-use Psr\Http\Message\ResponseInterface;
+use Atom\Dispatcher\ResultHandlerInterface;
+use Atom\Http\Response;
 
-class StringResultHandler implements IResultHandler
+class StringResultHandler extends AbstractResultHandler implements ResultHandlerInterface
 {
-    use ResultHandlerTrait;
-
-    public function isMatch(/*any*/$result): bool
+    public function isMatch(mixed $result): bool
     {
         return is_string($result);
     }
 
-    public function process($result): ResponseInterface
+    public function process(mixed $result): Response
     {
         $response = $this->getResponse();
-        $response->getBody()->write($result);
+        $response->write($result);
         return $response;
     }
 }
