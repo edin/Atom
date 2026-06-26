@@ -9,11 +9,10 @@ use Atom\Console\ConsoleCommandSources;
 use Atom\Database\Schema\Reset\DatabaseResetterInterface;
 use Atom\Database\Orm\EntityMetadataFactory;
 use Atom\Database\Orm\RowHydrator;
-use Atom\Database\Migration\DatabaseMigrationLockManager;
+use Atom\Database\Lock\DatabaseLockManagerInterface;
 use Atom\Database\Migration\DatabaseMigrationRepository;
 use Atom\Database\Migration\MigrationCreator;
 use Atom\Database\Migration\MigrationDiscovery;
-use Atom\Database\Migration\MigrationLockManagerInterface;
 use Atom\Database\Migration\MigrationOptions;
 use Atom\Database\Migration\MigrationRepositoryInterface;
 use Atom\Database\Migration\Migrator;
@@ -65,8 +64,10 @@ final readonly class DatabaseServices implements ServiceProviderInterface, Conso
             ->to(DatabaseMigrationRepository::class)
             ->singleton();
 
-        $bindings->bind(MigrationLockManagerInterface::class)
-            ->to(DatabaseMigrationLockManager::class)
+        $bindings->bind(DatabaseLockManagerInterface::class)
+            ->toFactory(fn(Injector $injector): DatabaseLockManagerInterface => $injector
+                ->get(DatabaseDriver::class)
+                ->lockManager($injector->get(DatabaseConnection::class)))
             ->singleton();
 
         $bindings->bind(MigrationDiscovery::class)

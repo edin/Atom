@@ -31,9 +31,29 @@ final class MySqlSchemaCompiler extends AbstractSchemaCompiler
         return "INT";
     }
 
+    protected function bigIntegerType(): string
+    {
+        return "BIGINT";
+    }
+
+    protected function floatType(): string
+    {
+        return "DOUBLE";
+    }
+
+    protected function decimalType(int $precision, int $scale): string
+    {
+        return "DECIMAL({$precision}, {$scale})";
+    }
+
     protected function booleanType(): string
     {
         return "TINYINT(1)";
+    }
+
+    protected function dateType(): string
+    {
+        return "DATE";
     }
 
     protected function dateTimeType(): string
@@ -43,7 +63,21 @@ final class MySqlSchemaCompiler extends AbstractSchemaCompiler
 
     protected function timestampType(): string
     {
-        return "DATETIME";
+        return "TIMESTAMP";
+    }
+
+    protected function jsonType(): string
+    {
+        return "JSON";
+    }
+
+    protected function binaryType(): string
+    {
+        return "BLOB";
+    }
+
+    protected function uuidType(): string
+    {
+        return "CHAR(36)";
     }
 }
-

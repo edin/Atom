@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Atom\Database\Driver;
 
-use Atom\Database\Migration\Driver\MySqlMigrationLockDriver;
 use Atom\Database\Migration\Driver\MySqlMigrationRepositoryDriver;
-use Atom\Database\Migration\Driver\MigrationLockDriverInterface;
 use Atom\Database\Migration\Driver\MigrationRepositoryDriverInterface;
 use Atom\Database\DatabaseConnection;
+use Atom\Database\Lock\DatabaseLockManagerInterface;
+use Atom\Database\Lock\MySqlDatabaseLockManager;
 use Atom\Database\Schema\Compiler\MySqlSchemaCompiler;
 use Atom\Database\Schema\Compiler\SchemaCompilerInterface;
 use Atom\Database\Schema\Inspector\MySqlSchemaInspector;
@@ -60,9 +60,9 @@ final class MySqlDriver extends AbstractPdoDriver
         return new MySqlMigrationRepositoryDriver();
     }
 
-    public function migrationLockDriver(): MigrationLockDriverInterface
+    public function lockManager(DatabaseConnection $connection): DatabaseLockManagerInterface
     {
-        return new MySqlMigrationLockDriver();
+        return new MySqlDatabaseLockManager($connection);
     }
 
     public function resetter(): DatabaseResetterInterface

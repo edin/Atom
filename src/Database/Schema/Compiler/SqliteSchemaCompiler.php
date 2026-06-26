@@ -31,9 +31,29 @@ final class SqliteSchemaCompiler extends AbstractSchemaCompiler
         return "INTEGER";
     }
 
+    protected function bigIntegerType(): string
+    {
+        return "INTEGER";
+    }
+
+    protected function floatType(): string
+    {
+        return "REAL";
+    }
+
+    protected function decimalType(int $precision, int $scale): string
+    {
+        return "NUMERIC({$precision}, {$scale})";
+    }
+
     protected function booleanType(): string
     {
         return "INTEGER";
+    }
+
+    protected function dateType(): string
+    {
+        return "DATE";
     }
 
     protected function dateTimeType(): string
@@ -45,5 +65,19 @@ final class SqliteSchemaCompiler extends AbstractSchemaCompiler
     {
         return "DATETIME";
     }
-}
 
+    protected function jsonType(): string
+    {
+        return "TEXT";
+    }
+
+    protected function binaryType(): string
+    {
+        return "BLOB";
+    }
+
+    protected function uuidType(): string
+    {
+        return "CHAR(36)";
+    }
+}

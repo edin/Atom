@@ -37,9 +37,29 @@ final class Table
         return $this->column($name, ColumnType::Integer);
     }
 
+    public function bigInteger(string $name): ColumnDefinition
+    {
+        return $this->column($name, ColumnType::BigInteger);
+    }
+
+    public function float(string $name): ColumnDefinition
+    {
+        return $this->column($name, ColumnType::Float);
+    }
+
+    public function decimal(string $name, int $precision = 10, int $scale = 2): ColumnDefinition
+    {
+        return $this->column($name, ColumnType::Decimal, precision: $precision, scale: $scale);
+    }
+
     public function boolean(string $name): ColumnDefinition
     {
         return $this->column($name, ColumnType::Boolean);
+    }
+
+    public function date(string $name): ColumnDefinition
+    {
+        return $this->column($name, ColumnType::Date);
     }
 
     public function dateTime(string $name): ColumnDefinition
@@ -50,6 +70,21 @@ final class Table
     public function timestamp(string $name): ColumnDefinition
     {
         return $this->column($name, ColumnType::Timestamp);
+    }
+
+    public function json(string $name): ColumnDefinition
+    {
+        return $this->column($name, ColumnType::Json);
+    }
+
+    public function binary(string $name): ColumnDefinition
+    {
+        return $this->column($name, ColumnType::Binary);
+    }
+
+    public function uuid(string $name): ColumnDefinition
+    {
+        return $this->column($name, ColumnType::Uuid);
     }
 
     public function timestamps(): self
@@ -80,9 +115,11 @@ final class Table
         string $name,
         ColumnType $type,
         ?int $length = null,
+        ?int $precision = null,
+        ?int $scale = null,
         mixed $default = null
     ): ColumnDefinition {
-        $column = new ColumnDefinition($name, $type, $length, $default);
+        $column = new ColumnDefinition($name, $type, $length, $precision, $scale, $default);
         $this->columns[] = $column;
         return $column;
     }
@@ -125,4 +162,3 @@ final class Table
         return is_array($columns) ? array_values($columns) : [$columns];
     }
 }
-

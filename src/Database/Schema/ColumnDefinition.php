@@ -16,6 +16,8 @@ final class ColumnDefinition
         public readonly string $name,
         public readonly ColumnType $type,
         public readonly ?int $length = null,
+        public readonly ?int $precision = null,
+        public readonly ?int $scale = null,
         public mixed $default = null
     ) {
     }
@@ -56,4 +58,3 @@ final class ColumnDefinition
         return $this;
     }
 }
-

@@ -175,9 +175,16 @@ abstract class AbstractSchemaCompiler implements SchemaCompilerInterface
             ColumnType::String => $this->stringType($column->length ?? 255),
             ColumnType::Text => $this->textType(),
             ColumnType::Integer => $this->integerType(),
+            ColumnType::BigInteger => $this->bigIntegerType(),
+            ColumnType::Float => $this->floatType(),
+            ColumnType::Decimal => $this->decimalType($column->precision ?? 10, $column->scale ?? 2),
             ColumnType::Boolean => $this->booleanType(),
+            ColumnType::Date => $this->dateType(),
             ColumnType::DateTime => $this->dateTimeType(),
             ColumnType::Timestamp => $this->timestampType(),
+            ColumnType::Json => $this->jsonType(),
+            ColumnType::Binary => $this->binaryType(),
+            ColumnType::Uuid => $this->uuidType(),
         };
     }
 
@@ -191,10 +198,23 @@ abstract class AbstractSchemaCompiler implements SchemaCompilerInterface
 
     abstract protected function integerType(): string;
 
+    abstract protected function bigIntegerType(): string;
+
+    abstract protected function floatType(): string;
+
+    abstract protected function decimalType(int $precision, int $scale): string;
+
     abstract protected function booleanType(): string;
+
+    abstract protected function dateType(): string;
 
     abstract protected function dateTimeType(): string;
 
     abstract protected function timestampType(): string;
-}
 
+    abstract protected function jsonType(): string;
+
+    abstract protected function binaryType(): string;
+
+    abstract protected function uuidType(): string;
+}

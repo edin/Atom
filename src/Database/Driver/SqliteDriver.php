@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Atom\Database\Driver;
 
 use Atom\Database\Migration\Driver\SqliteMigrationRepositoryDriver;
-use Atom\Database\Migration\Driver\SqliteMigrationLockDriver;
-use Atom\Database\Migration\Driver\MigrationLockDriverInterface;
 use Atom\Database\Migration\Driver\MigrationRepositoryDriverInterface;
 use Atom\Database\DatabaseConnection;
+use Atom\Database\Lock\DatabaseLockManagerInterface;
+use Atom\Database\Lock\FileDatabaseLockManager;
 use Atom\Database\Schema\Compiler\SchemaCompilerInterface;
 use Atom\Database\Schema\Compiler\SqliteSchemaCompiler;
 use Atom\Database\Schema\Inspector\SchemaInspectorInterface;
@@ -23,7 +23,7 @@ final class SqliteDriver extends AbstractPdoDriver
     /**
      * @param array<int, mixed> $options
      */
-    public function __construct(string $path, array $options = [])
+    public function __construct(private string $path, array $options = [])
     {
         parent::__construct("sqlite:{$path}", null, null, $options);
     }
@@ -53,9 +53,13 @@ final class SqliteDriver extends AbstractPdoDriver
         return new SqliteMigrationRepositoryDriver();
     }
 
-    public function migrationLockDriver(): MigrationLockDriverInterface
+    public function lockManager(DatabaseConnection $connection): DatabaseLockManagerInterface
     {
-        return new SqliteMigrationLockDriver();
+        $directory = $this->path === ":memory:"
+            ? sys_get_temp_dir() . DIRECTORY_SEPARATOR . "atom_sqlite_locks"
+            : dirname($this->path);
+
+        return new FileDatabaseLockManager($directory);
     }
 
     public function resetter(): DatabaseResetterInterface

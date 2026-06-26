@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atom\Database\Migration;
 
 use Atom\Database\DatabaseConnection;
+use Atom\Database\Lock\DatabaseLockManagerInterface;
 use Atom\Database\Schema\Schema;
 use Atom\Database\Schema\SchemaPlan;
 use RuntimeException;
@@ -14,7 +15,7 @@ final readonly class Migrator
     public function __construct(
         private DatabaseConnection $connection,
         private MigrationRepositoryInterface $repository,
-        private MigrationLockManagerInterface $locks,
+        private DatabaseLockManagerInterface $locks,
         private MigrationDiscovery $discovery,
         private MigrationOptions $options
     ) {
@@ -59,7 +60,8 @@ final readonly class Migrator
 
     public function run(): MigrationRunResult
     {
-        if (!$this->locks->acquire()) {
+        $lock = $this->locks->acquire("migrations");
+        if ($lock === null) {
             throw new RuntimeException("Migrations are already running.");
         }
 
@@ -76,13 +78,14 @@ final readonly class Migrator
 
             return new MigrationRunResult($migrated);
         } finally {
-            $this->locks->release();
+            $lock->release();
         }
     }
 
     public function rollback(int $steps = 1): MigrationRollbackResult
     {
-        if (!$this->locks->acquire()) {
+        $lock = $this->locks->acquire("migrations");
+        if ($lock === null) {
             throw new RuntimeException("Migrations are already running.");
         }
 
@@ -114,7 +117,7 @@ final readonly class Migrator
 
             return new MigrationRollbackResult($rolledBack);
         } finally {
-            $this->locks->release();
+            $lock->release();
         }
     }
 
