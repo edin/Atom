@@ -10,6 +10,7 @@ use Atom\View\Ast\TemplateNode;
 use Atom\View\Ast\TextNode;
 use Atom\View\Component\ComponentFactoryInterface;
 use Atom\View\Component\AttributeBag;
+use Atom\View\Component\Children;
 use Atom\View\Component\ComponentInterface;
 use Atom\View\Component\ComponentRegistry;
 use Atom\View\Component\Fragment;
@@ -137,6 +138,16 @@ final class ViewRendererTest extends TestCase
         $this->assertSame('<div>Hello Edin</div>', $html);
     }
 
+    public function testParentComponentCanCollectDeclaredChildComponents(): void
+    {
+        $registry = new ComponentRegistry();
+        $registry->register("Table", TestTableComponent::class);
+
+        $html = $this->render('<Table><Column name="Title" /><Column name="Status" /></Table>', [], $registry);
+
+        $this->assertSame('<table><th>Title</th><th>Status</th></table>', $html);
+    }
+
     public function testForwardsUnknownAttributesThroughAttributeBag(): void
     {
         $registry = new ComponentRegistry();
@@ -175,6 +186,28 @@ final class ViewRendererTest extends TestCase
         $html = $this->render('<ArrayReturn />', [], $registry);
 
         $this->assertSame('Hello <strong>World</strong>', $html);
+    }
+
+    public function testThrowsHelpfulMessageForUnsupportedComponentRenderResult(): void
+    {
+        $registry = new ComponentRegistry();
+        $registry->register("BadReturn", TestUnsupportedReturnComponent::class);
+
+        $this->expectException(ViewRenderException::class);
+        $this->expectExceptionMessage("Component Atom\Tests\View\TestUnsupportedReturnComponent returned unsupported render result int");
+
+        $this->render('<BadReturn />', [], $registry);
+    }
+
+    public function testThrowsHelpfulMessageForUnsupportedComponentRenderArrayItem(): void
+    {
+        $registry = new ComponentRegistry();
+        $registry->register("BadArrayReturn", TestUnsupportedArrayReturnComponent::class);
+
+        $this->expectException(ViewRenderException::class);
+        $this->expectExceptionMessage("returned an array with unsupported value at index '1': string");
+
+        $this->render('<BadArrayReturn />', [], $registry);
     }
 
     public function testThrowsWhenRequiredComponentPropertyIsMissing(): void
@@ -236,6 +269,34 @@ final class TestFrameComponent implements ComponentInterface
     public function render(): string
     {
         return "<div>" . $this->content?->render() . "</div>";
+    }
+}
+
+final class TestTableComponent implements ComponentInterface
+{
+    /** @var TestTableColumnComponent[] */
+    #[Children("Column", TestTableColumnComponent::class)]
+    public array $columns = [];
+    public ?Fragment $content = null;
+
+    public function render(): string
+    {
+        $columns = "";
+        foreach ($this->columns as $column) {
+            $columns .= $column->render();
+        }
+
+        return "<table>{$columns}" . $this->content?->render() . "</table>";
+    }
+}
+
+final class TestTableColumnComponent implements ComponentInterface
+{
+    public string $name = "";
+
+    public function render(): string
+    {
+        return "<th>{$this->name}</th>";
     }
 }
 
@@ -301,6 +362,25 @@ final class TestArrayReturnComponent implements ComponentInterface
             new ElementNode("strong", children: [
                 new TextNode("World"),
             ]),
+        ];
+    }
+}
+
+final class TestUnsupportedReturnComponent implements ComponentInterface
+{
+    public function render(): mixed
+    {
+        return 42;
+    }
+}
+
+final class TestUnsupportedArrayReturnComponent implements ComponentInterface
+{
+    public function render(): mixed
+    {
+        return [
+            new TextNode("ok"),
+            "bad",
         ];
     }
 }

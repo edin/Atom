@@ -1,0 +1,61 @@
+# Atom Sample App
+
+This sample app lives inside the framework repository and consumes the local framework package through Composer's path repository support.
+
+It demonstrates:
+
+- `Application::services()` and `Application::bootstrap()`
+- page discovery with `Page::registerPages()`
+- `.atom.html` page templates
+- page layout composition through a component class
+- native `.atom.php` component templates with `$component` and `$context`
+- API controllers through router attributes
+- SQLite database services
+- model classes with `Model::query()`, `find()`, `save()`, and relations
+- migrations and seeders through console commands
+
+## Run
+
+```powershell
+composer install
+php atom migrate:fresh
+php atom db:seed
+php -S 127.0.0.1:8021 -t public public/server.php
+```
+
+Open:
+
+```text
+http://127.0.0.1:8021
+```
+
+## Useful Commands
+
+```powershell
+php atom help
+php atom migrate:status
+php atom migrate:fresh
+php atom db:seed
+php atom make:migration create_posts
+php atom make:seeder seed_posts
+```
+
+## Structure
+
+```text
+app/
+├── Application.php
+├── Components/
+│   ├── Layout.php
+│   └── Layout.atom.php
+├── Controllers/
+│   └── ApiController.php
+├── Database/
+│   ├── Migrations/
+│   └── Seeders/
+├── Models/
+└── Pages/
+```
+
+Browser pages are implemented as page classes plus adjacent `.atom.html` templates.
+Controllers are used only for API-style endpoints.

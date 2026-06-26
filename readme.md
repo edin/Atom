@@ -1,247 +1,174 @@
 # Atom Framework
 
-Simple PHP Framework
+Atom is a small PHP 8.4 framework experiment.
 
+The current direction is:
+
+- pages instead of browser-facing controllers
+- controllers for API-style endpoints
+- a tiny DI container with request-scoped context
+- a custom router with route metadata
+- a component-capable `.atom.html` view engine
+- optional native `.atom.php` component templates
+- a lightweight database/query/ORM layer with migrations and model base classes
+- console command discovery
+
+The repository now contains both the framework and a sample app:
+
+```text
+.
+├── src/          Framework source
+├── tests/        Framework tests
+├── docs/         Framework documentation
+└── sample/       Sample application
 ```
-    git clone https://github.com/edin/AtomApp.git
-    composer update 
-    php -S localhost:5000 -t public
-    http://localhost:5000
+
+## Requirements
+
+- PHP 8.4
+- Composer
+- PDO SQLite for the sample app
+
+## Install
+
+From the framework root:
+
+```powershell
+composer install
+vendor\bin\phpunit.bat tests
 ```
 
-# Project goals
+From the sample app:
 
-- Simple php framework
-- Simple routing
-- Simple dependency injection container
-- Simple templates
-- Simple validation
-- Small HTTP request/response wrappers
-- Middleware pipeline support
+```powershell
+cd sample
+composer install
+php atom migrate:fresh
+php atom db:seed
+php -S 127.0.0.1:8021 -t public public/server.php
+```
 
-# Basic concepts
+Open:
 
-## Project structure
+```text
+http://127.0.0.1:8021
+```
 
-* src
-    * Application.php
-    * Controllers
-        * HomeController.php
-    * Models
-        * UserRepository.php
-    * ViewModels
-        * ViewModel.php
-    * Views
-        * Home
-            * index.php
+## Sample Shape
 
-## Application class
+The sample app uses the newer APIs:
+
+```text
+sample/app/
+├── Application.php
+├── Components/
+│   ├── Layout.php
+│   └── Layout.atom.php
+├── Controllers/
+│   └── ApiController.php
+├── Database/
+│   ├── Migrations/
+│   └── Seeders/
+├── Models/
+│   ├── Article.php
+│   └── Category.php
+└── Pages/
+    ├── AppPage.php
+    ├── HomePage.php
+    ├── HomePage.atom.html
+    ├── ArticlesPage.php
+    └── ArticlesPage.atom.html
+```
+
+`Application` registers database services, configures the active model database, attaches API controllers, and discovers pages:
 
 ```php
-<?php
-
-namespace App;
-
-use Atom\Di\ServiceProviderRegistry;
-use Atom\Di\Injector;
-use Atom\Router\Route;
-
-class Application extends \Atom\Application
+protected function bootstrap(Injector $injector): void
 {
-    protected function services(ServiceProviderRegistry $providers): void
-    {
-        // Dispatcher and views are registered by the base application.
-        $providers->add(Services::class);
-    }
+    Model::useDb($injector->get(Db::class));
 
-    protected function bootstrap(Injector $injector): void
+    Route::attach(ApiController::class);
+
+    Page::registerPages();
+}
+```
+
+## First Page
+
+```php
+namespace App\Pages;
+
+use Atom\Page\PageRoute;
+
+#[PageRoute("/hello")]
+final class HelloPage extends AppPage
+{
+    public string $title = "Hello";
+    public string $message = "";
+
+    public function get(): void
     {
-        Route::get("/", [HomeController::class, "index"]);
+        $this->message = "Hello from Atom.";
     }
 }
 ```
 
-## Routes configuration
+Adjacent template:
 
-```php
-<?php
-
-namespace App;
-
-use Atom\Router\Router;
-use Atom\Router\Route;
-
-class Routes
-{
-    public function __invoke(): void
-    {
-        Route::group("/", function (Router $group) {
-            $group->middleware(LogMiddleware::class);
-
-            Route::controller(HomeController::class, function () {
-                Route::get("", "index")->name("home");
-                Route::get("item", "item");
-                Route::get("json", "json");
-                Route::get("filter", "index");
-            });
-
-            Route::get("validation", [ValidationController::class, "index"]);
-
-            Route::attach(AccountController::class);
-        });
-
-        // Build routes from method attributes
-        Route::attachTo("/api", ApiController::class);
-
-        Route::get(
-            "/api/users-all",
-            function (UserRepository $users) {
-                return $users->findAll();
-            }
-        );
-    }
-}
+```html
+<section class="article">
+    <h1>{{ $this->title }}</h1>
+    <p>{{ $this->message }}</p>
+</section>
 ```
 
-## Controllers
+`Page::registerPages()` discovers `app/Pages`, registers routes from `#[PageRoute]`, invokes the page method matching the request method (`get`, `post`, etc.), renders the adjacent `.atom.html`, and composes it with the page layout component when one is configured.
+
+## First Model
 
 ```php
-<?php
-
-namespace App\Controllers;
-
-use Atom\Router\MatchedRoute;
-use Atom\Router\Attributes\Controller;
-use Atom\Router\Attributes\Get;
-use Atom\View\ViewInfo;
-use App\Models\UserRepository;
-use App\Messages\FormPostMessage;
-
-#[Controller("/")]
-final class HomeController
-{
-    private $userRepository;
-
-    public function __construct(UserRepository $userRepository)
-    {
-        $this->userRepository = $userRepository;
-    }
-
-    #[Get("")]
-    final public function index($id = 0, FormPostMessage $post, MatchedRoute $route)
-    {
-        return new ViewInfo('home/index', [
-            'items' => $this->userRepository->findAll(),
-            'post' => $post,
-            'route' => $route
-        ]);
-    }
-}
-```
-
-## Models
-
-Simple user model
-```php
-<?php
-
 namespace App\Models;
 
+use Atom\Database\Model;
 use Atom\Database\Orm\Attributes\Column;
 use Atom\Database\Orm\Attributes\PrimaryKey;
 use Atom\Database\Orm\Attributes\Table;
-use Atom\Database\Orm\Provider\NowProvider;
 
 #[Table("users")]
-final class User
+final class User extends Model
 {
     #[PrimaryKey("id")]
     public int $id;
 
-    #[Column("first_name")]
-    public string $firstName;
-
-    #[Column("last_name")]
-    public string $lastName;
-
-    #[Column("email")]
-    public string $email;
-
-    #[Column("created_at", onInsert: NowProvider::class)]
-    public DateTimeImmutable $createdAt;
-
-    #[Column("updated_at", onInsert: NowProvider::class, onUpdate: NowProvider::class)]
-    public DateTimeImmutable $updatedAt;
+    #[Column("name")]
+    public string $name;
 }
 ```
-Simple database usage
+
+Usage:
+
 ```php
-<?php
+$users = User::query()
+    ->where("active", true)
+    ->orderBy("name")
+    ->all();
 
-namespace App\Models;
+$user = User::find(1);
 
-use Atom\Database\Db;
-use Atom\Database\Sql\Op;
-
-final class UserRepository
-{
-    public function __construct(private Db $db)
-    {
-    }
-
-    /**
-     * @return list<User>
-     */
-    public function findAll(): array
-    {
-        return $this->db
-            ->select(User::class)
-            ->where("id", Op::gt(2))
-            ->where("id", Op::lt(10))
-            ->orWhereExp("id = :id", ["id" => 100])
-            ->limit(10)
-            ->all();
-    }
-}
+$user = new User();
+$user->name = "Edin";
+$user->save();
 ```
 
-## Views
+## Documentation
 
-- Views\layout.php
-
-```html
-<!doctype html>
-<html lang="en">
-    <body>
-        <main role="main" class="container">
-            <?= $content ?>
-        </main>
-    </body>
-</html>
-```
-
-- Views\Home\index.php
-
-```html
-<?php $view->extend("layout"); ?>
-
-<h2>Some items</h2>
-<?php if ($items): ?>
-<table class="table">
-    <?php foreach($items as $item): ?>
-    <tr>
-        <td><?= $item->id ?></td>
-        <td><?= $item->username ?></td>
-        <td><?= $item->email ?></td>
-        <td>
-            <div class="float-right">
-                <a class="btn btn-sm btn-primary" href="<?= $baseUrl ?>item">
-                    Detail
-                </a>
-            </div>
-        </td>
-    </tr>
-    <?php endforeach; ?>
-</table>
-<?php endif; ?>
-```
+- [Documentation Index](docs/Index.md)
+- [Pages and View Engine](docs/PagesAndViews.md)
+- [Components](docs/Components.md)
+- [Router](docs/Router.md)
+- [Database](docs/Database.md)
+- [Dependency Injection](docs/DependencyInjection.md)
+- [Console](docs/Console.md)
+- [Service Providers](docs/ServiceProviders.md)
+- [Middlewares](docs/Middlewares.md)
+- [Validation](docs/Validation.md)

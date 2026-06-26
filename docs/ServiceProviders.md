@@ -1,8 +1,69 @@
-# Service Providers
+# Application and Service Providers
 
 [Atom Framework](Index.md)
 
-Service providers group DI registrations for the application.
+An Atom application extends `Atom\Application`.
+
+Application setup is split into two hooks:
+
+- `services()` registers providers and bindings
+- `bootstrap()` performs runtime setup such as model database configuration, API routes, and page discovery
+
+## Application Example
+
+```php
+namespace App;
+
+use App\Controllers\ApiController;
+use Atom\Database\DatabaseServices;
+use Atom\Database\Db;
+use Atom\Database\Driver\SqliteDriver;
+use Atom\Database\Model;
+use Atom\Database\Migration\MigrationOptions;
+use Atom\Database\Seeder\SeederOptions;
+use Atom\Di\Injector;
+use Atom\Di\ServiceProviderRegistry;
+use Atom\Page\Page;
+use Atom\Router\Route;
+
+final class Application extends \Atom\Application
+{
+    protected function services(ServiceProviderRegistry $providers): void
+    {
+        $providers->add(new DatabaseServices(
+            new SqliteDriver(__DIR__ . "/../storage/app.sqlite"),
+            new MigrationOptions(__DIR__ . "/Database/Migrations"),
+            new SeederOptions(__DIR__ . "/Database/Seeders")
+        ));
+    }
+
+    protected function bootstrap(Injector $injector): void
+    {
+        Model::useDb($injector->get(Db::class));
+
+        Route::attach(ApiController::class);
+
+        Page::registerPages();
+    }
+}
+```
+
+## Framework Defaults
+
+The base application registers framework services for:
+
+- console
+- dispatcher
+- pages and view rendering
+- legacy PHP views
+- router
+- request and response wrappers
+
+Application providers are added on top of those defaults.
+
+## Service Providers
+
+Service providers group DI registrations:
 
 ```php
 use Atom\Di\Bindings;
@@ -12,66 +73,46 @@ final class BlogServices implements ServiceProviderInterface
 {
     public function register(Bindings $bindings): void
     {
-        $bindings->bind(PostRepository::class)
+        $bindings->bind(PostService::class)
             ->toSelf()
             ->singleton();
     }
 }
 ```
 
-## Registering Providers
-
-Applications register providers in `services()`:
+Register a provider class:
 
 ```php
-use Atom\Di\ServiceProviderRegistry;
+$providers->add(BlogServices::class);
+```
 
-final class Application extends \Atom\Application
+Register a configured provider instance:
+
+```php
+$providers->add(new DatabaseServices(new SqliteDriver($path)));
+```
+
+## Console Providers
+
+Providers can also expose console command discovery paths by implementing `ConsoleCommandProviderInterface`:
+
+```php
+use Atom\Console\ConsoleCommandProviderInterface;
+use Atom\Console\ConsoleCommandSources;
+use Atom\Di\Bindings;
+use Atom\Di\ServiceProviderInterface;
+
+final class BlogServices implements ServiceProviderInterface, ConsoleCommandProviderInterface
 {
-    protected function services(ServiceProviderRegistry $providers): void
+    public function register(Bindings $bindings): void
     {
-        $providers->add(BlogServices::class);
+    }
+
+    public function consoleCommands(ConsoleCommandSources $commands): void
+    {
+        $commands->add(__DIR__ . "/Commands", "App\\Blog\\Commands");
     }
 }
 ```
 
-Provider instances can be registered too:
-
-```php
-use Atom\Database\DatabaseServices;
-use Atom\Database\Driver\MySqlDriver;
-use Atom\Di\ServiceProviderRegistry;
-
-protected function services(ServiceProviderRegistry $providers): void
-{
-    $providers->add(new DatabaseServices(
-        new MySqlDriver(database: "app", username: "root", password: "root")
-    ));
-}
-```
-
-## Bootstrap
-
-Runtime configuration belongs in the application `bootstrap()` hook. This is where routes and other runtime setup are usually configured.
-
-```php
-use Atom\Di\Injector;
-use Atom\Router\Route;
-
-final class Application extends \Atom\Application
-{
-    protected function bootstrap(Injector $injector): void
-    {
-        Route::get("/", [HomeController::class, "index"]);
-        Route::get("/about", [HomeController::class, "about"]);
-    }
-}
-```
-
-The base application registers framework defaults before application services:
-
-- dispatcher services
-- view services
-- shared router
-- request and response bindings
-
+The application console discovers these command sources automatically.

@@ -9,6 +9,7 @@ use Atom\Database\DatabaseDriver;
 use Atom\Database\DatabaseServices;
 use Atom\Database\Db;
 use Atom\Database\Driver\SqliteDriver;
+use Atom\Database\Model;
 use Atom\Database\Orm\Attributes\BelongsTo;
 use Atom\Database\Orm\Attributes\Column;
 use Atom\Database\Orm\Attributes\HasMany;
@@ -193,6 +194,32 @@ final class DbTest extends TestCase
         $this->assertNull($db->select(DbHydratedUser::class)->where("id", 1)->first());
     }
 
+    public function testModelBaseCanQueryFindSaveAndDelete(): void
+    {
+        $db = new Db(new DatabaseConnection(SqliteDriver::memory()));
+        $db->connection()->pdo()->exec("CREATE TABLE users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)");
+        DbModelUser::useDb($db);
+
+        $user = new DbModelUser();
+        $user->name = "Edin";
+
+        $user->save();
+
+        $this->assertSame(1, $user->id);
+        $this->assertSame(1, DbModelUser::count());
+        $this->assertSame("Edin", DbModelUser::find(1)?->name);
+        $this->assertSame("Edin", DbModelUser::query()->where("id", 1)->first()?->name);
+
+        $user->name = "Atom";
+        $user->save();
+
+        $this->assertSame("Atom", DbModelUser::find(1)?->name);
+
+        $user->delete();
+
+        $this->assertNull(DbModelUser::find(1));
+    }
+
     public function testDbSelectCanLoadBelongsToRelation(): void
     {
         $db = new Db(new DatabaseConnection(SqliteDriver::memory()));
@@ -294,6 +321,16 @@ final class DbTest extends TestCase
 
 #[Table("users")]
 final class DbHydratedUser
+{
+    #[PrimaryKey("id")]
+    public int $id;
+
+    #[Column("name")]
+    public string $name;
+}
+
+#[Table("users")]
+final class DbModelUser extends Model
 {
     #[PrimaryKey("id")]
     public int $id;

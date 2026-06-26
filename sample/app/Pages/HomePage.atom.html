@@ -1,0 +1,39 @@
+<section class="hero">
+    <div>
+        <h1>Atom, rebuilt from the inside out.</h1>
+        <p>
+            A compact sample app for the new router, DI container, dispatcher, pages,
+            HTTP layer, and database foundation.
+        </p>
+        <p>
+            <a class="button" href="/articles">Browse articles</a>
+        </p>
+    </div>
+    <aside class="panel">
+        <h2>Smoke test</h2>
+        <p>This page is rendered through a discovered page route and atom.html template.</p>
+        <div class="stats">
+            <div class="stat">
+                <strong>{{ $this->articleCount }}</strong>
+                Articles
+            </div>
+            <div class="stat">
+                <strong>{{ count($this->latest) }}</strong>
+                Loaded
+            </div>
+        </div>
+    </aside>
+</section>
+
+<section class="article-list">
+    @foreach($this->latest as $article)
+        <article class="article">
+            <h2><a href="/articles/{{ $article->id }}">{{ $article->title }}</a></h2>
+            <div class="meta">
+                <span class="pill">{{ $article->category?->name ?? "Uncategorized" }}</span>
+                <span>{{ $article->createdAt->format("M j, Y") }}</span>
+            </div>
+            <p>{{ $article->summary }}</p>
+        </article>
+    @endforeach
+</section>

@@ -2,42 +2,48 @@
 
 [Atom Framework](Index.md)
 
-Atom's database layer has three parts:
+Atom's database layer has four parts:
 
 - drivers and `DatabaseConnection` for PDO access
 - SQL query builders under `Atom\Database\Sql`
-- `Db` for bound queries, entity hydration, persistence, and relation loading
+- `Db` for connection-bound querying, hydration, persistence, and relation loading
+- `Model` as a lightweight base class for application models
 
 ## Services
 
-Register database services in the application service provider hook:
-
-```php
-use Atom\Database\DatabaseServices;
-use Atom\Database\Driver\MySqlDriver;
-use Atom\Di\ServiceProviderRegistry;
-
-protected function services(ServiceProviderRegistry $providers): void
-{
-    $providers->add(new DatabaseServices(
-        new MySqlDriver(database: "app", username: "root", password: "root")
-    ));
-}
-```
-
-SQLite is useful for tests and small sample apps:
+Register database services from the application:
 
 ```php
 use Atom\Database\DatabaseServices;
 use Atom\Database\Driver\SqliteDriver;
+use Atom\Database\Migration\MigrationOptions;
+use Atom\Database\Seeder\SeederOptions;
 
-$providers->add(new DatabaseServices(new SqliteDriver(__DIR__ . "/app.sqlite")));
-$providers->add(new DatabaseServices(SqliteDriver::memory()));
+protected function services(ServiceProviderRegistry $providers): void
+{
+    $providers->add(new DatabaseServices(
+        new SqliteDriver(__DIR__ . "/../storage/app.sqlite"),
+        new MigrationOptions(__DIR__ . "/Database/Migrations"),
+        new SeederOptions(__DIR__ . "/Database/Seeders")
+    ));
+}
+```
+
+Configure the model base during bootstrap:
+
+```php
+use Atom\Database\Db;
+use Atom\Database\Model;
+
+protected function bootstrap(Injector $injector): void
+{
+    Model::useDb($injector->get(Db::class));
+}
 ```
 
 ## Query Builder
 
-The query builder creates SQL objects only. It does not know about connections until passed to `Db` or `DatabaseConnection`.
+The SQL query builder creates query objects. It does not execute anything by itself.
 
 ```php
 use Atom\Database\Sql\Op;
@@ -54,37 +60,27 @@ $query = Query::select("users u")
     ->limit(20);
 ```
 
-Simple join expressions can also be parsed from the table definition:
+Simple join strings are supported:
 
 ```php
 Query::select("users u")
     ->leftJoin("profiles p on p.user_id = u.id");
 ```
 
-Scalar values become equality conditions, arrays become `IN`, and `null` becomes `IS NULL`:
+Condition shortcuts:
 
 ```php
 Query::select("users")
-    ->where("active", true)
-    ->where("id", [1, 2, 3])
-    ->where("deleted_at", null);
+    ->where("active", true)       // active = true
+    ->where("id", [1, 2, 3])      // id in (...)
+    ->where("deleted_at", null);  // deleted_at is null
 ```
 
-Use `whereExp()` for small raw criteria expressions with named parameters:
+Raw criteria expressions can be used when needed:
 
 ```php
 Query::select("users u")
     ->whereExp("u.id = :id and u.id < 100", ["id" => 2]);
-```
-
-Grouping, aggregate columns, and having are supported:
-
-```php
-Query::select("orders")
-    ->columns("customer_id")
-    ->count("*", "total")
-    ->groupBy("customer_id")
-    ->having("total", Op::gt(1));
 ```
 
 Mutation builders:
@@ -100,40 +96,12 @@ Query::delete("users")
     ->where("id", Op::gte(10));
 ```
 
-## Connections
+## Db
 
-`DatabaseConnection` compiles and executes query objects through the configured driver:
-
-```php
-use Atom\Database\DatabaseConnection;
-use Atom\Database\Driver\SqliteDriver;
-use Atom\Database\Sql\Query;
-
-$connection = new DatabaseConnection(SqliteDriver::memory());
-
-$connection->execute(Query::insert("users")->values(["name" => "Edin"]));
-
-$row = $connection->first(Query::select("users")->columns("id", "name"));
-$rows = $connection->all(Query::select("users"));
-$count = $connection->scalar(Query::select("users")->count());
-```
-
-Transactions wrap a callback:
+`Db` binds query objects to a configured connection.
 
 ```php
-$connection->transaction(function (DatabaseConnection $connection): void {
-    $connection->execute(Query::insert("users")->values(["name" => "Edin"]));
-});
-```
-
-## Bound Queries
-
-`Db` creates queries bound to a connection and provides convenience result methods.
-
-```php
-use Atom\Database\Db;
-
-$users = $db
+$rows = $db
     ->select("users")
     ->columns("id", "name")
     ->where("active", true)
@@ -151,28 +119,41 @@ $total = $db
     ->total();
 ```
 
-## Entities
-
-Use attributes to describe table and column metadata:
+Selecting by class hydrates models/entities:
 
 ```php
+$articles = $db
+    ->select(Article::class)
+    ->where("is_published", true)
+    ->with("category")
+    ->all();
+```
+
+## Models
+
+Models extend `Atom\Database\Model` and use ORM attributes for metadata.
+
+```php
+namespace App\Models;
+
+use Atom\Database\Model;
 use Atom\Database\Orm\Attributes\Column;
 use Atom\Database\Orm\Attributes\PrimaryKey;
 use Atom\Database\Orm\Attributes\Table;
 use Atom\Database\Orm\Provider\NowProvider;
 use DateTimeImmutable;
 
-#[Table("users")]
-final class User
+#[Table("articles")]
+final class Article extends Model
 {
     #[PrimaryKey("id")]
     public int $id;
 
-    #[Column("name")]
-    public string $name;
+    #[Column("title")]
+    public string $title;
 
-    #[Column("email")]
-    public string $email;
+    #[Column("body")]
+    public string $body;
 
     #[Column("created_at", onInsert: NowProvider::class)]
     public DateTimeImmutable $createdAt;
@@ -182,35 +163,40 @@ final class User
 }
 ```
 
-Selecting by class hydrates entities:
+Query:
 
 ```php
-/** @var list<User> $users */
-$users = $db
-    ->select(User::class)
-    ->where("active", true)
+$articles = Article::query()
+    ->where("is_published", true)
+    ->orderByDesc("created_at")
+    ->limit(10)
     ->all();
-
-/** @var User|null $user */
-$user = $db
-    ->select(User::class)
-    ->where("id", 1)
-    ->first();
 ```
 
-Persist entities with `insert`, `update`, `save`, and `delete`:
+Find by primary key:
 
 ```php
-$user = new User();
-$user->name = "Edin";
-$user->email = "edin@example.com";
+$article = Article::find(1);
+```
 
-$db->save($user);
+Count:
 
-$user->name = "Amar";
-$db->save($user);
+```php
+$total = Article::count();
+```
 
-$db->delete($user);
+Save and delete:
+
+```php
+$article = new Article();
+$article->title = "Hello";
+$article->body = "Body";
+$article->save();
+
+$article->title = "Updated";
+$article->save();
+
+$article->delete();
 ```
 
 `save()` inserts when the primary key is empty and updates otherwise.
@@ -226,7 +212,7 @@ use Atom\Database\Orm\Attributes\PrimaryKey;
 use Atom\Database\Orm\Attributes\Table;
 
 #[Table("categories")]
-final class Category
+final class Category extends Model
 {
     #[PrimaryKey("id")]
     public int $id;
@@ -236,7 +222,7 @@ final class Category
 }
 
 #[Table("articles")]
-final class Article
+final class Article extends Model
 {
     #[PrimaryKey("id")]
     public int $id;
@@ -252,11 +238,10 @@ final class Article
 }
 ```
 
-Load relations:
+Load relation:
 
 ```php
-$articles = $db
-    ->select(Article::class)
+$articles = Article::query()
     ->with("category")
     ->all();
 ```
@@ -267,11 +252,42 @@ Supported relation attributes:
 - `HasOne`
 - `HasMany`
 
-Multiple relations can be loaded:
+## Migrations and Seeders
+
+Database services register console commands automatically.
+
+```powershell
+php atom migrate:status
+php atom migrate
+php atom migrate:fresh
+php atom migrate:rollback
+php atom migrate:sql
+php atom db:seed
+php atom make:migration create_articles
+php atom make:seeder seed_articles
+```
+
+Migration files may return anonymous migration classes:
 
 ```php
-$articles = $db
-    ->select(Article::class)
-    ->with("category", "comments")
-    ->all();
+<?php
+
+use Atom\Database\Migration\Migration;
+use Atom\Database\Schema\Schema;
+
+return new class extends Migration {
+    public function up(Schema $schema): void
+    {
+        $schema->create("articles", function ($table): void {
+            $table->id();
+            $table->string("title");
+            $table->timestamps();
+        });
+    }
+
+    public function down(Schema $schema): void
+    {
+        $schema->drop("articles");
+    }
+};
 ```

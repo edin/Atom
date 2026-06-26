@@ -165,3 +165,27 @@ $router->add(RouteEntry::route(
     RouteAction::fromClosure(fn () => "ok")
 ));
 ```
+
+## Route Metadata
+
+Route entries can carry small metadata objects:
+
+```php
+$entry = RouteEntry::route(
+    "GET",
+    "/dashboard",
+    RouteAction::fromMethod(DashboardController::class, "index")
+)->metadata(new RequiresRole("admin"));
+```
+
+Metadata is available from the matched route:
+
+```php
+$metadata = $matchedRoute
+    ->getRouteEntry()
+    ->getMetadataOfType(RequiresRole::class);
+```
+
+Pages use this internally. `Page::registerPages()` registers a normal route action pointing at `PageRouteHandler::render`, then stores the target page class as route metadata. This keeps page routes inspectable and easier to cache or serialize later.
+
+Metadata should stay simple: readonly DTOs with scalar values, arrays, enums, or class names. Avoid closures or service instances if route caching is a future goal.

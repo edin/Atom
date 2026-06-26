@@ -6,6 +6,7 @@ namespace Atom\Tests\View;
 
 use Atom\View\Ast\ElementNode;
 use Atom\View\Component\AttributeBag;
+use Atom\View\Component\Children;
 use Atom\View\Component\ComponentHydrator;
 use Atom\View\Component\ComponentInterface;
 use Atom\View\Component\Fragment;
@@ -94,6 +95,37 @@ final class ComponentHydratorTest extends TestCase
         $this->assertSame("one", $component->content?->render());
     }
 
+    public function testCollectsDeclaredChildComponentsAndRemovesThemFromContent(): void
+    {
+        $component = new HydratedTableComponent();
+        $node = $this->element('<Table><Column name="Title" />Tail</Table>');
+
+        $this->hydrator()->hydrate(
+            $component,
+            $node,
+            new ViewContext(),
+            static fn(array $nodes, ViewContext $context): string => count($nodes) === 1 ? "tail" : "unexpected"
+        );
+
+        $this->assertCount(1, $component->columns);
+        $this->assertInstanceOf(HydratedColumnComponent::class, $component->columns[0]);
+        $this->assertSame("Title", $component->columns[0]->name);
+        $this->assertSame("tail", $component->content?->render());
+    }
+
+    public function testThrowsWhenCollectedChildComponentTypeIsInvalid(): void
+    {
+        $this->expectException(ViewRenderException::class);
+        $this->expectExceptionMessage("mapped by Atom\Tests\View\InvalidChildTypeComponent::\$columns");
+
+        $this->hydrator()->hydrate(
+            new InvalidChildTypeComponent(),
+            $this->element('<Table><Column /></Table>'),
+            new ViewContext(),
+            static fn(): string => ""
+        );
+    }
+
     public function testNormalizesAttributeNamesToPropertyNames(): void
     {
         $component = new HydratedCardComponent();
@@ -180,10 +212,37 @@ final class ComponentHydratorTest extends TestCase
     public function testThrowsForUnknownAttributeWithoutAttributeBag(): void
     {
         $this->expectException(ViewRenderException::class);
+        $this->expectExceptionMessage("Unknown attribute 'unknown' on component Atom\Tests\View\HydratedCardComponent rendered from <Card>");
 
         $this->hydrator()->hydrate(
             new HydratedCardComponent(),
             $this->element('<Card unknown="value" />'),
+            new ViewContext(),
+            static fn(): string => ""
+        );
+    }
+
+    public function testThrowsHelpfulMessageForUnknownNamedFragment(): void
+    {
+        $this->expectException(ViewRenderException::class);
+        $this->expectExceptionMessage("Unknown fragment <Card.Footer> on component Atom\Tests\View\HydratedCardComponent");
+
+        $this->hydrator()->hydrate(
+            new HydratedCardComponent(),
+            $this->element('<Card><Card.Footer>Footer</Card.Footer></Card>'),
+            new ViewContext(),
+            static fn(): string => ""
+        );
+    }
+
+    public function testThrowsHelpfulMessageWhenComponentReceivesContentWithoutContentProperty(): void
+    {
+        $this->expectException(ViewRenderException::class);
+        $this->expectExceptionMessage("received child content starting with text 'Body'");
+
+        $this->hydrator()->hydrate(
+            new NoContentComponent(),
+            $this->element('<Card>Body</Card>'),
             new ViewContext(),
             static fn(): string => ""
         );
@@ -215,6 +274,48 @@ final class HydratedCardComponent implements ComponentInterface
     public ?Fragment $fragmentTitle = null;
     public ?Fragment $content = null;
 
+    public function render(): string
+    {
+        return "";
+    }
+}
+
+final class HydratedTableComponent implements ComponentInterface
+{
+    /** @var HydratedColumnComponent[] */
+    #[Children("Column", HydratedColumnComponent::class)]
+    public array $columns = [];
+    public ?Fragment $content = null;
+
+    public function render(): string
+    {
+        return "";
+    }
+}
+
+final class HydratedColumnComponent implements ComponentInterface
+{
+    public string $name = "";
+
+    public function render(): string
+    {
+        return "";
+    }
+}
+
+final class InvalidChildTypeComponent implements ComponentInterface
+{
+    #[Children("Column", \stdClass::class)]
+    public array $columns = [];
+
+    public function render(): string
+    {
+        return "";
+    }
+}
+
+final class NoContentComponent implements ComponentInterface
+{
     public function render(): string
     {
         return "";

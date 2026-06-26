@@ -71,8 +71,9 @@ final readonly class ViewRenderer
 
     private function renderElement(ElementNode $node, ViewContext $context): string
     {
-        if ($this->components->has($node->name) || is_a($node->name, ComponentInterface::class, true)) {
-            return $this->renderComponent($node, $context);
+        $componentClass = $this->resolveComponentClass($node);
+        if ($componentClass !== null) {
+            return $this->renderComponent($node, $context, $componentClass);
         }
 
         $attributes = $this->renderAttributes($node, $context);
@@ -86,11 +87,27 @@ final readonly class ViewRenderer
             . "</{$node->name}>";
     }
 
-    private function renderComponent(ElementNode $node, ViewContext $context): string
+    /**
+     * @return class-string<ComponentInterface>|null
+     */
+    private function resolveComponentClass(ElementNode $node): ?string
     {
-        $className = $this->components->has($node->name)
-            ? $this->components->get($node->name)
-            : $node->name;
+        if ($this->components->has($node->name)) {
+            return $this->components->get($node->name);
+        }
+
+        if (is_a($node->name, ComponentInterface::class, true)) {
+            return $node->name;
+        }
+
+        return null;
+    }
+
+    /**
+     * @param class-string<ComponentInterface> $className
+     */
+    private function renderComponent(ElementNode $node, ViewContext $context, string $className): string
+    {
         $component = $this->componentFactory->create($className);
 
         $this->componentHydrator()->hydrate(
@@ -100,11 +117,13 @@ final readonly class ViewRenderer
             fn(array $nodes, ViewContext $context): string => $this->renderNodes($nodes, $context)
         );
 
-        return $this->renderComponentResult($component->render(), $context);
+        return $this->renderComponentResult($component, $component->render(), $context);
     }
 
-    private function renderComponentResult(mixed $result, ViewContext $context): string
+    private function renderComponentResult(ComponentInterface $component, mixed $result, ViewContext $context): string
     {
+        $componentClass = $component::class;
+
         if (is_string($result)) {
             return $result;
         }
@@ -118,16 +137,22 @@ final readonly class ViewRenderer
         }
 
         if (is_array($result)) {
-            foreach ($result as $node) {
+            foreach ($result as $index => $node) {
                 if (!$node instanceof ViewNode) {
-                    throw new ViewRenderException("Component returned an array with unsupported value.");
+                    throw new ViewRenderException(
+                        "Component {$componentClass} returned an array with unsupported value at index '{$index}': "
+                        . get_debug_type($node) . ". Expected every item to implement " . ViewNode::class . "."
+                    );
                 }
             }
 
             return $this->renderNodes($result, $context);
         }
 
-        throw new ViewRenderException("Component returned unsupported render result.");
+        throw new ViewRenderException(
+            "Component {$componentClass} returned unsupported render result " . get_debug_type($result)
+            . ". Expected string, " . TemplateNode::class . ", " . ViewNode::class . ", or array<ViewNode>."
+        );
     }
 
     private function renderIf(IfNode $node, ViewContext $context): string
@@ -196,7 +221,7 @@ final readonly class ViewRenderer
 
     private function componentHydrator(): ComponentHydrator
     {
-        return $this->componentHydrator ?? new ComponentHydrator($this->evaluator);
+        return $this->componentHydrator ?? new ComponentHydrator($this->evaluator, $this->componentFactory);
     }
 
     private function escape(mixed $value): string

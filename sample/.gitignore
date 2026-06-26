@@ -1,0 +1,3 @@
+/vendor
+/resource/cache
+/storage/*.sqlite

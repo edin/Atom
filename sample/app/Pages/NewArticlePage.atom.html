@@ -1,0 +1,34 @@
+<div class="toolbar">
+    <div>
+        <h1>New article</h1>
+        <p>A tiny POST flow using a page method, request wrapper, and response wrapper.</p>
+    </div>
+</div>
+
+<form class="form" method="post" action="/articles">
+    <label>
+        Category
+        <select name="category_id">
+            @foreach($this->categories as $category)
+                <option value="{{ $category->id }}">{{ $category->name }}</option>
+            @endforeach
+        </select>
+    </label>
+
+    <label>
+        Title
+        <input name="title" maxlength="120" required>
+    </label>
+
+    <label>
+        Summary
+        <input name="summary" maxlength="220" required>
+    </label>
+
+    <label>
+        Body
+        <textarea name="body" required></textarea>
+    </label>
+
+    <button class="button" type="submit">Publish</button>
+</form>

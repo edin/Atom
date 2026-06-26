@@ -1,0 +1,9 @@
+<article class="article">
+    <h1>{{ $this->article->title }}</h1>
+    <div class="meta">
+        <span class="pill">{{ $this->article->category?->name ?? "Uncategorized" }}</span>
+        <span>{{ $this->article->createdAt->format("M j, Y H:i") }}</span>
+    </div>
+    <p>{{ $this->article->summary }}</p>
+    <p>{{ $this->article->body }}</p>
+</article>

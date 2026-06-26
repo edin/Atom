@@ -1,25 +1,66 @@
-# Atom Framework
+# Atom Framework Documentation
 
-## Dependency Injection
+Atom is currently organized as one framework package plus a sample app.
 
-[Dependency Injection](DependencyInjection.md)
+The main concepts are:
 
-## Router
+- [Application and Service Providers](ServiceProviders.md)
+- [Pages and View Engine](PagesAndViews.md)
+- [Components](Components.md)
+- [Router](Router.md)
+- [Database](Database.md)
+- [Dependency Injection](DependencyInjection.md)
+- [Console](Console.md)
+- [Middlewares](Middlewares.md)
+- [Validation](Validation.md)
 
-[Router](Router.md)
+## Application Flow
 
-## Database
+At runtime the base application:
 
-[Database](Database.md)
+1. registers framework service providers
+2. lets the application register its services
+3. creates the injector
+4. configures the shared router
+5. runs application bootstrap
+6. dispatches the request through the middleware pipeline
 
-## Validation
+The sample application's bootstrap is intentionally small:
 
-[Validation](Validation.md)
+```php
+protected function bootstrap(Injector $injector): void
+{
+    Model::useDb($injector->get(Db::class));
 
-## Console
+    Route::attach(ApiController::class);
 
-[Console](Console.md)
+    Page::registerPages();
+}
+```
 
-## Middlewares
+Pages own browser-facing workflows. Controllers are still useful for APIs.
 
-[Middlewares](Middlewares.md)
+## Repository Layout
+
+```text
+.
+├── src/
+├── tests/
+├── docs/
+└── sample/
+```
+
+The sample app depends on the local framework package through:
+
+```json
+{
+  "repositories": [
+    {
+      "type": "path",
+      "url": ".."
+    }
+  ]
+}
+```
+
+This keeps framework and sample development together while still leaving room to split packages later.
