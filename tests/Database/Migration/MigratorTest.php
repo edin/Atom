@@ -10,7 +10,6 @@ use Atom\Console\ConsoleServices;
 use Atom\Database\DatabaseConnection;
 use Atom\Database\DatabaseServices;
 use Atom\Database\Driver\SqliteDriver;
-use Atom\Database\Migration\DatabaseMigrationLockManager;
 use Atom\Database\Migration\DatabaseMigrationRepository;
 use Atom\Database\Migration\MigrationDiscovery;
 use Atom\Database\Migration\MigrationOptions;
@@ -224,7 +223,7 @@ final class MigratorTest extends TestCase
         $migrator = new Migrator(
             $connection,
             $repository,
-            new DatabaseMigrationLockManager($connection),
+            $connection->driver()->lockManager($connection),
             new MigrationDiscovery(),
             new MigrationOptions(__DIR__ . "/ConditionalFixtures")
         );
@@ -256,7 +255,7 @@ final class MigratorTest extends TestCase
         return new Migrator(
             $connection,
             $repository,
-            new DatabaseMigrationLockManager($connection),
+            $connection->driver()->lockManager($connection),
             new MigrationDiscovery(),
             $options
         );

@@ -75,6 +75,33 @@ final class SchemaTest extends TestCase
         $this->assertSame(["email", "status"], $operation->table->indexes()[0]->columns);
     }
 
+    public function testTableCollectsExpandedColumnTypes(): void
+    {
+        $schema = new Schema();
+
+        $schema->create("typed", function ($table): void {
+            $table->bigInteger("views");
+            $table->float("rating");
+            $table->decimal("price", 12, 4);
+            $table->date("published_on");
+            $table->json("metadata");
+            $table->binary("payload");
+            $table->uuid("public_id");
+        });
+
+        $columns = $schema->operations()[0]->table->columns();
+
+        $this->assertSame(ColumnType::BigInteger, $columns[0]->type);
+        $this->assertSame(ColumnType::Float, $columns[1]->type);
+        $this->assertSame(ColumnType::Decimal, $columns[2]->type);
+        $this->assertSame(12, $columns[2]->precision);
+        $this->assertSame(4, $columns[2]->scale);
+        $this->assertSame(ColumnType::Date, $columns[3]->type);
+        $this->assertSame(ColumnType::Json, $columns[4]->type);
+        $this->assertSame(ColumnType::Binary, $columns[5]->type);
+        $this->assertSame(ColumnType::Uuid, $columns[6]->type);
+    }
+
     public function testDropTableCollectsDropOperation(): void
     {
         $schema = new Schema();

@@ -73,6 +73,47 @@ final class SchemaCompilerTest extends TestCase
         ], $plan->sql());
     }
 
+    public function testSqliteCompilerMapsExpandedColumnTypes(): void
+    {
+        $schema = new Schema();
+        $schema->create("typed", function ($table): void {
+            $table->bigInteger("views");
+            $table->float("rating");
+            $table->decimal("price", 12, 4);
+            $table->date("published_on");
+            $table->json("metadata");
+            $table->binary("payload");
+            $table->uuid("public_id");
+        });
+
+        $plan = (new SqliteSchemaCompiler())->compile($schema);
+
+        $this->assertSame([
+            'CREATE TABLE "typed" ("views" INTEGER NOT NULL, "rating" REAL NOT NULL, "price" NUMERIC(12, 4) NOT NULL, "published_on" DATE NOT NULL, "metadata" TEXT NOT NULL, "payload" BLOB NOT NULL, "public_id" CHAR(36) NOT NULL)',
+        ], $plan->sql());
+    }
+
+    public function testMySqlCompilerMapsExpandedColumnTypes(): void
+    {
+        $schema = new Schema();
+        $schema->create("typed", function ($table): void {
+            $table->bigInteger("views");
+            $table->float("rating");
+            $table->decimal("price", 12, 4);
+            $table->date("published_on");
+            $table->json("metadata");
+            $table->binary("payload");
+            $table->uuid("public_id");
+            $table->timestamp("created_at");
+        });
+
+        $plan = (new MySqlSchemaCompiler())->compile($schema);
+
+        $this->assertSame([
+            'CREATE TABLE `typed` (`views` BIGINT NOT NULL, `rating` DOUBLE NOT NULL, `price` DECIMAL(12, 4) NOT NULL, `published_on` DATE NOT NULL, `metadata` JSON NOT NULL, `payload` BLOB NOT NULL, `public_id` CHAR(36) NOT NULL, `created_at` TIMESTAMP NOT NULL)',
+        ], $plan->sql());
+    }
+
     public function testExplicitSchemaBatchesArePreservedAndIndexesAreSplitPerBatch(): void
     {
         $schema = new Schema();
@@ -93,4 +134,3 @@ final class SchemaCompilerTest extends TestCase
         $this->assertCount(1, $plan->batches()[1]->commands());
     }
 }
-

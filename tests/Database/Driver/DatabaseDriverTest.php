@@ -7,10 +7,10 @@ namespace Atom\Tests\Database\Driver;
 use Atom\Database\DatabaseDriver;
 use Atom\Database\Driver\MySqlDriver;
 use Atom\Database\Driver\SqliteDriver;
-use Atom\Database\Migration\Driver\MySqlMigrationLockDriver;
 use Atom\Database\Migration\Driver\MySqlMigrationRepositoryDriver;
-use Atom\Database\Migration\Driver\SqliteMigrationLockDriver;
 use Atom\Database\Migration\Driver\SqliteMigrationRepositoryDriver;
+use Atom\Database\Lock\FileDatabaseLockManager;
+use Atom\Database\Lock\MySqlDatabaseLockManager;
 use Atom\Database\Schema\Compiler\MySqlSchemaCompiler;
 use Atom\Database\Schema\Compiler\SqliteSchemaCompiler as DatabaseSqliteSchemaCompiler;
 use Atom\Database\Schema\Inspector\MySqlSchemaInspector;
@@ -33,7 +33,7 @@ final class DatabaseDriverTest extends TestCase
         $this->assertInstanceOf(MySqlSchemaCompiler::class, $driver->schemaCompiler());
         $this->assertInstanceOf(MySqlSchemaInspector::class, $driver->schemaInspector(new DatabaseConnection($driver)));
         $this->assertInstanceOf(MySqlMigrationRepositoryDriver::class, $driver->migrationRepositoryDriver());
-        $this->assertInstanceOf(MySqlMigrationLockDriver::class, $driver->migrationLockDriver());
+        $this->assertInstanceOf(MySqlDatabaseLockManager::class, $driver->lockManager(new DatabaseConnection($driver)));
         $this->assertInstanceOf(MySqlDatabaseResetter::class, $driver->resetter());
     }
 
@@ -46,7 +46,7 @@ final class DatabaseDriverTest extends TestCase
         $this->assertInstanceOf(DatabaseSqliteSchemaCompiler::class, $driver->schemaCompiler());
         $this->assertInstanceOf(SqliteSchemaInspector::class, $driver->schemaInspector(new DatabaseConnection($driver)));
         $this->assertInstanceOf(SqliteMigrationRepositoryDriver::class, $driver->migrationRepositoryDriver());
-        $this->assertInstanceOf(SqliteMigrationLockDriver::class, $driver->migrationLockDriver());
+        $this->assertInstanceOf(FileDatabaseLockManager::class, $driver->lockManager(new DatabaseConnection($driver)));
         $this->assertInstanceOf(SqliteDatabaseResetter::class, $driver->resetter());
     }
 }
