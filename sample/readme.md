@@ -18,6 +18,7 @@ It demonstrates:
 
 ```powershell
 composer install
+copy .env.example .env
 php atom migrate:fresh
 php atom db:seed
 php -S 127.0.0.1:8021 -t public public/server.php
@@ -38,6 +39,18 @@ php atom migrate:fresh
 php atom db:seed
 php atom make:migration create_posts
 php atom make:seeder seed_posts
+```
+
+Database settings are read from `.env`:
+
+```env
+DB_DRIVER=sqlite
+DB_DATABASE=storage/atom_sample.sqlite
+DB_HOST=localhost
+DB_PORT=
+DB_USERNAME=
+DB_PASSWORD=
+DB_CHARSET=utf8mb4
 ```
 
 ## Structure

@@ -28,4 +28,27 @@ abstract class AbstractPdoDriver implements DatabaseDriver
 
         return $pdo;
     }
+
+    public function dsn(): string
+    {
+        return $this->dsn;
+    }
+
+    public function username(): ?string
+    {
+        return $this->username;
+    }
+
+    public function password(): ?string
+    {
+        return $this->password;
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    public function options(): array
+    {
+        return $this->options;
+    }
 }

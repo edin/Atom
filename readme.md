@@ -43,6 +43,7 @@ From the sample app:
 ```powershell
 cd sample
 composer install
+copy .env.example .env
 php atom migrate:fresh
 php atom db:seed
 php -S 127.0.0.1:8021 -t public public/server.php
@@ -167,6 +168,7 @@ $user->save();
 - [Components](docs/Components.md)
 - [Router](docs/Router.md)
 - [Database](docs/Database.md)
+- [Configuration](docs/Configuration.md)
 - [Dependency Injection](docs/DependencyInjection.md)
 - [Console](docs/Console.md)
 - [Service Providers](docs/ServiceProviders.md)

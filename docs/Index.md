@@ -9,6 +9,7 @@ The main concepts are:
 - [Components](Components.md)
 - [Router](Router.md)
 - [Database](Database.md)
+- [Configuration](Configuration.md)
 - [Dependency Injection](DependencyInjection.md)
 - [Console](Console.md)
 - [Middlewares](Middlewares.md)
@@ -64,3 +65,12 @@ The sample app depends on the local framework package through:
 ```
 
 This keeps framework and sample development together while still leaving room to split packages later.
+
+Local sample configuration can live in `sample/.env`:
+
+```env
+APP_ENV=local
+APP_DEBUG=true
+DB_DRIVER=sqlite
+DB_DATABASE=storage/atom_sample.sqlite
+```

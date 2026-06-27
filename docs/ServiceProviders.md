@@ -15,9 +15,10 @@ Application setup is split into two hooks:
 namespace App;
 
 use App\Controllers\ApiController;
+use Atom\Config\Env;
+use Atom\Database\DatabaseDriverFactory;
 use Atom\Database\DatabaseServices;
 use Atom\Database\Db;
-use Atom\Database\Driver\SqliteDriver;
 use Atom\Database\Model;
 use Atom\Database\Migration\MigrationOptions;
 use Atom\Database\Seeder\SeederOptions;
@@ -30,8 +31,10 @@ final class Application extends \Atom\Application
 {
     protected function services(ServiceProviderRegistry $providers): void
     {
+        Env::loadIfExists(__DIR__ . "/../.env");
+
         $providers->add(new DatabaseServices(
-            new SqliteDriver(__DIR__ . "/../storage/app.sqlite"),
+            DatabaseDriverFactory::fromEnv(dirname(__DIR__)),
             new MigrationOptions(__DIR__ . "/Database/Migrations"),
             new SeederOptions(__DIR__ . "/Database/Seeders")
         ));

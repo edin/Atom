@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App;
 
 use App\Components\Table;
+use Atom\Config\Env;
 use App\Controllers\ApiController;
+use Atom\Database\DatabaseConfig;
 use Atom\Database\DatabaseServices;
+use Atom\Database\DatabaseDriverFactory;
 use Atom\Database\Db;
-use Atom\Database\Driver\SqliteDriver;
 use Atom\Database\Model;
 use Atom\Database\Migration\MigrationOptions;
 use Atom\Database\Seeder\SeederOptions;
@@ -24,15 +26,21 @@ final class Application extends \Atom\Application
 
     protected function services(ServiceProviderRegistry $providers): void
     {
-        $storage = dirname(__DIR__) . "/storage";
-        if (!is_dir($storage)) {
-            mkdir($storage, 0777, true);
+        $root = dirname(__DIR__);
+        Env::loadIfExists($root . "/.env");
+
+        $database = DatabaseConfig::fromEnv();
+        if (strtolower($database->driver) === "sqlite") {
+            $storage = dirname($this->path($root, $database->database));
+            if (!is_dir($storage)) {
+                mkdir($storage, 0777, true);
+            }
         }
 
         $providers->add(new DatabaseServices(
-            new SqliteDriver($storage . "/atom_sample.sqlite"),
-            new MigrationOptions(dirname(__DIR__) . "/app/Database/Migrations"),
-            new SeederOptions(dirname(__DIR__) . "/app/Database/Seeders")
+            (new DatabaseDriverFactory($root))->create($database),
+            new MigrationOptions($root . "/app/Database/Migrations"),
+            new SeederOptions($root . "/app/Database/Seeders")
         ));
     }
 
@@ -46,5 +54,14 @@ final class Application extends \Atom\Application
         Route::attach(ApiController::class);
 
         Page::registerPages();
+    }
+
+    private function path(string $root, string $path): string
+    {
+        if (preg_match('/^(?:[A-Za-z]:[\/\\\\]|[\/\\\\])/', $path) === 1) {
+            return $path;
+        }
+
+        return $root . "/" . ltrim($path, "/\\");
     }
 }

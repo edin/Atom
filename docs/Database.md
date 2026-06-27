@@ -15,6 +15,7 @@ Register database services from the application:
 
 ```php
 use Atom\Database\DatabaseServices;
+use Atom\Database\DatabaseDriverFactory;
 use Atom\Database\Driver\SqliteDriver;
 use Atom\Database\Migration\MigrationOptions;
 use Atom\Database\Seeder\SeederOptions;
@@ -28,6 +29,37 @@ protected function services(ServiceProviderRegistry $providers): void
     ));
 }
 ```
+
+Or build the driver from environment configuration:
+
+```php
+use Atom\Config\Env;
+use Atom\Database\DatabaseDriverFactory;
+
+Env::loadIfExists(dirname(__DIR__) . "/.env");
+
+$driver = DatabaseDriverFactory::fromEnv(dirname(__DIR__));
+```
+
+The sample app reads its SQLite path from `.env`:
+
+```env
+DB_DRIVER=sqlite
+DB_DATABASE=storage/atom_sample.sqlite
+DB_HOST=localhost
+DB_PORT=
+DB_USERNAME=
+DB_PASSWORD=
+DB_CHARSET=utf8mb4
+```
+
+Supported driver values:
+
+- `sqlite`
+- `mysql`
+- `mariadb`
+
+PostgreSQL is planned, but the framework currently throws a clear error for `pgsql`, `postgres`, or `postgresql`.
 
 Configure the model base during bootstrap:
 
