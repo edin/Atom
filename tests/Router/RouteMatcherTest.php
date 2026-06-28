@@ -72,4 +72,16 @@ final class RouteMatcherTest extends TestCase
         $this->assertTrue($result->isFound());
         $this->assertSame($route, $result->matchedRoute->getRouteEntry());
     }
+
+    public function testMatcherFindsRouteWithWildcardParam(): void
+    {
+        $route = RouteEntry::route("GET", "/resources/{path*}", RouteAction::fromClosure(fn () => []));
+        $router = new Router();
+        $router->add($route);
+
+        $result = (new RouteMatcher($router))->match("GET", "/resources/css/app.css");
+
+        $this->assertTrue($result->isFound());
+        $this->assertSame(["path" => "css/app.css"], $result->matchedRoute->getRouteParams());
+    }
 }

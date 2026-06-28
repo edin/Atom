@@ -7,9 +7,12 @@ namespace Atom\Tests\Module;
 use Atom\Application;
 use Atom\Di\Injector;
 use Atom\Http\Response;
+use Atom\Modules\Framework\Components\FieldError;
+use Atom\Modules\Framework\Components\ValidationSummary;
+use Atom\Modules\Framework\Framework;
 use Atom\Module\ModuleContext;
 use Atom\Module\ModuleInterface;
-use Atom\Module\ResourceRouteHandler;
+use Atom\Http\StaticFileHandler;
 use Atom\Router\RouteAction;
 use Atom\Router\RouteEntry;
 use Atom\Router\RouteMatcher;
@@ -58,15 +61,29 @@ final class ModuleTest extends TestCase
         $entries = $context->resources("/resources", $directory);
 
         $this->assertCount(1, $entries);
-        $this->assertSame("/dev/resources/module.css", $entries[0]->getFullPath());
+        $this->assertSame("/dev/resources/{path*}", $entries[0]->getFullPath());
 
         $match = (new RouteMatcher($app->getRouter()))->match("GET", "/dev/resources/module.css");
         $this->assertTrue($match->isFound());
+        $this->assertSame(["path" => "module.css"], $match->matchedRoute->getRouteParams());
 
-        $response = (new ResourceRouteHandler())->serve($match->matchedRoute, new Response());
+        $response = (new StaticFileHandler())->serve($match->matchedRoute, new Response());
 
         $this->assertSame("text/css; charset=utf-8", $response->headers()->get("Content-Type"));
         $this->assertSame("body { color: red; }", $response->getContent());
+    }
+
+    public function testFrameworkModuleRegistersSharedComponents(): void
+    {
+        $app = new ModuleTestApplication();
+        $app->initialize();
+
+        $app->registerModule(Framework::module());
+
+        $components = $app->getInjector()->get(ComponentRegistry::class);
+
+        $this->assertSame(FieldError::class, $components->get("FieldError"));
+        $this->assertSame(ValidationSummary::class, $components->get("ValidationSummary"));
     }
 
     public function testModuleContextRegistersPagesUnderBasePath(): void

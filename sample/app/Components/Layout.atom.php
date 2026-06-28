@@ -20,11 +20,12 @@
                 <a href="/">Home</a>
                 <a href="/articles">Articles</a>
                 <a href="/articles/new">New article</a>
-                <a href="/api/articles">API</a>
+                <a href="/counter">Counter</a>
             </nav>
         </header>
 
         <?= $context->fragment($component->content) ?>
     </main>
+    <script src="/atom/framework/resources/atom.js?v=2"></script>
 </body>
 </html>

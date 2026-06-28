@@ -34,6 +34,7 @@
         var next = parsePage(html);
 
         document.title = next.title;
+        syncState(next);
         document.body.innerHTML = next.body.innerHTML;
 
         if (url && window.location.href !== url) {
@@ -41,8 +42,25 @@
         }
     }
 
+    function syncState(next) {
+        var current = document.querySelector('meta[name="atom-state"]');
+        var incoming = next.querySelector('meta[name="atom-state"]');
+
+        if (incoming === null) {
+            current && current.remove();
+            return;
+        }
+
+        if (current === null) {
+            document.head.appendChild(incoming.cloneNode(true));
+            return;
+        }
+
+        current.setAttribute("content", incoming.getAttribute("content") || "");
+    }
+
     function setBusy(busy) {
-        document.documentElement.classList.toggle("is-api-loading", busy);
+        document.documentElement.classList.toggle("is-atom-loading", busy);
     }
 
     function showError(message) {
@@ -115,6 +133,31 @@
         );
     }
 
+    function invokeAction(action, target) {
+        var body = new FormData();
+
+        body.append("_action", action);
+        body.append("_state", currentState());
+
+        setBusy(true);
+        target && (target.disabled = true);
+
+        request(
+            "POST",
+            window.location.href,
+            body,
+            function (html, responseUrl) {
+                morphPage(html, responseUrl);
+                setBusy(false);
+            },
+            function () {
+                setBusy(false);
+                target && (target.disabled = false);
+                showError("Action failed before a response was received.");
+            }
+        );
+    }
+
     function followLink(anchor) {
         setBusy(true);
         request(
@@ -144,6 +187,7 @@
         }
 
         event.preventDefault();
+        event.__atomHandled = true;
         submitForm(form, event.submitter || null);
     }, true);
 
@@ -159,7 +203,36 @@
         }
 
         event.preventDefault();
+        event.__atomHandled = true;
         submitForm(button.form, button);
+    }, true);
+
+    document.addEventListener("click", function (event) {
+        if (event.__atomHandled) {
+            return;
+        }
+
+        var element = event.target.closest ? event.target.closest("[" + actionAttribute.replace(":", "\\:") + "]") : null;
+
+        if (element === null || element.tagName === "FORM") {
+            return;
+        }
+
+        if (element.form !== undefined && element.form !== null) {
+            return;
+        }
+
+        if (typeof window.XMLHttpRequest !== "function" || typeof window.FormData !== "function") {
+            return;
+        }
+
+        var action = element.getAttribute(actionAttribute) || "";
+        if (action === "") {
+            return;
+        }
+
+        event.preventDefault();
+        invokeAction(action, element);
     }, true);
 
     document.addEventListener("click", function (event) {
@@ -192,6 +265,9 @@
 
     window.Atom = {
         enhanced: true,
+        action: function (name) {
+            invokeAction(name, null);
+        },
         navigate: function (url) {
             setBusy(true);
             request(
@@ -210,5 +286,4 @@
         }
     };
 
-    window.AtomApiExplorer = window.Atom;
 })();

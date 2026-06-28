@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "..",
-                "reference": "dd1d4cdf0535e6f5b4a554c356881e5f7c87ccce"
+                "reference": "9d2ae1b3ead5ff8d071e5e989d3e592cb2710f8f"
             },
             "require": {
                 "php": "^8.4"
@@ -23,6 +23,7 @@
             "type": "library",
             "autoload": {
                 "psr-4": {
+                    "Atom\\ApiExplorer\\": "src/Modules/ApiExplorer/",
                     "Atom\\": "src/",
                     "Atom\\Tests\\": "tests/"
                 }

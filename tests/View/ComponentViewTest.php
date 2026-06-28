@@ -4,9 +4,16 @@ declare(strict_types=1);
 
 namespace Atom\Tests\View;
 
+use Atom\Modules\Framework\Components\FieldError;
+use Atom\Modules\Framework\Components\ValidationSummary;
+use Atom\Page\Page;
+use Atom\Validation\Rules\Required;
 use Atom\View\Component\ComponentInterface;
+use Atom\View\Component\ComponentRegistry;
 use Atom\View\Component\ComponentView;
 use Atom\View\Component\Fragment;
+use Atom\View\Parser\ViewParser;
+use Atom\View\Render\ViewRenderer;
 use PHPUnit\Framework\TestCase;
 
 final class ComponentViewTest extends TestCase
@@ -32,6 +39,41 @@ final class ComponentViewTest extends TestCase
 
         $this->assertSame('<article class="card is-active" data-id="42"><h1>Hello &lt;Atom&gt;</h1>Body</article>' . "\n", $html);
     }
+
+    public function testFrameworkValidationComponentsRenderPageErrors(): void
+    {
+        $page = new ValidationComponentPage();
+        $page->title = "";
+        $page->validate();
+
+        $registry = new ComponentRegistry();
+        $registry->register("FieldError", FieldError::class);
+        $registry->register("ValidationSummary", ValidationSummary::class);
+
+        $html = (new ViewRenderer(components: $registry))->render(
+            (new ViewParser())->parse('<FieldError name="title" /><ValidationSummary />'),
+            ["page" => $page]
+        );
+
+        $this->assertStringContainsString('<p class="field-error">The field is required.</p>', $html);
+        $this->assertStringContainsString('<div class="validation-summary"><ul><li>The field is required.</li></ul></div>', $html);
+    }
+
+    public function testFrameworkValidationComponentsRenderNothingWithoutErrors(): void
+    {
+        $page = new ValidationComponentPage();
+
+        $registry = new ComponentRegistry();
+        $registry->register("FieldError", FieldError::class);
+        $registry->register("ValidationSummary", ValidationSummary::class);
+
+        $html = (new ViewRenderer(components: $registry))->render(
+            (new ViewParser())->parse('<FieldError name="title" /><ValidationSummary />'),
+            ["page" => $page]
+        );
+
+        $this->assertSame("", $html);
+    }
 }
 
 final class TemplateBackedComponent implements ComponentInterface
@@ -56,4 +98,10 @@ final class ContextBackedComponent implements ComponentInterface
     {
         return ComponentView::render($this, "ComponentFixtures/ContextBackedComponent.atom.php");
     }
+}
+
+final class ValidationComponentPage extends Page
+{
+    #[Required]
+    public string $title = "";
 }

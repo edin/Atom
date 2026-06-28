@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atom\View\Component;
 
+use Atom\Page\Page;
 use Atom\View\Ast\AttributeNode;
 use Atom\View\Ast\AttributeSpreadNode;
 use Atom\View\Ast\ElementNode;
@@ -37,6 +38,7 @@ final readonly class ComponentHydrator
     public function hydrate(ComponentInterface $component, ElementNode $node, ViewContext $context, Closure $renderNodes): void
     {
         $this->assignProperties($component, $node, $this->evaluateAttributes($node, $context));
+        $this->assignContextProperties($component, $context);
         $remainingChildren = $this->assignChildren($component, $node, $context, $renderNodes);
         $this->assignFragments($component, $node, $remainingChildren, $context, $renderNodes);
         $this->validateRequiredProperties($component, $node);
@@ -311,6 +313,35 @@ final readonly class ComponentHydrator
         return true;
     }
 
+    private function assignContextProperties(ComponentInterface $component, ViewContext $context): void
+    {
+        $page = $context->variables()["page"] ?? null;
+        if (!$page instanceof Page) {
+            return;
+        }
+
+        $reflection = new ReflectionObject($component);
+        if (!$reflection->hasProperty("page")) {
+            return;
+        }
+
+        $property = $reflection->getProperty("page");
+        if (
+            !$property->isPublic() ||
+            $property->isStatic() ||
+            $property->isInitialized($component) ||
+            !$this->acceptsPage($property->getType())
+        ) {
+            return;
+        }
+
+        try {
+            $property->setValue($component, $page);
+        } catch (Throwable $exception) {
+            throw new ViewRenderException("Failed to assign component page context.", previous: $exception);
+        }
+    }
+
     private function validateRequiredProperties(ComponentInterface $component, ElementNode $node): void
     {
         $reflection = new ReflectionObject($component);
@@ -344,6 +375,15 @@ final readonly class ComponentHydrator
         }
 
         return $type->getName() === AttributeBag::class;
+    }
+
+    private function acceptsPage(?ReflectionType $type): bool
+    {
+        if (!$type instanceof ReflectionNamedType) {
+            return false;
+        }
+
+        return is_a($type->getName(), Page::class, true);
     }
 
     private function fragmentFromValue(mixed $value): Fragment

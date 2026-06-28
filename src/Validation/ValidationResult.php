@@ -52,6 +52,11 @@ final class ValidationResult implements Countable, JsonSerializable
         return $this->errorsFor($field) !== [];
     }
 
+    public function has(string $field): bool
+    {
+        return $this->hasErrorsFor($field);
+    }
+
     /**
      * @return ValidationError[]
      */
@@ -106,4 +111,3 @@ final class ValidationResult implements Countable, JsonSerializable
         ];
     }
 }
-

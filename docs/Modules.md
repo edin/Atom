@@ -55,7 +55,7 @@ Feature/
     Resources/
 ```
 
-Resources are registered as exact `GET` routes for files found in the resource directory. With a module base path of `/tools/blog`, this call:
+Resources are served through the framework static file handler. A resource directory registers one wildcard `GET` route under the given path. With a module base path of `/tools/blog`, this call:
 
 ```php
 $context->resources("/resources", __DIR__ . "/UI/Resources");
@@ -71,6 +71,20 @@ for:
 
 ```text
 UI/Resources/app.css
+```
+
+Shared framework browser assets can be mounted by a module with:
+
+```php
+use Atom\Modules\Framework\Framework;
+
+Framework::resources($context);
+```
+
+This exposes the small Atom client runtime at:
+
+```text
+/atom/framework/resources/atom.js
 ```
 
 Pages discovered through `pages()` are registered under the context base path. A module can create a child context when it wants to mount internal pages under its own route prefix:

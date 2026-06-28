@@ -61,10 +61,14 @@ final class ApiExplorerTest extends TestCase
         ));
 
         $entry = $this->routeByName($router, "atom.api-explorer");
+        $frameworkResources = $this->routeByPath($router, "/atom/framework/resources/{path*}");
+        $apiResources = $this->routeByPath($router, "/dev/api/resources/{path*}");
         $page = $this->routeByPath($router, "/dev/api/page");
         $preview = $this->routeByPath($router, "/dev/api/preview");
 
         $this->assertSame("/dev/api", $entry->getFullPath());
+        $this->assertSame("/atom/framework/resources/{path*}", $frameworkResources->getFullPath());
+        $this->assertSame("/dev/api/resources/{path*}", $apiResources->getFullPath());
         $this->assertSame(ApiExplorerHandler::class, $entry->getController());
         $this->assertSame("/dev/api/resources", $entry->getMetadataOfType(ApiExplorerRouteMetadata::class)->resourcePath);
         $this->assertSame("/api", $entry->getMetadataOfType(ApiExplorerRouteMetadata::class)->apiPathPrefix);
@@ -88,7 +92,7 @@ final class ApiExplorerTest extends TestCase
         $this->assertSame(TryRequestPanel::class, $app->getInjector()->get(ComponentRegistry::class)->get("ApiExplorer.TryRequest"));
         $this->assertStringContainsString("<!doctype html>", $html);
         $this->assertStringContainsString('/atom/api/resources/api-explorer.css', $html);
-        $this->assertStringContainsString('/atom/api/resources/api-explorer.js?v=10', $html);
+        $this->assertStringContainsString('/atom/framework/resources/atom.js?v=2', $html);
         $this->assertStringContainsString('<header class="topbar">', $html);
         $this->assertStringContainsString("/api/articles/{id}", $html);
         $this->assertStringContainsString('class="request-url-field"', $html);

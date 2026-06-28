@@ -22,10 +22,16 @@ $this->registerModule(ApiExplorer::module("/atom/api"));
 
 This adds a `GET` route that renders the generated API model as a PHP-built developer page.
 
-The module also serves its CSS from:
+The module serves its CSS from:
 
 ```text
 /atom/api/resources/api-explorer.css
+```
+
+It also registers the shared Atom browser runtime from the framework module:
+
+```text
+/atom/framework/resources/atom.js
 ```
 
 The module includes a UI preview page with fixed sample data:

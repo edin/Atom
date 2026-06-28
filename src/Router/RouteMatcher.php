@@ -48,7 +48,7 @@ final class RouteMatcher
         $routeSegments = $this->splitPath($routePath);
         $requestSegments = $this->splitPath($requestPath);
 
-        if (count($routeSegments) !== count($requestSegments)) {
+        if (!$this->segmentCountsCanMatch($routeSegments, $requestSegments)) {
             return null;
         }
 
@@ -56,6 +56,11 @@ final class RouteMatcher
 
         foreach ($routeSegments as $index => $routeSegment) {
             $requestSegment = $requestSegments[$index];
+
+            if ($this->isWildcardParameterSegment($routeSegment)) {
+                $params[substr($routeSegment, 1, -2)] = rawurldecode(implode("/", array_slice($requestSegments, $index)));
+                return $params;
+            }
 
             if ($this->isParameterSegment($routeSegment)) {
                 $params[substr($routeSegment, 1, -1)] = rawurldecode($requestSegment);
@@ -87,6 +92,25 @@ final class RouteMatcher
     private function isParameterSegment(string $segment): bool
     {
         return preg_match('/^\{[a-zA-Z_][a-zA-Z0-9_]*\}$/', $segment) === 1;
+    }
+
+    private function isWildcardParameterSegment(string $segment): bool
+    {
+        return preg_match('/^\{[a-zA-Z_][a-zA-Z0-9_]*\*\}$/', $segment) === 1;
+    }
+
+    /**
+     * @param string[] $routeSegments
+     * @param string[] $requestSegments
+     */
+    private function segmentCountsCanMatch(array $routeSegments, array $requestSegments): bool
+    {
+        $last = $routeSegments[array_key_last($routeSegments)] ?? null;
+        if (is_string($last) && $this->isWildcardParameterSegment($last)) {
+            return count($requestSegments) >= count($routeSegments);
+        }
+
+        return count($routeSegments) === count($requestSegments);
     }
 
     /**

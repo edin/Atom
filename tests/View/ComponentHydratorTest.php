@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atom\Tests\View;
 
+use Atom\Page\Page;
 use Atom\View\Ast\ElementNode;
 use Atom\View\Component\AttributeBag;
 use Atom\View\Component\Children;
@@ -222,6 +223,21 @@ final class ComponentHydratorTest extends TestCase
         );
     }
 
+    public function testAssignsPageContextToPageAwareComponents(): void
+    {
+        $page = new HydratedPageContextPage();
+        $component = new PageAwareComponent();
+
+        $this->hydrator()->hydrate(
+            $component,
+            $this->element('<FieldError />'),
+            new ViewContext(["page" => $page]),
+            static fn(): string => ""
+        );
+
+        $this->assertSame($page, $component->page);
+    }
+
     public function testThrowsHelpfulMessageForUnknownNamedFragment(): void
     {
         $this->expectException(ViewRenderException::class);
@@ -348,6 +364,20 @@ final class AttributeBagComponent implements ComponentInterface
 {
     public string $title = "";
     public AttributeBag $attributes;
+
+    public function render(): string
+    {
+        return "";
+    }
+}
+
+final class HydratedPageContextPage extends Page
+{
+}
+
+final class PageAwareComponent implements ComponentInterface
+{
+    public Page $page;
 
     public function render(): string
     {

@@ -136,6 +136,108 @@ p {
     text-decoration: none;
 }
 
+.link-button {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--accent);
+    font: inherit;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.link-button:hover {
+    color: var(--accent-dark);
+    text-decoration: underline;
+}
+
+.secondary-button {
+    background: #0f766e;
+    border-color: #0f766e;
+}
+
+.secondary-button:hover {
+    background: #115e59;
+}
+
+.ghost-button {
+    background: #fff;
+    color: var(--accent);
+}
+
+.ghost-button:hover {
+    background: #eff6ff;
+    color: var(--accent-dark);
+}
+
+.counter-page {
+    display: grid;
+    gap: 18px;
+    padding: 24px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+}
+
+.counter-header {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.counter-display {
+    display: grid;
+    place-items: center;
+    min-height: 180px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fafbfc;
+    font-size: 5rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.counter-actions,
+.counter-steps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.counter-actions .button {
+    min-width: 88px;
+}
+
+.step-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 42px;
+    min-height: 34px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--text);
+    font: inherit;
+    font-weight: 650;
+    cursor: pointer;
+}
+
+.step-button.selected {
+    border-color: var(--accent);
+    background: #edf2ff;
+    color: #1e40af;
+}
+
+html.is-atom-loading {
+    cursor: progress;
+}
+
+html.is-atom-loading .counter-page {
+    opacity: 0.86;
+}
+
 .article-list {
     display: grid;
     gap: 14px;
@@ -205,6 +307,41 @@ p {
     display: grid;
     gap: 14px;
     padding: 18px;
+}
+
+.inline-edit {
+    display: grid;
+    gap: 12px;
+}
+
+.inline-edit textarea {
+    min-height: 86px;
+}
+
+.inline-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.field-error {
+    margin: 0;
+    color: #b91c1c;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.validation-summary {
+    padding: 12px 14px;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    background: #fff1f2;
+    color: #991b1b;
+}
+
+.validation-summary ul {
+    margin: 0;
+    padding-left: 18px;
 }
 
 label {

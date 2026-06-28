@@ -17,6 +17,7 @@ use Atom\Database\Migration\MigrationOptions;
 use Atom\Database\Seeder\SeederOptions;
 use Atom\Di\Injector;
 use Atom\Di\ServiceProviderRegistry;
+use Atom\Modules\Framework\Framework;
 use Atom\Page\Page;
 use Atom\Router\Route;
 use Atom\View\Component\ComponentRegistry;
@@ -53,6 +54,7 @@ final class Application extends \Atom\Application
             ->register("Table", Table::class);
 
         Route::attach(ApiController::class);
+        $this->registerModule(Framework::module());
         $this->registerModule(ApiExplorer::module("/atom/api"));
 
         Page::registerPages();

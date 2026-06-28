@@ -1,35 +1,38 @@
 <div class="toolbar">
     <div>
         <h1>New article</h1>
-        <p>A tiny POST flow using a page action, request wrapper, and response wrapper.</p>
+        <p>A tiny POST flow using page input binding, validation, and response redirects.</p>
     </div>
 </div>
 
-<form class="form" method="post" action="/articles">
-    <input type="hidden" name="_action" value="create">
+<form class="form" method="post" atom:action="create">
+    <ValidationSummary />
 
     <label>
         Category
         <select name="category_id">
             @foreach($this->categories as $category)
-                <option value="{{ $category->id }}">{{ $category->name }}</option>
+                <option value="{{ $category->id }}" :selected="$this->categoryId === $category->id">{{ $category->name }}</option>
             @endforeach
         </select>
     </label>
 
     <label>
         Title
-        <input name="title" maxlength="120" required>
+        <input name="titleInput" value="{{ $this->titleInput }}" maxlength="120">
+        <FieldError name="titleInput" />
     </label>
 
     <label>
         Summary
-        <input name="summary" maxlength="220" required>
+        <input name="summary" value="{{ $this->summary }}" maxlength="220">
+        <FieldError name="summary" />
     </label>
 
     <label>
         Body
-        <textarea name="body" required></textarea>
+        <textarea name="body">{{ $this->body }}</textarea>
+        <FieldError name="body" />
     </label>
 
     <button class="button" type="submit">Publish</button>

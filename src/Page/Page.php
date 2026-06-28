@@ -6,11 +6,14 @@ namespace Atom\Page;
 
 use Atom\Router\Route;
 use Atom\Router\RouteEntry;
+use Atom\Validation\ValidationResult;
+use Atom\Validation\Validator;
 use RuntimeException;
 
 abstract class Page
 {
     public ?string $layout = null;
+    private ?ValidationResult $validation = null;
 
     /**
      * @return RouteEntry[]
@@ -41,5 +44,17 @@ abstract class Page
     public function template(): ?string
     {
         return null;
+    }
+
+    public function validate(): bool
+    {
+        $this->validation = Validator::for(static::class)->validate($this);
+
+        return $this->validation->passed();
+    }
+
+    public function errors(): ValidationResult
+    {
+        return $this->validation ??= ValidationResult::valid();
     }
 }

@@ -53,12 +53,12 @@ body {
     background: var(--api-color-page);
 }
 
-html.is-api-loading {
+html.is-atom-loading {
     cursor: progress;
 }
 
-html.is-api-loading .try-panel,
-html.is-api-loading .content {
+html.is-atom-loading .try-panel,
+html.is-atom-loading .content {
     opacity: 0.82;
 }
 

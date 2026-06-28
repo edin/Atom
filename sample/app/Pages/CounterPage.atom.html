@@ -1,0 +1,29 @@
+<section class="counter-page">
+    <div class="counter-header">
+        <div>
+            <h1>{{ $this->title }}</h1>
+            <p>
+                A tiny page action demo with server-side state and Atom's browser runtime.
+            </p>
+        </div>
+        <span class="pill">Step {{ $this->step }}</span>
+    </div>
+
+    <div class="counter-display" aria-live="polite">
+        {{ $this->count }}
+    </div>
+
+    <div class="counter-actions">
+        <button class="button secondary-button" type="button" atom:action="decrement">-{{ $this->step }}</button>
+        <button class="button" type="button" atom:action="increment">+{{ $this->step }}</button>
+        <button class="button ghost-button" type="button" atom:action="reset">Reset</button>
+    </div>
+
+    <div class="counter-steps" aria-label="Counter step">
+        @foreach([1, 2, 5, 10] as $step)
+            <button class="step-button {{ $this->stepClass($step) }}" type="button" atom:action="setStep({{ $step }})">
+                {{ $step }}
+            </button>
+        @endforeach
+    </div>
+</section>

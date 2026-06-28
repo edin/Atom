@@ -8,8 +8,29 @@
 
 <Table :items="$this->articles">
     <Column title="Article">
-        <a href="/articles/{{ $item->id }}">{{ $item->title }}</a>
-        <p class="table-summary">{{ $item->summary }}</p>
+        @if($this->editingId === $item->id)
+            <form class="inline-edit" method="post" atom:action="save">
+                <label>
+                    Title
+                    <input name="editTitle" value="{{ $this->editTitle }}" maxlength="120">
+                    <FieldError name="editTitle" />
+                </label>
+
+                <label>
+                    Summary
+                    <textarea name="editSummary" maxlength="220">{{ $this->editSummary }}</textarea>
+                    <FieldError name="editSummary" />
+                </label>
+
+                <div class="inline-actions">
+                    <button class="button" type="submit">Save</button>
+                    <button class="button ghost-button" type="submit" atom:action="cancel">Cancel</button>
+                </div>
+            </form>
+        @else
+            <a href="/articles/{{ $item->id }}">{{ $item->title }}</a>
+            <p class="table-summary">{{ $item->summary }}</p>
+        @endif
     </Column>
 
     <Column title="Category">
@@ -18,5 +39,9 @@
 
     <Column title="Published">
         {{ $item->createdAt->format("M j, Y H:i") }}
+    </Column>
+
+    <Column title="Actions">
+        <button class="link-button" type="button" atom:action="edit({{ $item->id }})">Edit</button>
     </Column>
 </Table>

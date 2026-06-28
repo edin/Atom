@@ -8,8 +8,12 @@ use Atom\Di\Bindings;
 use Atom\Di\InjectionContext;
 use Atom\Di\Injector;
 use Atom\Http\Request;
+use Atom\Hydrator\Attributes\FromBody;
+use Atom\Hydrator\Attributes\FromQuery;
+use Atom\Hydrator\Attributes\FromRoute;
 use Atom\Page\Page;
 use Atom\Page\PageAction;
+use Atom\Page\PageActionException;
 use Atom\Page\PageActionHandler;
 use Atom\Page\PageRenderer;
 use Atom\Page\PageRoute;
@@ -18,8 +22,12 @@ use Atom\Page\PageRouteMetadata;
 use Atom\Page\PageRouteRegistrar;
 use Atom\Page\State;
 use Atom\Router\Route;
+use Atom\Router\RouteAction;
+use Atom\Router\RouteEntry;
 use Atom\Router\RouteMatcher;
 use Atom\Router\Router;
+use Atom\Validation\Rules\MinLength;
+use Atom\Validation\Rules\Required;
 use Atom\View\Component\ComponentInterface;
 use Atom\View\Component\Fragment;
 use PHPUnit\Framework\TestCase;
@@ -128,6 +136,111 @@ final class PageRendererTest extends TestCase
         $this->assertStringContainsString('name="atom-state"', $html);
     }
 
+    public function testPageActionHandlerHydratesPageInputBeforeAction(): void
+    {
+        $html = $this->handlePageAction(BoundInputRenderedTestPage::class, "/bound-page/{id}", "save", [
+            "name" => "  Atom  ",
+            "published" => "yes",
+        ], [
+            "mode" => "draft",
+        ]);
+
+        $this->assertSame("<h1>7 Atom draft yes</h1>\n", $html);
+    }
+
+    public function testPageActionHandlerReportsInvalidPageInput(): void
+    {
+        $this->expectException(PageActionException::class);
+        $this->expectExceptionMessage("Unable to hydrate page input");
+        $this->expectExceptionMessage("expected int");
+
+        $this->handlePageAction(InvalidBoundInputRenderedTestPage::class, "/invalid-bound-page", "save", [
+            "age" => "nope",
+        ]);
+    }
+
+    public function testPageHasEmptyValidationErrorsBeforeValidation(): void
+    {
+        $page = new ValidatedRenderedTestPage();
+
+        $this->assertTrue($page->errors()->passed());
+        $this->assertFalse($page->errors()->has("title"));
+        $this->assertNull($page->errors()->first("title"));
+    }
+
+    public function testPageCanValidateItselfWithAttributeRules(): void
+    {
+        $page = new ValidatedRenderedTestPage();
+        $page->title = "";
+
+        $this->assertFalse($page->validate());
+        $this->assertTrue($page->errors()->failed());
+        $this->assertTrue($page->errors()->has("title"));
+        $this->assertSame("required", $page->errors()->errorsFor("title")[0]->code);
+    }
+
+    public function testPageValidationPassesForValidState(): void
+    {
+        $page = new ValidatedRenderedTestPage();
+        $page->title = "Valid title";
+
+        $this->assertTrue($page->validate());
+        $this->assertTrue($page->errors()->passed());
+    }
+
+    public function testPageActionCanValidateHydratedInput(): void
+    {
+        $html = $this->handlePageAction(ValidatedRenderedTestPage::class, "/validated-page", "save", [
+            "title" => "",
+        ]);
+
+        $this->assertSame("<h1>invalid: required</h1>\n", $html);
+    }
+
+    public function testPageActionHandlerReportsInvalidActionExpression(): void
+    {
+        $this->expectException(PageActionException::class);
+        $this->expectExceptionMessage("Expected syntax like 'save'");
+
+        $this->handlePageAction(PostRenderedTestPage::class, "/post-page", "save(");
+    }
+
+    public function testPageActionHandlerReportsAvailableActionsWhenActionIsMissing(): void
+    {
+        $this->expectException(PageActionException::class);
+        $this->expectExceptionMessage("Page action 'publish' was not found");
+        $this->expectExceptionMessage("Available actions: save.");
+
+        $this->handlePageAction(PostRenderedTestPage::class, "/post-page", "publish");
+    }
+
+    public function testPageActionHandlerReportsHttpMethodMismatch(): void
+    {
+        $this->expectException(PageActionException::class);
+        $this->expectExceptionMessage("is not available for POST");
+        $this->expectExceptionMessage("Available method: GET.");
+
+        $this->handlePageAction(GetActionRenderedTestPage::class, "/get-action-page", "refresh");
+    }
+
+    public function testPageActionHandlerReportsTooManyActionArguments(): void
+    {
+        $this->expectException(PageActionException::class);
+        $this->expectExceptionMessage("was called with 3 argument(s)");
+        $this->expectExceptionMessage("accepts 2");
+
+        $this->handlePageAction(DeleteRenderedTestPage::class, "/delete-page", 'delete(12, "hard", true)');
+    }
+
+    public function testPageActionHandlerWrapsMissingRequiredParameterErrors(): void
+    {
+        $this->expectException(PageActionException::class);
+        $this->expectExceptionMessage("Unable to invoke page action 'delete'");
+        $this->expectExceptionMessage("Unable to resolve parameter 'id'");
+
+        $this->handlePageAction(DeleteRenderedTestPage::class, "/delete-page", "delete");
+    }
+
     public function testRendersPageInsideConfiguredLayoutComponent(): void
     {
         $renderer = new PageRenderer(new Injector(), new InjectionContext());
@@ -135,6 +248,39 @@ final class PageRendererTest extends TestCase
         $html = $renderer->render(LayoutRenderedTestPage::class);
 
         $this->assertSame("<layout title=\"Body\"><h1>Body</h1>\n</layout>", $html);
+    }
+
+    private function handlePageAction(
+        string $pageClass,
+        string $path,
+        string $action,
+        array $body = [],
+        array $query = []
+    ): mixed
+    {
+        $router = new Router();
+        (new PageRouteRegistrar())->register($router, [
+            new \Atom\Page\PageDescriptor($path, $pageClass),
+        ]);
+        $requestPath = preg_replace('/\{[^}]+}/', '7', $path) ?? $path;
+        $match = (new RouteMatcher($router))->match("POST", $requestPath);
+        if (!$match->isFound()) {
+            $entry = RouteEntry::route("POST", $path, RouteAction::fromMethod(PageActionHandler::class, "handle"))
+                ->metadata(new PageRouteMetadata($pageClass));
+            $match = \Atom\Router\RouteMatchResult::found(new \Atom\Router\MatchedRoute($entry, ["id" => "7"]));
+        }
+
+        $body["_action"] = $action;
+        $context = new InjectionContext();
+        $context->set(Request::class, new Request("POST", $requestPath, $query, $body));
+        $context->set(\Atom\Router\MatchedRoute::class, $match->matchedRoute);
+        $injector = new Injector();
+
+        return (new PageActionHandler($injector, $context))->handle(
+            new PageRenderer($injector, $context),
+            $match->matchedRoute,
+            $context->get(Request::class)
+        );
     }
 
     public function testRegistersDiscoveredPageRoute(): void
@@ -279,6 +425,84 @@ final class DeleteRenderedTestPage extends Page
     public function delete(int $id, string $mode): void
     {
         $this->title = "Deleted {$id} {$mode}";
+    }
+}
+
+final class GetActionRenderedTestPage extends Page
+{
+    public function template(): ?string
+    {
+        return "GetRenderedTestPage.atom.html";
+    }
+
+    #[PageAction("refresh", method: "get")]
+    public function refresh(): void
+    {
+    }
+}
+
+final class BoundInputRenderedTestPage extends Page
+{
+    public string $title = "";
+
+    #[FromRoute("id")]
+    public int $id = 0;
+
+    #[FromBody]
+    public string $name = "";
+
+    #[FromBody]
+    public bool $published = false;
+
+    #[FromQuery]
+    public string $mode = "";
+
+    public function template(): ?string
+    {
+        return "GetRenderedTestPage.atom.html";
+    }
+
+    #[PageAction("save")]
+    public function save(): void
+    {
+        $this->title = $this->id . " " . $this->name . " " . $this->mode . " " . ($this->published ? "yes" : "no");
+    }
+}
+
+final class InvalidBoundInputRenderedTestPage extends Page
+{
+    #[FromBody]
+    public int $age;
+
+    public function template(): ?string
+    {
+        return "GetRenderedTestPage.atom.html";
+    }
+
+    #[PageAction("save")]
+    public function save(): void
+    {
+    }
+}
+
+final class ValidatedRenderedTestPage extends Page
+{
+    #[FromBody]
+    #[Required]
+    #[MinLength(3)]
+    public string $title = "";
+
+    public function template(): ?string
+    {
+        return "GetRenderedTestPage.atom.html";
+    }
+
+    #[PageAction("save")]
+    public function save(): void
+    {
+        $this->title = $this->validate()
+            ? "valid"
+            : "invalid: " . $this->errors()->errorsFor("title")[0]->code;
     }
 }
 
