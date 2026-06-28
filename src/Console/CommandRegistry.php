@@ -20,6 +20,10 @@ final class CommandRegistry
             throw new InvalidArgumentException("Console command name cannot be empty.");
         }
 
+        if (isset($this->commands[$name])) {
+            throw new InvalidArgumentException("Console command '{$name}' is already registered.");
+        }
+
         $this->commands[$name] = new CommandDefinition($name, $command, $description);
         return $this;
     }
@@ -39,9 +43,9 @@ final class CommandRegistry
      */
     public function all(): array
     {
-        ksort($this->commands);
+        $commands = $this->commands;
+        ksort($commands);
 
-        return array_values($this->commands);
+        return array_values($commands);
     }
 }
-

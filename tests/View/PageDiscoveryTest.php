@@ -24,7 +24,6 @@ final class PageDiscoveryTest extends TestCase
         $this->assertArrayHasKey("/articles", $byPath);
         $this->assertSame(ArticleListPage::class, $byPath["/articles"]->pageClass);
         $this->assertSame("articles.index", $byPath["/articles"]->name);
-        $this->assertSame(["GET", "POST"], $byPath["/articles"]->method);
         $this->assertArrayHasKey("/first", $byPath);
         $this->assertSame(RepeatRoutePage::class, $byPath["/first"]->pageClass);
         $this->assertSame("first", $byPath["/first"]->name);

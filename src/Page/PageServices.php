@@ -50,5 +50,13 @@ final readonly class PageServices implements ServiceProviderInterface
         $bindings->bind(PageRenderer::class)
             ->toSelf()
             ->scoped();
+
+        $bindings->bind(PageActionHandler::class)
+            ->toSelf()
+            ->scoped();
+
+        $bindings->bind(PageStateSerializer::class)
+            ->to(JsonPageStateSerializer::class)
+            ->scoped();
     }
 }

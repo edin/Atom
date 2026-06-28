@@ -7,6 +7,9 @@ namespace Atom\Page;
 use Atom\Router\RouteAction;
 use Atom\Router\RouteEntry;
 use Atom\Router\Router;
+use ReflectionAttribute;
+use ReflectionClass;
+use ReflectionMethod;
 
 final readonly class PageRouteRegistrar
 {
@@ -17,16 +20,16 @@ final readonly class PageRouteRegistrar
     /**
      * @return RouteEntry[]
      */
-    public function registerDirectory(Router $router, string $directory): array
+    public function registerDirectory(Router $router, string $directory, string $pathPrefix = ""): array
     {
-        return $this->register($router, $this->discovery->discover($directory));
+        return $this->register($router, $this->discovery->discover($directory), $pathPrefix);
     }
 
     /**
      * @param PageDescriptor[] $descriptors
      * @return RouteEntry[]
      */
-    public function register(Router $router, array $descriptors): array
+    public function register(Router $router, array $descriptors, string $pathPrefix = ""): array
     {
         $entries = [];
         usort($descriptors, fn(PageDescriptor $left, PageDescriptor $right): int =>
@@ -35,8 +38,8 @@ final readonly class PageRouteRegistrar
 
         foreach ($descriptors as $descriptor) {
             $entry = RouteEntry::route(
-                $descriptor->method,
-                $descriptor->path,
+                "GET",
+                $this->joinPaths($pathPrefix, $descriptor->path),
                 RouteAction::fromMethod(PageRouteHandler::class, "render")
             )->metadata(new PageRouteMetadata($descriptor->pageClass));
 
@@ -46,9 +49,34 @@ final readonly class PageRouteRegistrar
 
             $router->add($entry);
             $entries[] = $entry;
+
+            foreach ($this->actionMethods($descriptor->pageClass) as $method) {
+                $actionEntry = RouteEntry::route(
+                    $method,
+                    $this->joinPaths($pathPrefix, $descriptor->path),
+                    RouteAction::fromMethod(PageActionHandler::class, "handle")
+                )->metadata(new PageRouteMetadata($descriptor->pageClass));
+
+                $router->add($actionEntry);
+                $entries[] = $actionEntry;
+            }
         }
 
         return $entries;
+    }
+
+    private function joinPaths(string $prefix, string $path): string
+    {
+        $prefix = rtrim($prefix, " /");
+        $path = ltrim($path, " /");
+
+        if ($path !== "") {
+            $path = "/" . $path;
+        }
+
+        $result = $prefix . $path;
+
+        return $result === "" ? "/" : $result;
     }
 
     private function pathScore(string $path): int
@@ -64,5 +92,24 @@ final readonly class PageRouteRegistrar
         }
 
         return $score;
+    }
+
+    /**
+     * @param class-string<Page> $pageClass
+     * @return string[]
+     */
+    private function actionMethods(string $pageClass): array
+    {
+        $methods = [];
+        $reflection = new ReflectionClass($pageClass);
+
+        foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+            foreach ($method->getAttributes(PageAction::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
+                $action = $attribute->newInstance();
+                $methods[strtoupper($action->method)] = strtoupper($action->method);
+            }
+        }
+
+        return array_values($methods);
     }
 }

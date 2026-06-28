@@ -19,6 +19,8 @@ use Atom\View\Component\ComponentHydrator;
 use Atom\View\Component\ComponentInterface;
 use Atom\View\Component\ComponentRegistry;
 use Atom\View\Component\NewComponentFactory;
+use ReflectionObject;
+use ReflectionProperty;
 
 final readonly class ViewRenderer
 {
@@ -128,12 +130,14 @@ final readonly class ViewRenderer
             return $result;
         }
 
+        $componentContext = $this->componentContext($component, $context);
+
         if ($result instanceof TemplateNode) {
-            return $this->renderNodes($result->children, $context);
+            return $this->renderNodes($result->children, $componentContext);
         }
 
         if ($result instanceof ViewNode) {
-            return $this->renderNode($result, $context);
+            return $this->renderNode($result, $componentContext);
         }
 
         if (is_array($result)) {
@@ -146,13 +150,42 @@ final readonly class ViewRenderer
                 }
             }
 
-            return $this->renderNodes($result, $context);
+            return $this->renderNodes($result, $componentContext);
         }
 
         throw new ViewRenderException(
             "Component {$componentClass} returned unsupported render result " . get_debug_type($result)
             . ". Expected string, " . TemplateNode::class . ", " . ViewNode::class . ", or array<ViewNode>."
         );
+    }
+
+    private function componentContext(ComponentInterface $component, ViewContext $context): ViewContext
+    {
+        return $context->with([
+            "this" => $component,
+            "component" => $component,
+            "context" => new \Atom\View\Component\ComponentTemplateContext(),
+            ...$this->publicProperties($component),
+        ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function publicProperties(ComponentInterface $component): array
+    {
+        $reflection = new ReflectionObject($component);
+        $variables = [];
+
+        foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+            if ($property->isStatic() || !$property->isInitialized($component)) {
+                continue;
+            }
+
+            $variables[$property->getName()] = $property->getValue($component);
+        }
+
+        return $variables;
     }
 
     private function renderIf(IfNode $node, ViewContext $context): string
@@ -226,6 +259,10 @@ final readonly class ViewRenderer
 
     private function escape(mixed $value): string
     {
+        if ($value instanceof HtmlString) {
+            return $value->toHtml();
+        }
+
         return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, "UTF-8");
     }
 }

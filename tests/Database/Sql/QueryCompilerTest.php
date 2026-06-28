@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atom\Tests\Database\Sql;
 
 use Atom\Database\Sql\Compiler\MySqlCompiler;
+use Atom\Database\Sql\Compiler\SqliteCompiler;
 use Atom\Database\Sql\Op;
 use Atom\Database\Sql\Query;
 use PHPUnit\Framework\TestCase;
@@ -20,6 +21,18 @@ final class QueryCompilerTest extends TestCase
         $command = (new MySqlCompiler())->compile($query);
 
         $this->assertSame("SELECT `id`, `name` FROM `users` WHERE `age` >= :p1", $command->sql);
+        $this->assertSame([":p1" => 18], $command->parameters);
+    }
+
+    public function testSqliteCompilerUsesDoubleQuotedIdentifiers(): void
+    {
+        $query = Query::select("users u")
+            ->columns("u.id", "u.name")
+            ->where("u.age", Op::gte(18));
+
+        $command = (new SqliteCompiler())->compile($query);
+
+        $this->assertSame('SELECT "u"."id", "u"."name" FROM "users" "u" WHERE "u"."age" >= :p1', $command->sql);
         $this->assertSame([":p1" => 18], $command->parameters);
     }
 

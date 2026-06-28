@@ -7,6 +7,7 @@ namespace App;
 use App\Components\Table;
 use Atom\Config\Env;
 use App\Controllers\ApiController;
+use Atom\ApiExplorer\ApiExplorer;
 use Atom\Database\DatabaseConfig;
 use Atom\Database\DatabaseServices;
 use Atom\Database\DatabaseDriverFactory;
@@ -52,6 +53,7 @@ final class Application extends \Atom\Application
             ->register("Table", Table::class);
 
         Route::attach(ApiController::class);
+        $this->registerModule(ApiExplorer::module("/atom/api"));
 
         Page::registerPages();
     }

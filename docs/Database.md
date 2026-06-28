@@ -58,8 +58,11 @@ Supported driver values:
 - `sqlite`
 - `mysql`
 - `mariadb`
+- `pgsql`
+- `postgres`
+- `postgresql`
 
-PostgreSQL is planned, but the framework currently throws a clear error for `pgsql`, `postgres`, or `postgresql`.
+PostgreSQL has unit-level driver, SQL compiler, schema compiler, migration repository, inspector, resetter, and lock support. Real PostgreSQL integration tests are still optional and not part of the default test suite.
 
 Configure the model base during bootstrap:
 

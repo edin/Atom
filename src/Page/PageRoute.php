@@ -11,8 +11,7 @@ final readonly class PageRoute
 {
     public function __construct(
         public string $path,
-        public ?string $name = null,
-        public string|array $method = "GET"
+        public ?string $name = null
     ) {
     }
 }

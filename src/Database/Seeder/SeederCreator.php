@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Atom\Database\Seeder;
 
+use Atom\Console\FileTemplateRenderer;
 use RuntimeException;
 
 final readonly class SeederCreator
 {
-    public function __construct(private SeederOptions $options)
-    {
+    public function __construct(
+        private SeederOptions $options,
+        private FileTemplateRenderer $templates = new FileTemplateRenderer()
+    ) {
     }
 
     public function create(string $name): string
@@ -28,7 +31,7 @@ final readonly class SeederCreator
             throw new RuntimeException("Seeder file '{$file}' already exists.");
         }
 
-        file_put_contents($file, $this->template());
+        file_put_contents($file, $this->templates->render("database/seeder.php.tpl"));
 
         return $file;
     }
@@ -50,20 +53,4 @@ final readonly class SeederCreator
         return $name;
     }
 
-    private function template(): string
-    {
-        return <<<'PHP'
-<?php
-
-use Atom\Database\Seeder\Seeder;
-
-return new class extends Seeder
-{
-    public function run(): void
-    {
-    }
-};
-
-PHP;
-    }
 }

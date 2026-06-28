@@ -6,6 +6,7 @@ namespace Atom\Database;
 
 use Atom\Console\ConsoleCommandProviderInterface;
 use Atom\Console\ConsoleCommandSources;
+use Atom\Console\FileTemplateRenderer;
 use Atom\Database\Schema\Reset\DatabaseResetterInterface;
 use Atom\Database\Orm\EntityMetadataFactory;
 use Atom\Database\Orm\RowHydrator;
@@ -75,7 +76,10 @@ final readonly class DatabaseServices implements ServiceProviderInterface, Conso
             ->singleton();
 
         $bindings->bind(MigrationCreator::class)
-            ->toSelf()
+            ->toFactory(fn(Injector $injector): MigrationCreator => new MigrationCreator(
+                $injector->get(MigrationOptions::class),
+                $injector->get(FileTemplateRenderer::class)
+            ))
             ->singleton();
 
         $bindings->bind(Migrator::class)
@@ -90,7 +94,10 @@ final readonly class DatabaseServices implements ServiceProviderInterface, Conso
             ->singleton();
 
         $bindings->bind(SeederCreator::class)
-            ->toSelf()
+            ->toFactory(fn(Injector $injector): SeederCreator => new SeederCreator(
+                $injector->get(SeederOptions::class),
+                $injector->get(FileTemplateRenderer::class)
+            ))
             ->singleton();
 
         $bindings->bind(SeederRunner::class)

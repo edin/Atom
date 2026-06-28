@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Atom\Database\Migration;
 
+use Atom\Console\FileTemplateRenderer;
 use RuntimeException;
 
 final readonly class MigrationCreator
 {
-    public function __construct(private MigrationOptions $options)
-    {
+    public function __construct(
+        private MigrationOptions $options,
+        private FileTemplateRenderer $templates = new FileTemplateRenderer()
+    ) {
     }
 
     public function create(string $name): string
@@ -28,7 +31,7 @@ final readonly class MigrationCreator
             throw new RuntimeException("Migration file '{$file}' already exists.");
         }
 
-        file_put_contents($file, $this->template());
+        file_put_contents($file, $this->templates->render("database/migration.php.tpl"));
 
         return $file;
     }
@@ -50,21 +53,4 @@ final readonly class MigrationCreator
         return $name;
     }
 
-    private function template(): string
-    {
-        return <<<'PHP'
-<?php
-
-use Atom\Database\Migration\Migration;
-use Atom\Database\Schema\Schema;
-
-return new class extends Migration
-{
-    public function up(Schema $schema): void
-    {
-    }
-};
-
-PHP;
-    }
 }

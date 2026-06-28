@@ -11,6 +11,7 @@ use Atom\Di\ServiceProviderInterface;
 use Atom\Http\Request;
 use Atom\Http\RequestHandlerInterface;
 use Atom\Http\Response;
+use Atom\Hydrator\DtoTypeFactory;
 use Atom\Router\Router;
 
 final class DispatcherServices implements ServiceProviderInterface
@@ -59,5 +60,7 @@ final class DispatcherServices implements ServiceProviderInterface
 
         $bindings->bind(RequestHandlerInterface::class)
             ->toExisting(Dispatcher::class);
+
+        $bindings->addTypeFactory(DtoTypeFactory::create());
     }
 }

@@ -6,18 +6,25 @@ namespace Atom\Tests\Database\Driver;
 
 use Atom\Database\DatabaseDriver;
 use Atom\Database\Driver\MySqlDriver;
+use Atom\Database\Driver\PostgresDriver;
 use Atom\Database\Driver\SqliteDriver;
 use Atom\Database\Migration\Driver\MySqlMigrationRepositoryDriver;
+use Atom\Database\Migration\Driver\PostgresMigrationRepositoryDriver;
 use Atom\Database\Migration\Driver\SqliteMigrationRepositoryDriver;
 use Atom\Database\Lock\FileDatabaseLockManager;
 use Atom\Database\Lock\MySqlDatabaseLockManager;
+use Atom\Database\Lock\PostgresDatabaseLockManager;
 use Atom\Database\Schema\Compiler\MySqlSchemaCompiler;
+use Atom\Database\Schema\Compiler\PostgresSchemaCompiler;
 use Atom\Database\Schema\Compiler\SqliteSchemaCompiler as DatabaseSqliteSchemaCompiler;
 use Atom\Database\Schema\Inspector\MySqlSchemaInspector;
+use Atom\Database\Schema\Inspector\PostgresSchemaInspector;
 use Atom\Database\Schema\Inspector\SqliteSchemaInspector;
 use Atom\Database\Schema\Reset\MySqlDatabaseResetter;
+use Atom\Database\Schema\Reset\PostgresDatabaseResetter;
 use Atom\Database\Schema\Reset\SqliteDatabaseResetter;
 use Atom\Database\Sql\Compiler\MySqlCompiler;
+use Atom\Database\Sql\Compiler\PostgresCompiler;
 use Atom\Database\Sql\Compiler\SqliteCompiler;
 use Atom\Database\DatabaseConnection;
 use PHPUnit\Framework\TestCase;
@@ -48,5 +55,18 @@ final class DatabaseDriverTest extends TestCase
         $this->assertInstanceOf(SqliteMigrationRepositoryDriver::class, $driver->migrationRepositoryDriver());
         $this->assertInstanceOf(FileDatabaseLockManager::class, $driver->lockManager(new DatabaseConnection($driver)));
         $this->assertInstanceOf(SqliteDatabaseResetter::class, $driver->resetter());
+    }
+
+    public function testPostgresDriverProvidesCompiler(): void
+    {
+        $driver = new PostgresDriver("atom", "localhost", "root", "secret");
+
+        $this->assertInstanceOf(DatabaseDriver::class, $driver);
+        $this->assertInstanceOf(PostgresCompiler::class, $driver->compiler());
+        $this->assertInstanceOf(PostgresSchemaCompiler::class, $driver->schemaCompiler());
+        $this->assertInstanceOf(PostgresSchemaInspector::class, $driver->schemaInspector(new DatabaseConnection($driver)));
+        $this->assertInstanceOf(PostgresMigrationRepositoryDriver::class, $driver->migrationRepositoryDriver());
+        $this->assertInstanceOf(PostgresDatabaseLockManager::class, $driver->lockManager(new DatabaseConnection($driver)));
+        $this->assertInstanceOf(PostgresDatabaseResetter::class, $driver->resetter());
     }
 }

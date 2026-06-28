@@ -58,12 +58,16 @@ final class Dispatcher implements RequestHandlerInterface
         $match = (new RouteMatcher($this->router))->match($method, $uriPath, $request->query()->toArray());
 
         if ($match->isMethodNotAllowed()) {
-            $allowedMethodsStr = implode(", ", $match->allowedMethods);
-            throw new \RuntimeException("Method $method is not allowed. Allowed methods are $allowedMethodsStr.");
+            return (new Response())
+                ->status(405)
+                ->header("Allow", implode(", ", $match->allowedMethods))
+                ->content("Method Not Allowed");
         }
 
         if (!$match->isFound()) {
-            throw new \RuntimeException("Route '$uriPath' was not found.");
+            return (new Response())
+                ->status(404)
+                ->content("Not Found");
         }
 
         $matchedRoute = $match->matchedRoute;

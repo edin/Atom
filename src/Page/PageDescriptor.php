@@ -12,8 +12,7 @@ final readonly class PageDescriptor
     public function __construct(
         public string $path,
         public string $pageClass,
-        public ?string $name = null,
-        public string|array $method = "GET"
+        public ?string $name = null
     ) {
     }
 }

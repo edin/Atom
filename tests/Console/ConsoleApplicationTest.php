@@ -13,6 +13,7 @@ use Atom\Console\ConsoleApplication;
 use Atom\Console\ConsoleInput;
 use Atom\Console\ConsoleOutput;
 use Atom\Console\ConsoleServices;
+use Atom\Console\Make\MakeOptions;
 use Atom\Console\Attributes\ConsoleCommand;
 use Atom\Di\Bindings;
 use Atom\Di\Injector;
@@ -66,6 +67,17 @@ final class ConsoleApplicationTest extends TestCase
 
         $this->assertSame(0, $code);
         $this->assertSame("pong" . PHP_EOL, $output->output());
+    }
+
+    public function testThrowsForDuplicateCommandRegistration(): void
+    {
+        $console = new ConsoleApplication(Injector::create());
+        $console->command("ping", new ConsolePingCommand());
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage("Console command 'ping' is already registered.");
+
+        $console->command("ping", new ConsolePingCommand());
     }
 
     public function testCanRunBaseCommandClass(): void
@@ -153,6 +165,18 @@ final class ConsoleApplicationTest extends TestCase
         $this->assertStringContainsString("ping  Checks console wiring", $output->output());
     }
 
+    public function testRendersHelpWhenNoCommandIsProvided(): void
+    {
+        $console = new ConsoleApplication(Injector::create());
+        $console->command("ping", new ConsolePingCommand(), "Checks console wiring");
+
+        $output = new BufferedConsoleOutput();
+        $code = $console->run(["atom"], $output);
+
+        $this->assertSame(0, $code);
+        $this->assertStringContainsString("Available commands:", $output->output());
+    }
+
     public function testUnknownCommandReturnsFailure(): void
     {
         $console = new ConsoleApplication(Injector::create());
@@ -162,6 +186,30 @@ final class ConsoleApplicationTest extends TestCase
 
         $this->assertSame(1, $code);
         $this->assertStringContainsString("Command 'missing' was not found.", $output->errors());
+    }
+
+    public function testCommandExceptionReturnsFailure(): void
+    {
+        $console = new ConsoleApplication(Injector::create());
+        $console->command("fail", new ConsoleFailingCommand());
+
+        $output = new BufferedConsoleOutput();
+        $code = $console->run(["atom", "fail"], $output);
+
+        $this->assertSame(1, $code);
+        $this->assertStringContainsString("Command 'fail' failed: Boom.", $output->errors());
+    }
+
+    public function testMissingRequiredParameterReturnsFailure(): void
+    {
+        $console = new ConsoleApplication(Injector::create());
+        $console->add(ConsoleRequiredArgumentCommand::class);
+
+        $output = new BufferedConsoleOutput();
+        $code = $console->run(["atom", "required:test"], $output);
+
+        $this->assertSame(1, $code);
+        $this->assertStringContainsString("Command 'required:test' failed: Unable to bind console parameter 'name'.", $output->errors());
     }
 
     public function testDiscoversCommandClassesAndCommandGroups(): void
@@ -202,6 +250,38 @@ final class ConsoleApplicationTest extends TestCase
 
         $this->assertSame(0, $code);
         $this->assertSame("Hello, Atom!" . PHP_EOL, $output->output());
+    }
+
+    public function testFrameworkMakePageCommandCreatesFiles(): void
+    {
+        $root = $this->tempDirectory();
+        $providers = ServiceProviderRegistry::create()
+            ->add(ConsoleServices::class);
+        $bindings = $providers->bindings()
+            ->value(ServiceProviderRegistry::class, $providers)
+            ->value(MakeOptions::class, new MakeOptions(root: $root));
+
+        $console = Injector::create($bindings)->get(ConsoleApplication::class);
+
+        $this->assertTrue($console->commands()->has("make:page"));
+        $this->assertTrue($console->commands()->has("make:component"));
+
+        $output = new BufferedConsoleOutput();
+        $code = $console->run(["atom", "make:page", "Reports"], $output);
+
+        $this->assertSame(0, $code);
+        $this->assertFileExists($root . "/app/Pages/ReportsPage.php");
+        $this->assertFileExists($root . "/app/Pages/ReportsPage.atom.html");
+        $this->assertStringContainsString("Created page: app/Pages/ReportsPage.php", $output->output());
+        $this->assertStringContainsString("Created view: app/Pages/ReportsPage.atom.html", $output->output());
+    }
+
+    private function tempDirectory(): string
+    {
+        $directory = sys_get_temp_dir() . DIRECTORY_SEPARATOR . "atom_console_" . uniqid();
+        mkdir($directory, 0777, true);
+
+        return $directory;
     }
 }
 
@@ -245,6 +325,14 @@ final class ConsolePingCommand implements CommandInterface
     }
 }
 
+final class ConsoleFailingCommand implements CommandInterface
+{
+    public function handle(ConsoleInput $input, ConsoleOutput $output): int
+    {
+        throw new \RuntimeException("Boom.");
+    }
+}
+
 final class ConsoleMakeCommand extends Command
 {
     protected static string $name = "make:thing";
@@ -254,6 +342,18 @@ final class ConsoleMakeCommand extends Command
     {
         $suffix = $force ? " with force" : "";
         $this->line(strtoupper($greeting->greet($name)) . $suffix);
+
+        return 0;
+    }
+}
+
+final class ConsoleRequiredArgumentCommand extends Command
+{
+    protected static string $name = "required:test";
+
+    protected function execute(string $name): int
+    {
+        $this->line($name);
 
         return 0;
     }

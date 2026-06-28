@@ -8,6 +8,8 @@ use Atom\Di\Bindings;
 use Atom\Di\InjectionContext;
 use Atom\Di\Injector;
 use Atom\Dispatcher\MiddlewarePipeline;
+use Atom\Dispatcher\Dispatcher;
+use Atom\Dispatcher\DispatcherServices;
 use Atom\Dispatcher\ResponseResultInterface;
 use Atom\Dispatcher\ResultConverter;
 use Atom\Dispatcher\ResultHandlerRegistry;
@@ -16,6 +18,9 @@ use Atom\Http\Request;
 use Atom\Http\RequestHandlerInterface;
 use Atom\Http\Response;
 use Atom\Interfaces\IResponsable;
+use Atom\Router\RouteAction;
+use Atom\Router\RouteEntry;
+use Atom\Router\Router;
 use PHPUnit\Framework\TestCase;
 
 final class DispatcherTest extends TestCase
@@ -91,6 +96,29 @@ final class DispatcherTest extends TestCase
         $this->assertSame("plain-object", $result->getContent());
     }
 
+    public function testDispatcherReturnsNotFoundResponseForMissingRoute(): void
+    {
+        $dispatcher = $this->dispatcher(new Router());
+
+        $response = $dispatcher->handle(new Request("GET", "/favicon.ico"));
+
+        $this->assertSame(404, $response->getStatus());
+        $this->assertSame("Not Found", $response->getContent());
+    }
+
+    public function testDispatcherReturnsMethodNotAllowedResponse(): void
+    {
+        $router = new Router();
+        $router->add(RouteEntry::route("POST", "/articles", RouteAction::fromClosure(fn(): string => "created")));
+        $dispatcher = $this->dispatcher($router);
+
+        $response = $dispatcher->handle(new Request("GET", "/articles"));
+
+        $this->assertSame(405, $response->getStatus());
+        $this->assertSame("POST", $response->headers()->get("Allow"));
+        $this->assertSame("Method Not Allowed", $response->getContent());
+    }
+
     private function converter(Response $response): ResultConverter
     {
         $bindings = Bindings::create();
@@ -98,6 +126,15 @@ final class DispatcherTest extends TestCase
 
         $injector = new Injector($bindings);
         return new ResultConverter($injector, $response, new ResultHandlerRegistry($injector));
+    }
+
+    private function dispatcher(Router $router): Dispatcher
+    {
+        $bindings = Bindings::create();
+        (new DispatcherServices())->register($bindings);
+        $bindings->value(Router::class, $router);
+
+        return Injector::create($bindings)->get(Dispatcher::class);
     }
 }
 

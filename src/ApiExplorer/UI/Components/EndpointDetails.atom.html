@@ -1,0 +1,149 @@
+<article id="operation-{{ $this->index }}" class="endpoint">
+    <div class="route-line">
+        <small class="method-tag">{{ $this->operation->method }}</small>
+        <code>{{ $this->operation->path() }}</code>
+    </div>
+
+    @if($this->endpoint()->description !== null)
+        <p class="endpoint-description">{{ $this->endpoint()->description }}</p>
+    @endif
+
+    <div class="section-heading"><span>Request shape</span></div>
+
+    @if(count($this->endpoint()->requestFields) === 0)
+        <p class="empty">No request fields detected.</p>
+    @else
+        @if(count($this->requestParameters()) > 0)
+            <table class="shape-table request-shape-table">
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th style="width: 250px">Rules</th>
+                        <th style="width: 96px">Location</th>
+                        <th style="width: 82px">Required</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($this->requestParameters() as $field)
+                        <tr>
+                            <td>
+                                <code class="schema-code">
+                                    <span class="schema-field">{{ $this->fieldLabel($field) }}</span><span class="schema-separator">:</span>
+                                    <span class="schema-type">{{ $this->fieldType($field) }}</span>
+                                </code>
+                            </td>
+                            <td>
+                                @if(count($field->validationRules) > 0)
+                                    <small>{{ $this->rulesLabel($field) }}</small>
+                                @endif
+                            </td>
+                            <td>{{ $this->locationLabel($field) }}</td>
+                            <td>{{ $field->required ? "yes" : "no" }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endif
+
+        @foreach($this->dtoFields() as $model => $fields)
+            <div class="section-heading dto-heading"><span>{{ $this->shortName($model) }}</span></div>
+            <table class="shape-table request-shape-table">
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th style="width: 140px">Rules</th>
+                        <th style="width: 96px">Location</th>
+                        <th style="width: 82px">Required</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($fields as $field)
+                        <tr>
+                            <td>
+                                <code class="schema-code">
+                                    <span class="schema-field">{{ $this->fieldLabel($field) }}</span><span class="schema-separator">:</span>
+                                    <span class="schema-type">{{ $this->fieldType($field) }}</span>
+                                </code>
+                            </td>
+                            <td>
+                                @if(count($field->validationRules) > 0)
+                                    <small>{{ $this->rulesLabel($field) }}</small>
+                                @endif
+                            </td>
+                            <td>{{ $this->locationLabel($field) }}</td>
+                            <td>{{ $field->required ? "yes" : "no" }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @endforeach
+    @endif
+
+    <div class="section-heading response-heading"><span>Response shape</span></div>
+
+    @if(count($this->responseFields()) === 0)
+        <p class="empty">Returns {{ $this->responseTitle() }}.</p>
+    @else
+        <div class="payload-title">{{ $this->responseTitle() }}</div>
+        <table class="shape-table response-shape-table">
+            <thead>
+                <tr>
+                    <th>Field</th>
+                    <th style="width: 82px">Required</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($this->responseRows() as $row)
+                    <tr>
+                        <td>
+                            <code class="schema-code depth-{{ $this->responseRowDepth($row) }}">
+                                <span class="schema-field">{{ $this->fieldLabel($this->responseRowField($row)) }}</span><span class="schema-separator">:</span>
+                                <span class="schema-type">{{ $this->fieldType($this->responseRowField($row)) }}</span>
+                            </code>
+                        </td>
+                        <td>{{ $this->responseRowField($row)->required ? "yes" : "no" }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
+
+    @if(count($this->errorResponses()) > 0)
+        <div class="section-heading response-heading"><span>Error responses</span></div>
+
+        @foreach($this->errorResponses() as $error)
+            <div class="payload-title">
+                <span class="status-code">{{ $error->status }}</span>
+                {{ $this->errorTitle($error) }}
+            </div>
+            @if($error->description !== null)
+                <p class="endpoint-description error-description">{{ $error->description }}</p>
+            @endif
+            @if(count($error->fields) === 0)
+                <p class="empty">Returns {{ $this->errorTitle($error) }}.</p>
+            @else
+                <table class="shape-table response-shape-table">
+                    <thead>
+                        <tr>
+                            <th>Field</th>
+                            <th style="width: 82px">Required</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($this->errorRows($error) as $row)
+                            <tr>
+                                <td>
+                                    <code class="schema-code depth-{{ $this->responseRowDepth($row) }}">
+                                        <span class="schema-field">{{ $this->fieldLabel($this->responseRowField($row)) }}</span><span class="schema-separator">:</span>
+                                        <span class="schema-type">{{ $this->fieldType($this->responseRowField($row)) }}</span>
+                                    </code>
+                                </td>
+                                <td>{{ $this->responseRowField($row)->required ? "yes" : "no" }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            @endif
+        @endforeach
+    @endif
+</article>

@@ -9,11 +9,14 @@ use Atom\Di\InjectionContext;
 use Atom\Di\Injector;
 use Atom\Http\Request;
 use Atom\Page\Page;
+use Atom\Page\PageAction;
+use Atom\Page\PageActionHandler;
 use Atom\Page\PageRenderer;
 use Atom\Page\PageRoute;
 use Atom\Page\PageRouteHandler;
 use Atom\Page\PageRouteMetadata;
 use Atom\Page\PageRouteRegistrar;
+use Atom\Page\State;
 use Atom\Router\Route;
 use Atom\Router\RouteMatcher;
 use Atom\Router\Router;
@@ -43,7 +46,7 @@ final class PageRendererTest extends TestCase
         $this->assertSame("<h1>Loaded</h1>\n", $html);
     }
 
-    public function testInvokesMethodMatchingRequestMethodBeforeRenderingTemplate(): void
+    public function testRendererOnlyInvokesGetBeforeRenderingTemplate(): void
     {
         $context = new InjectionContext();
         $context->set(Request::class, new Request("POST", "/"));
@@ -51,7 +54,78 @@ final class PageRendererTest extends TestCase
 
         $html = $renderer->render(PostRenderedTestPage::class);
 
+        $this->assertSame("<h1>Loaded</h1>\n", $html);
+    }
+
+    public function testPageActionHandlerInvokesAttributedActionAndRerendersPage(): void
+    {
+        $router = new Router();
+        (new PageRouteRegistrar())->register($router, [
+            new \Atom\Page\PageDescriptor("/post-page", PostRenderedTestPage::class),
+        ]);
+        $match = (new RouteMatcher($router))->match("POST", "/post-page");
+
+        $context = new InjectionContext();
+        $context->set(Request::class, new Request("POST", "/post-page", [], ["_action" => "save"]));
+        $context->set(\Atom\Router\MatchedRoute::class, $match->matchedRoute);
+        $injector = new Injector();
+        $handler = new PageActionHandler($injector, $context);
+        $renderer = new PageRenderer($injector, $context);
+
+        $html = $handler->handle($renderer, $match->matchedRoute, $context->get(Request::class));
+
+        $this->assertTrue($match->isFound());
+        $this->assertSame(PageActionHandler::class, $match->matchedRoute->getRouteAction()->controllerType);
         $this->assertSame("<h1>Posted</h1>\n", $html);
+    }
+
+    public function testPageActionHandlerParsesActionArguments(): void
+    {
+        $router = new Router();
+        (new PageRouteRegistrar())->register($router, [
+            new \Atom\Page\PageDescriptor("/delete-page", DeleteRenderedTestPage::class),
+        ]);
+        $match = (new RouteMatcher($router))->match("POST", "/delete-page");
+
+        $context = new InjectionContext();
+        $context->set(Request::class, new Request("POST", "/delete-page", [], ["_action" => 'delete(12, "hard")']));
+        $context->set(\Atom\Router\MatchedRoute::class, $match->matchedRoute);
+        $injector = new Injector();
+        $handler = new PageActionHandler($injector, $context);
+        $renderer = new PageRenderer($injector, $context);
+
+        $html = $handler->handle($renderer, $match->matchedRoute, $context->get(Request::class));
+
+        $this->assertSame("<h1>Deleted 12 hard</h1>\n", $html);
+    }
+
+    public function testPageStateIsRestoredBeforeActionAndCapturedAfterRender(): void
+    {
+        $serializer = new \Atom\Page\JsonPageStateSerializer();
+        $page = new CounterRenderedTestPage();
+        $page->count = 2;
+        $state = $serializer->serialize($page);
+
+        $router = new Router();
+        (new PageRouteRegistrar())->register($router, [
+            new \Atom\Page\PageDescriptor("/counter-page", CounterRenderedTestPage::class),
+        ]);
+        $match = (new RouteMatcher($router))->match("POST", "/counter-page");
+
+        $context = new InjectionContext();
+        $context->set(Request::class, new Request("POST", "/counter-page", [], [
+            "_action" => "increment",
+            "_state" => $state,
+        ]));
+        $context->set(\Atom\Router\MatchedRoute::class, $match->matchedRoute);
+        $injector = new Injector();
+        $handler = new PageActionHandler($injector, $context);
+        $renderer = new PageRenderer($injector, $context);
+
+        $html = $handler->handle($renderer, $match->matchedRoute, $context->get(Request::class));
+
+        $this->assertStringContainsString("<h1>3</h1>", $html);
+        $this->assertStringContainsString('name="atom-state"', $html);
     }
 
     public function testRendersPageInsideConfiguredLayoutComponent(): void
@@ -79,6 +153,18 @@ final class PageRendererTest extends TestCase
             PageFixtures\HelloPage::class,
             $match->matchedRoute->getRouteEntry()->getMetadataOfType(PageRouteMetadata::class)?->pageClass
         );
+    }
+
+    public function testRegistersDiscoveredPageRouteWithPrefix(): void
+    {
+        $router = new Router();
+        $entries = (new PageRouteRegistrar())->registerDirectory($router, __DIR__ . "/PageFixtures", "/module");
+
+        $match = (new RouteMatcher($router))->match("GET", "/module/hello-page");
+
+        $this->assertCount(1, $entries);
+        $this->assertTrue($match->isFound());
+        $this->assertSame("/module/hello-page", $entries[0]->getFullPath());
     }
 
     public function testPageRegistersDiscoveredRoutesOnSharedRouter(): void
@@ -150,7 +236,13 @@ final class PostRenderedTestPage extends Page
         return "GetRenderedTestPage.atom.html";
     }
 
-    public function post(): void
+    public function get(): void
+    {
+        $this->title = "Loaded";
+    }
+
+    #[PageAction("save")]
+    public function save(): void
     {
         $this->title = "Posted";
     }
@@ -172,6 +264,42 @@ final class LayoutRenderedTestPage extends Page
         $this->title = "Body";
     }
 
+}
+
+final class DeleteRenderedTestPage extends Page
+{
+    public string $title = "Before";
+
+    public function template(): ?string
+    {
+        return "GetRenderedTestPage.atom.html";
+    }
+
+    #[PageAction("delete")]
+    public function delete(int $id, string $mode): void
+    {
+        $this->title = "Deleted {$id} {$mode}";
+    }
+}
+
+final class CounterRenderedTestPage extends Page
+{
+    #[State]
+    public int $count = 0;
+
+    public string $title = "0";
+
+    public function template(): ?string
+    {
+        return "GetRenderedTestPage.atom.html";
+    }
+
+    #[PageAction("increment")]
+    public function increment(): void
+    {
+        $this->count++;
+        $this->title = (string) $this->count;
+    }
 }
 
 final class TestLayoutComponent implements ComponentInterface

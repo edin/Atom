@@ -7,9 +7,10 @@ namespace App\Pages;
 use App\Models\Article;
 use Atom\Http\Request;
 use Atom\Http\Response;
+use Atom\Page\PageAction;
 use Atom\Page\PageRoute;
 
-#[PageRoute("/articles", name: "articles.index", method: ["GET", "POST"])]
+#[PageRoute("/articles", name: "articles.index")]
 final class ArticlesPage extends AppPage
 {
     public string $title = "Articles - Atom Sample";
@@ -26,7 +27,8 @@ final class ArticlesPage extends AppPage
             ->all();
     }
 
-    public function post(Request $request, Response $response): Response
+    #[PageAction]
+    public function create(Request $request, Response $response): Response
     {
         $article = new Article();
         $article->categoryId = $request->post()->int("category_id", 1);

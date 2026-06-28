@@ -8,12 +8,12 @@ use Atom\Page\Page;
 use Atom\Page\PageAction;
 use Atom\Page\PageRoute;
 
-#[PageRoute("/articles", name: "articles.index", method: ["GET", "POST"])]
+#[PageRoute("/articles", name: "articles.index")]
 final class ArticleListPage extends Page
 {
     public string $title = "Articles";
 
-    #[PageAction("refresh", method: "post")]
+    #[PageAction]
     public function refresh(): void
     {
     }

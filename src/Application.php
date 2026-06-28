@@ -16,10 +16,13 @@ use Atom\Console\ConsoleServices;
 use Atom\Http\Request;
 use Atom\Http\Response;
 use Atom\Http\RequestHandlerInterface;
+use Atom\Module\ModuleContext;
+use Atom\Module\ModuleInterface;
 use Atom\Page\PageServices;
 use Atom\Router\MatchedRoute;
 use Atom\Router\Route;
 use Atom\Router\Router;
+use Atom\View\Component\ComponentRegistry;
 use Atom\View\ViewServices;
 use RuntimeException;
 
@@ -90,6 +93,16 @@ abstract class Application
     final public function getConsole(): ConsoleApplication
     {
         return $this->getInjector()->get(ConsoleApplication::class);
+    }
+
+    final public function registerModule(ModuleInterface $module, string $basePath = ""): void
+    {
+        $module->register(new ModuleContext(
+            $this->getRouter(),
+            $this->getInjector(),
+            $this->getInjector()->get(ComponentRegistry::class),
+            $basePath
+        ));
     }
 
     final protected function registerDefaultServices(ServiceProviderRegistry $providers): void

@@ -279,6 +279,36 @@ array<ViewNode>
 
 Most application components return strings or use a native component template.
 
+## Atom HTML Component Templates
+
+For `.atom.html` component templates, extend `TemplateComponent` and place a template with the same base filename beside the component class:
+
+```php
+use Atom\View\Component\TemplateComponent;
+
+final class EndpointList extends TemplateComponent
+{
+    public array $endpoints = [];
+}
+```
+
+```text
+EndpointList.php
+EndpointList.atom.html
+```
+
+The template receives:
+
+```php
+$this
+$component
+$context
+```
+
+and public component properties as variables.
+
+Use `$context->fragmentHtml($this->content)` when a template component needs to render a child fragment as HTML.
+
 ## Native Component Templates
 
 For larger HTML output, a component can render an adjacent `.atom.php` template.

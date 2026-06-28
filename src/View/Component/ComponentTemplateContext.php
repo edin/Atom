@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Atom\View\Component;
 
+use Atom\View\Render\HtmlString;
+
 final readonly class ComponentTemplateContext
 {
     public function encode(mixed $value): string
@@ -17,6 +19,19 @@ final readonly class ComponentTemplateContext
     public function fragment(?Fragment $fragment, array $variables = []): string
     {
         return $fragment?->render($variables) ?? "";
+    }
+
+    /**
+     * @param array<string, mixed> $variables
+     */
+    public function fragmentHtml(?Fragment $fragment, array $variables = []): HtmlString
+    {
+        return new HtmlString($fragment?->render($variables) ?? "");
+    }
+
+    public function raw(mixed $value): HtmlString
+    {
+        return new HtmlString((string) $value);
     }
 
     /**

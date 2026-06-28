@@ -24,7 +24,8 @@ final readonly class PageRenderer
         private InjectionContext $context,
         private PageViewLocator $viewLocator = new PageViewLocator(),
         private ViewParser $parser = new ViewParser(),
-        private ViewRenderer $renderer = new ViewRenderer()
+        private ViewRenderer $renderer = new ViewRenderer(),
+        private PageStateSerializer $state = new JsonPageStateSerializer()
     ) {
     }
 
@@ -34,7 +35,14 @@ final readonly class PageRenderer
     public function render(string $pageClass): mixed
     {
         $page = $this->injector->instantiate($pageClass, context: $this->context);
-        $result = $this->invokeGet($page);
+        $this->restoreState($page);
+
+        return $this->renderPage($page);
+    }
+
+    public function renderPage(Page $page, bool $invokeGet = true): mixed
+    {
+        $result = $invokeGet ? $this->invokeGet($page) : null;
 
         if ($result !== null) {
             return $result;
@@ -45,10 +53,10 @@ final readonly class PageRenderer
             "page" => $page,
         ];
 
-        $template = $this->parser->parse(file_get_contents($this->viewLocator->locate($pageClass)) ?: "");
+        $template = $this->parser->parse(file_get_contents($this->viewLocator->locate($page::class)) ?: "");
         $content = $this->renderer->render($template, $variables);
 
-        return $this->renderLayout($page, $content, $variables);
+        return $this->injectState($this->renderLayout($page, $content, $variables), $this->state->serialize($page));
     }
 
     /**
@@ -73,19 +81,11 @@ final readonly class PageRenderer
     private function invokeGet(Page $page): mixed
     {
         $reflection = new ReflectionClass($page);
-        $method = $this->pageMethod();
-        if (!$reflection->hasMethod($method)) {
+        if (!$reflection->hasMethod("get")) {
             return null;
         }
 
-        return $this->injector->invoke([$page, $method], $this->routeParams(), $this->context);
-    }
-
-    private function pageMethod(): string
-    {
-        $request = $this->context->get(Request::class);
-
-        return $request instanceof Request ? strtolower($request->getMethod()) : "get";
+        return $this->injector->invoke([$page, "get"], $this->routeParams(), $this->context);
     }
 
     /**
@@ -96,5 +96,35 @@ final readonly class PageRenderer
         $route = $this->context->get(MatchedRoute::class);
 
         return $route instanceof MatchedRoute ? $route->getRouteParams() : [];
+    }
+
+    private function restoreState(Page $page): void
+    {
+        $request = $this->context->get(Request::class);
+        if (!$request instanceof Request) {
+            return;
+        }
+
+        $state = $request->post()->string("_state", $request->query()->string("_state"));
+        $this->state->deserialize($page, $state);
+    }
+
+    private function injectState(string $html, string $state): string
+    {
+        if ($state === "") {
+            return $html;
+        }
+
+        $meta = '<meta name="atom-state" content="' . htmlspecialchars($state, ENT_QUOTES | ENT_SUBSTITUTE, "UTF-8") . '">';
+
+        if (str_contains($html, 'name="atom-state"')) {
+            return preg_replace('/<meta\s+name="atom-state"\s+content="[^"]*"\s*\/?>/i', $meta, $html, 1) ?? $html;
+        }
+
+        if (stripos($html, "</head>") !== false) {
+            return preg_replace('/<\/head>/i', "    {$meta}\n</head>", $html, 1) ?? $html;
+        }
+
+        return $meta . $html;
     }
 }

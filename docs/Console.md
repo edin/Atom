@@ -301,6 +301,78 @@ $output->errorLine("Something failed");
 
 Tests can use `BufferedConsoleOutput`.
 
+## File Templates
+
+Make-style commands can render framework templates through `FileTemplateRenderer`.
+
+```php
+use Atom\Console\FileTemplateRenderer;
+
+$contents = $templates->render("database/migration.php.tpl");
+```
+
+Templates live under:
+
+```text
+src/Templates/
+```
+
+Applications can override them by placing files with the same relative path under:
+
+```text
+templates/atom/
+```
+
+For example, this app template replaces the framework page class template:
+
+```text
+templates/atom/page/page.php.tpl
+```
+
+The renderer supports simple placeholders:
+
+```text
+Hello {{ name }}
+```
+
+```php
+$templates->render("hello.tpl", ["name" => "Atom"]);
+```
+
+Current built-in templates are used by:
+
+- `make:migration`
+- `make:seeder`
+- `make:page`
+- `make:component`
+
+## Make Commands
+
+Atom ships with a few project generators:
+
+```text
+php atom make:page Articles
+php atom make:page "Admin Users" /admin/users
+php atom make:component AlertBox
+```
+
+`make:page` creates:
+
+```text
+app/Pages/ArticlesPage.php
+app/Pages/ArticlesPage.atom.html
+```
+
+The generated page uses `#[PageRoute]` and extends `Atom\Page\Page`.
+
+`make:component` creates:
+
+```text
+app/Components/AlertBox.php
+```
+
+Generated files are intentionally small. Customize them by copying the matching framework template into `templates/atom` and editing the copy.
+
 ## Help
 
 `help`, `--help`, and `-h` render the registered command list.

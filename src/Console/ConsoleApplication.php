@@ -9,6 +9,7 @@ use Atom\Di\Injector;
 use Atom\Di\Provider;
 use Atom\Console\Attributes\ConsoleCommand;
 use ReflectionMethod;
+use Throwable;
 
 final readonly class ConsoleApplication
 {
@@ -128,18 +129,24 @@ final readonly class ConsoleApplication
         $context->set(ConsoleInput::class, $input);
         $context->set(ConsoleOutput::class, $output);
 
-        $command = $this->resolve($definition, $commandInjector, $context);
-        if ($command instanceof Command) {
-            return $command->run($commandInjector, $input, $output, $context);
+        try {
+            $command = $this->resolve($definition, $commandInjector, $context);
+            if ($command instanceof Command) {
+                return $command->run($commandInjector, $input, $output, $context);
+            }
+
+            $result = $commandInjector->invoke(
+                [$command, "handle"],
+                ["input" => $input, "output" => $output],
+                $context
+            );
+
+            return is_int($result) ? $result : 0;
+        } catch (Throwable $throwable) {
+            $output->errorLine("Command '{$input->commandName()}' failed: " . $throwable->getMessage());
+
+            return 1;
         }
-
-        $result = $commandInjector->invoke(
-            [$command, "handle"],
-            ["input" => $input, "output" => $output],
-            $context
-        );
-
-        return is_int($result) ? $result : 0;
     }
 
     private function resolve(

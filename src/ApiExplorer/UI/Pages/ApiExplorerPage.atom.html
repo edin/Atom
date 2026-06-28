@@ -1,0 +1,24 @@
+<ApiExplorer.AppShell title="{{ $this->title }}" count="{{ count($this->operations) }}">
+    <div class="workspace">
+        <aside class="sidebar">
+            <ApiExplorer.EndpointList :operations="$this->operations" :selectedIndex="$this->selectedId" />
+        </aside>
+
+        <section class="content">
+            @if($this->selectedOperation() !== null)
+                <ApiExplorer.EndpointDetails :operation="$this->selectedOperation()" :index="$this->selectedId" />
+            @else
+                <p class="empty">No endpoints detected.</p>
+            @endif
+        </section>
+
+        <aside class="try-panel">
+            <ApiExplorer.TryRequest
+                :operation="$this->selectedOperation()"
+                :selectedId="$this->selectedId"
+                :url="$this->requestUrl"
+                :body="$this->requestBody"
+                :responsePreview="$this->responsePreview" />
+        </aside>
+    </div>
+</ApiExplorer.AppShell>

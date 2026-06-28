@@ -7,6 +7,7 @@ namespace Atom\Tests\Database\Migration;
 use Atom\Database\DatabaseConnection;
 use Atom\Database\Driver\SqliteDriver;
 use Atom\Database\Migration\DatabaseMigrationRepository;
+use Atom\Database\Migration\Driver\PostgresMigrationRepositoryDriver;
 use Atom\Database\Migration\Driver\SqliteMigrationRepositoryDriver;
 use PHPUnit\Framework\TestCase;
 
@@ -89,6 +90,18 @@ final class DatabaseMigrationRepositoryTest extends TestCase
         $repository->record("create_users", 1);
 
         $this->assertSame(["create_users"], $repository->applied());
+    }
+
+    public function testPostgresRepositoryDriverSql(): void
+    {
+        $driver = new PostgresMigrationRepositoryDriver();
+
+        $this->assertStringContainsString("information_schema.tables", $driver->tableExistsSql());
+        $this->assertStringContainsString("current_schema()", $driver->tableExistsSql());
+        $this->assertSame('"migrations"', $driver->quoteIdentifier("migrations"));
+        $this->assertSame('SELECT migration FROM "migrations" ORDER BY batch ASC, migration ASC', $driver->selectAppliedSql("migrations"));
+        $this->assertStringContainsString('CREATE TABLE IF NOT EXISTS "migrations"', $driver->createTableSql("migrations"));
+        $this->assertStringContainsString("applied_at TIMESTAMP NOT NULL", $driver->createTableSql("migrations"));
     }
 
     private function repository(): DatabaseMigrationRepository

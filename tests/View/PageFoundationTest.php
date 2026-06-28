@@ -26,7 +26,7 @@ final class PageFoundationTest extends TestCase
         $reflection = new ReflectionClass(ArticleListPage::class);
         $action = $reflection->getMethod("refresh")->getAttributes(PageAction::class)[0]->newInstance();
 
-        $this->assertSame("refresh", $action->name);
+        $this->assertNull($action->name);
         $this->assertSame("post", $action->method);
     }
 }

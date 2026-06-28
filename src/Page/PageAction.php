@@ -10,7 +10,7 @@ use Attribute;
 final readonly class PageAction
 {
     public function __construct(
-        public string $name,
+        public ?string $name = null,
         public string $method = "post"
     ) {
     }

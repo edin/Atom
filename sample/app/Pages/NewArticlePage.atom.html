@@ -1,11 +1,13 @@
 <div class="toolbar">
     <div>
         <h1>New article</h1>
-        <p>A tiny POST flow using a page method, request wrapper, and response wrapper.</p>
+        <p>A tiny POST flow using a page action, request wrapper, and response wrapper.</p>
     </div>
 </div>
 
 <form class="form" method="post" action="/articles">
+    <input type="hidden" name="_action" value="create">
+
     <label>
         Category
         <select name="category_id">

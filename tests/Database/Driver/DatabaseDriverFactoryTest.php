@@ -9,6 +9,7 @@ use Atom\Database\DatabaseConfig;
 use Atom\Database\DatabaseDriverFactory;
 use Atom\Database\DatabaseDriverFactoryException;
 use Atom\Database\Driver\MySqlDriver;
+use Atom\Database\Driver\PostgresDriver;
 use Atom\Database\Driver\SqliteDriver;
 use PHPUnit\Framework\TestCase;
 
@@ -111,12 +112,21 @@ final class DatabaseDriverFactoryTest extends TestCase
         $this->assertNull($config->password);
     }
 
-    public function testThrowsForUnsupportedPostgresDriver(): void
+    public function testCreatesPostgresDriver(): void
     {
-        $this->expectException(DatabaseDriverFactoryException::class);
-        $this->expectExceptionMessage("PostgreSQL driver is not implemented yet.");
+        $driver = (new DatabaseDriverFactory())->create(new DatabaseConfig(
+            driver: "pgsql",
+            database: "atom",
+            host: "127.0.0.1",
+            port: 5433,
+            username: "postgres",
+            password: "secret"
+        ));
 
-        (new DatabaseDriverFactory())->create(new DatabaseConfig(driver: "pgsql"));
+        $this->assertInstanceOf(PostgresDriver::class, $driver);
+        $this->assertSame("pgsql:dbname=atom;host=127.0.0.1;port=5433", $driver->dsn());
+        $this->assertSame("postgres", $driver->username());
+        $this->assertSame("secret", $driver->password());
     }
 
     public function testThrowsForUnknownDriver(): void

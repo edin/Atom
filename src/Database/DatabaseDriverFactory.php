@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atom\Database;
 
 use Atom\Database\Driver\MySqlDriver;
+use Atom\Database\Driver\PostgresDriver;
 use Atom\Database\Driver\SqliteDriver;
 
 final readonly class DatabaseDriverFactory
@@ -31,8 +32,13 @@ final readonly class DatabaseDriverFactory
                 $config->charset,
                 $config->options
             ),
-            "pgsql", "postgres", "postgresql" => throw new DatabaseDriverFactoryException(
-                "PostgreSQL driver is not implemented yet."
+            "pgsql", "postgres", "postgresql" => new PostgresDriver(
+                $config->database,
+                $config->host,
+                $config->username,
+                $config->password,
+                $config->port,
+                $config->options
             ),
             default => throw new DatabaseDriverFactoryException("Unsupported database driver '{$config->driver}'."),
         };

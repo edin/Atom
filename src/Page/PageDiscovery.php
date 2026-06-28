@@ -105,7 +105,7 @@ final readonly class PageDiscovery
         foreach ($routes as $routeAttribute) {
             /** @var PageRoute $route */
             $route = $routeAttribute->newInstance();
-            $descriptors[] = new PageDescriptor($route->path, $className, $route->name, $route->method);
+            $descriptors[] = new PageDescriptor($route->path, $className, $route->name);
         }
 
         return $descriptors;

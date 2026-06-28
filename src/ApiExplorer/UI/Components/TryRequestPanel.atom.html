@@ -1,0 +1,25 @@
+@if($this->operation === null)
+    <p class="empty">Select an endpoint after routes are available.</p>
+@else
+    <form class="request-form" method="post" atom:action="try">
+        <input type="hidden" name="id" value="{{ $this->selectedId }}">
+        <input type="hidden" name="method" value="{{ $this->operation->method }}">
+        <div class="request-bar">
+            <div class="request-url-field">
+                <span class="request-method">{{ $this->operation->method }}</span>
+                <input name="url" aria-label="Request URL" value="{{ $this->requestUrl() }}">
+            </div>
+            <button type="submit">Send</button>
+        </div>
+
+        <label class="request-body">
+            Body
+            <textarea name="body" class="body-editor">{{ $this->requestBody() }}</textarea>
+        </label>
+    </form>
+
+    <div class="response-preview">
+        <div class="section-heading"><span>Response</span></div>
+        <pre>{{ $this->responseText() }}</pre>
+    </div>
+@endif
