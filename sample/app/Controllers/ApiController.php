@@ -13,8 +13,8 @@ use App\Api\Responses\DeleteArticleResponse;
 use App\Api\Responses\NotFoundResponse;
 use App\Api\Responses\PagedResponse;
 use App\Api\Responses\ValidationErrorResponse;
-use Atom\ApiExplorer\Attributes\ErrorResponse;
-use Atom\ApiExplorer\Attributes\ResponseGeneric;
+use Atom\Api\Attributes\ErrorResponse;
+use Atom\Api\Attributes\ResponseOf;
 use Atom\Hydrator\Attributes\FromRoute;
 use Atom\Router\Attributes\Controller;
 use Atom\Router\Attributes\Delete;
@@ -26,7 +26,7 @@ use Atom\Router\Attributes\Put;
 final readonly class ApiController
 {
     #[Get("articles")]
-    #[ResponseGeneric("T", ArticleResponse::class)]
+    #[ResponseOf(ArticleResponse::class)]
     public function articles(ArticleListRequest $query): PagedResponse
     {
         $response = new PagedResponse();

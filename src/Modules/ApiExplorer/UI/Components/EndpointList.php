@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Atom\ApiExplorer\UI\Components;
+namespace Atom\Modules\ApiExplorer\UI\Components;
 
-use Atom\ApiExplorer\UI\ApiOperationDescriptor;
+use Atom\Modules\ApiExplorer\UI\Models\ApiOperationDescriptor;
 use Atom\View\Component\TemplateComponent;
 
 final class EndpointList extends TemplateComponent

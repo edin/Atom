@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Atom\ApiExplorer;
+namespace Atom\Modules\ApiExplorer;
 
 final readonly class ApiExplorerRouteMetadata
 {

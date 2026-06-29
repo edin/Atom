@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Atom\ApiExplorer\UI;
+namespace Atom\Modules\ApiExplorer\UI\Models;
 
-use Atom\ApiExplorer\ApiEndpointDescriptor;
+use Atom\Api\ApiEndpointDescriptor;
 
 final readonly class ApiOperationDescriptor
 {

@@ -2,17 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Atom\ApiExplorer;
+namespace Atom\Modules\ApiExplorer;
 
+use Atom\Api\ApiHidden;
+use Atom\Http\Response;
 use Atom\Module\ModuleContext;
 use Atom\Module\ModuleInterface;
 use Atom\Modules\Framework\Framework;
 use Atom\Router\RouteAction;
 use Atom\Router\RouteEntry;
-use Atom\ApiExplorer\UI\Components\AppShell;
-use Atom\ApiExplorer\UI\Components\EndpointDetails;
-use Atom\ApiExplorer\UI\Components\EndpointList;
-use Atom\ApiExplorer\UI\Components\TryRequestPanel;
+use Atom\Modules\ApiExplorer\UI\Components\AppShell;
+use Atom\Modules\ApiExplorer\UI\Components\EndpointDetails;
+use Atom\Modules\ApiExplorer\UI\Components\EndpointList;
+use Atom\Modules\ApiExplorer\UI\Components\TryRequestPanel;
 
 final readonly class ApiExplorerModule implements ModuleInterface
 {
@@ -27,8 +29,9 @@ final readonly class ApiExplorerModule implements ModuleInterface
         Framework::resources($context);
 
         $resourcePath = rtrim($this->path, " /") . "/resources";
+        $pagePath = rtrim($this->path, " /") . "/explorer";
         foreach ($context->resources($resourcePath, __DIR__ . "/UI/Resources") as $entry) {
-            $entry->metadata(new ApiExplorerHidden());
+            $entry->metadata(new ApiHidden());
         }
 
         $context->component("ApiExplorer.AppShell", AppShell::class);
@@ -38,16 +41,20 @@ final readonly class ApiExplorerModule implements ModuleInterface
 
         foreach ($context->withBasePath($this->path)->pages(__DIR__ . "/UI/Pages") as $entry) {
             $entry->metadata(new ApiExplorerRouteMetadata($resourcePath, $this->apiPathPrefix));
-            $entry->metadata(new ApiExplorerHidden());
+            $entry->metadata(new ApiHidden());
         }
 
         $context->route(
-            RouteEntry::route("GET", $this->path, RouteAction::fromMethod(ApiExplorerHandler::class, "index"))
+            RouteEntry::route(
+                "GET",
+                $this->path,
+                RouteAction::fromClosure(fn(Response $response): Response => $response->redirect($pagePath))
+            )
                 ->name("atom.api-explorer")
                 ->title("API Explorer")
                 ->description("Inspect registered API routes.")
                 ->metadata(new ApiExplorerRouteMetadata($resourcePath, $this->apiPathPrefix))
-                ->metadata(new ApiExplorerHidden())
+                ->metadata(new ApiHidden())
         );
 
     }

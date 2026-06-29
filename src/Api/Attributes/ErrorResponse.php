@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Atom\ApiExplorer\Attributes;
+namespace Atom\Api\Attributes;
 
 use Attribute;
 

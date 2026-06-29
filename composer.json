@@ -15,7 +15,6 @@
     },
     "autoload": {
         "psr-4": {
-            "Atom\\ApiExplorer\\": "src/Modules/ApiExplorer/",
             "Atom\\": "src/",
             "Atom\\Tests\\": "tests/"
         }

@@ -2,25 +2,37 @@
 
 [Atom Framework](Index.md)
 
-The API explorer starts as a model builder for REST APIs. It reads registered routes and reflects controller actions, closures, DTOs, source attributes, and validation attributes.
+Atom's API description layer starts as a model builder for REST APIs. It reads registered routes and reflects controller actions, closures, DTOs, source attributes, and validation attributes.
 
 The first layer is intentionally UI-free:
 
 ```php
-use Atom\ApiExplorer\ApiModelBuilder;
+use Atom\Api\ApiModelBuilder;
 
 $description = (new ApiModelBuilder())->describe($router);
+```
+
+Response shape attributes also live in the core API namespace:
+
+```php
+use Atom\Api\Attributes\ArrayOf;
+use Atom\Api\Attributes\ErrorResponse;
+use Atom\Api\Attributes\ResponseOf;
 ```
 
 Atom can also register a read-only HTML explorer:
 
 ```php
-use Atom\ApiExplorer\ApiExplorer;
+use Atom\Modules\ApiExplorer\ApiExplorer;
 
 $this->registerModule(ApiExplorer::module("/atom/api"));
 ```
 
-This adds a `GET` route that renders the generated API model as a PHP-built developer page.
+This adds a module page that renders the generated API model as a PHP-built developer page. The module root redirects to the page URL:
+
+```text
+/atom/api/explorer
+```
 
 The module serves its CSS from:
 
@@ -34,13 +46,29 @@ It also registers the shared Atom browser runtime from the framework module:
 /atom/framework/resources/atom.js
 ```
 
-The module includes a UI preview page with fixed sample data:
+Use `ResponseOf` with wrapper response models when the action returns a container such as a paged response:
 
-```text
-/atom/api/preview
+```php
+use Atom\Api\Attributes\ArrayOf;
+use Atom\Api\Attributes\ResponseOf;
+
+#[ResponseOf(ArticleResponse::class)]
+public function articles(): PagedResponse
+{
+    return new PagedResponse();
+}
+
+final class PagedResponse
+{
+    #[ArrayOf]
+    public array $items = [];
+
+    public int $total;
+    public int $page;
+}
 ```
 
-The preview page is built with Atom module pages, components, and resources. Use it to iterate on the explorer layout before wiring the same components into the live API model.
+Use `#[ArrayOf(SomeResponse::class)]` when the array item type is concrete and does not depend on the action response.
 
 `ApiDescription` contains endpoint descriptors:
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Atom\ApiExplorer;
+namespace Atom\Modules\ApiExplorer;
 
 use Atom\Di\Injector;
 use Atom\Module\ModuleContext;

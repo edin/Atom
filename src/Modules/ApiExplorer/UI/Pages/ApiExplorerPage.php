@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Atom\ApiExplorer\UI\Pages;
+namespace Atom\Modules\ApiExplorer\UI\Pages;
 
-use Atom\ApiExplorer\ApiDescription;
-use Atom\ApiExplorer\ApiExplorerRouteMetadata;
-use Atom\ApiExplorer\ApiModelBuilder;
-use Atom\ApiExplorer\UI\ApiOperationDescriptor;
+use Atom\Api\ApiDescription;
+use Atom\Modules\ApiExplorer\ApiExplorerRouteMetadata;
+use Atom\Api\ApiModelBuilder;
+use Atom\Modules\ApiExplorer\UI\Models\ApiOperationDescriptor;
 use Atom\Di\InjectionContext;
 use Atom\Di\Injector;
 use Atom\Dispatcher\Dispatcher;
@@ -20,7 +20,7 @@ use Atom\Router\MatchedRoute;
 use Atom\Router\Router;
 use Throwable;
 
-#[PageRoute("/page")]
+#[PageRoute("/explorer")]
 final class ApiExplorerPage extends Page
 {
     public string $title = "API Explorer";

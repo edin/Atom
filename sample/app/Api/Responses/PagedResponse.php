@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Api\Responses;
 
-use Atom\ApiExplorer\Attributes\ArrayOf;
+use Atom\Api\Attributes\ArrayOf;
 
 final class PagedResponse
 {
-    #[ArrayOf("T")]
+    #[ArrayOf]
     public array $items;
 
     public int $total;

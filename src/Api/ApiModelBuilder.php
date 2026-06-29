@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Atom\ApiExplorer;
+namespace Atom\Api;
 
-use Atom\ApiExplorer\Attributes\ArrayOf;
-use Atom\ApiExplorer\Attributes\ErrorResponse;
-use Atom\ApiExplorer\Attributes\ResponseGeneric;
+use Atom\Api\Attributes\ArrayOf;
+use Atom\Api\Attributes\ErrorResponse;
+use Atom\Api\Attributes\ResponseOf;
 use Atom\Hydrator\Attributes\Dto;
 use Atom\Hydrator\Attributes\SourceAttributeInterface;
 use Atom\Router\RouteAction;
@@ -36,7 +36,7 @@ final class ApiModelBuilder
         $routes = array_filter(
             $router->getAllRoutes(),
             fn(RouteEntry $route): bool =>
-                $route->getMetadataOfType(ApiExplorerHidden::class) === null
+                $route->getMetadataOfType(ApiHidden::class) === null
                 && $this->matchesPathPrefix($route, $pathPrefix)
         );
 
@@ -73,7 +73,7 @@ final class ApiModelBuilder
             $route->getMethodName(),
             $this->typeName($handler->getReturnType()),
             $this->fieldsFromHandler($handler, $route),
-            $this->fieldsFromReturnType($handler->getReturnType(), $this->responseGenerics($handler)),
+            $this->fieldsFromReturnType($handler->getReturnType(), $this->responseType($handler)),
             $this->errorResponses($handler)
         );
     }
@@ -162,10 +162,9 @@ final class ApiModelBuilder
     }
 
     /**
-     * @param array<string, string> $generics
      * @return ApiFieldDescriptor[]
      */
-    private function fieldsFromReturnType(?ReflectionType $type, array $generics): array
+    private function fieldsFromReturnType(?ReflectionType $type, ?string $responseType): array
     {
         if (!$type instanceof ReflectionNamedType || $type->isBuiltin()) {
             return [];
@@ -181,16 +180,15 @@ final class ApiModelBuilder
             return [];
         }
 
-        return $this->fieldsFromClass($className, $generics);
+        return $this->fieldsFromClass($className, $responseType);
     }
 
     /**
      * @param class-string $className
-     * @param array<string, string> $generics
      * @param array<string, true> $visited
      * @return ApiFieldDescriptor[]
      */
-    private function fieldsFromClass(string $className, array $generics, array $visited = [], int $depth = 0): array
+    private function fieldsFromClass(string $className, ?string $responseType, array $visited = [], int $depth = 0): array
     {
         if ($depth >= self::MAX_SCHEMA_DEPTH || isset($visited[$className])) {
             return [];
@@ -205,7 +203,7 @@ final class ApiModelBuilder
                 continue;
             }
 
-            $arrayItemType = $this->arrayItemType($property, $generics);
+            $arrayItemType = $this->arrayItemType($property, $responseType);
             $propertyType = $this->propertyTypeName($property, $arrayItemType);
             $nestedType = $arrayItemType ?? $this->propertyClassName($property);
 
@@ -217,7 +215,7 @@ final class ApiModelBuilder
                 $this->isPropertyRequired($property),
                 $className,
                 [],
-                $nestedType !== null ? $this->fieldsFromClassName($nestedType, $generics, $visited, $depth + 1) : []
+                $nestedType !== null ? $this->fieldsFromClassName($nestedType, $responseType, $visited, $depth + 1) : []
             );
         }
 
@@ -225,11 +223,10 @@ final class ApiModelBuilder
     }
 
     /**
-     * @param array<string, string> $generics
      * @param array<string, true> $visited
      * @return ApiFieldDescriptor[]
      */
-    private function fieldsFromClassName(string $type, array $generics, array $visited, int $depth): array
+    private function fieldsFromClassName(string $type, ?string $responseType, array $visited, int $depth): array
     {
         if (!class_exists($type)) {
             return [];
@@ -240,22 +237,18 @@ final class ApiModelBuilder
             return [];
         }
 
-        return $this->fieldsFromClass($type, $generics, $visited, $depth);
+        return $this->fieldsFromClass($type, $responseType, $visited, $depth);
     }
 
-    /**
-     * @return array<string, string>
-     */
-    private function responseGenerics(ReflectionFunctionAbstract $handler): array
+    private function responseType(ReflectionFunctionAbstract $handler): ?string
     {
-        $generics = [];
+        $attributes = $handler->getAttributes(ResponseOf::class);
 
-        foreach ($handler->getAttributes(ResponseGeneric::class) as $attribute) {
-            $generic = $attribute->newInstance();
-            $generics[$generic->name] = $generic->type;
+        if ($attributes === []) {
+            return null;
         }
 
-        return $generics;
+        return $attributes[0]->newInstance()->type;
     }
 
     /**
@@ -271,7 +264,7 @@ final class ApiModelBuilder
                 $error->status,
                 $error->type,
                 $error->description,
-                $this->fieldsFromClassName($error->type, $this->responseGenerics($handler), [], 0)
+                $this->fieldsFromClassName($error->type, $this->responseType($handler), [], 0)
             );
         }
 
@@ -279,9 +272,8 @@ final class ApiModelBuilder
     }
 
     /**
-     * @param array<string, string> $generics
      */
-    private function arrayItemType(ReflectionProperty $property, array $generics): ?string
+    private function arrayItemType(ReflectionProperty $property, ?string $responseType): ?string
     {
         $attributes = $property->getAttributes(ArrayOf::class);
         if ($attributes === []) {
@@ -290,7 +282,7 @@ final class ApiModelBuilder
 
         $type = $attributes[0]->newInstance()->type;
 
-        return $generics[$type] ?? $type;
+        return $type ?? $responseType;
     }
 
     private function propertyTypeName(ReflectionProperty $property, ?string $arrayItemType): ?string

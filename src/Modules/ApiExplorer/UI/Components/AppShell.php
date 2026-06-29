@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Atom\ApiExplorer\UI\Components;
+namespace Atom\Modules\ApiExplorer\UI\Components;
 
 use Atom\View\Component\Fragment;
 use Atom\View\Component\TemplateComponent;

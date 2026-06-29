@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Atom\Tests\ApiExplorer;
 
-use Atom\ApiExplorer\Attributes\ArrayOf;
-use Atom\ApiExplorer\Attributes\ErrorResponse;
-use Atom\ApiExplorer\Attributes\ResponseGeneric;
-use Atom\ApiExplorer\ApiModelBuilder;
+use Atom\Api\Attributes\ArrayOf;
+use Atom\Api\Attributes\ErrorResponse;
+use Atom\Api\Attributes\ResponseOf;
+use Atom\Api\ApiModelBuilder;
 use Atom\Hydrator\Attributes\Dto;
 use Atom\Hydrator\Attributes\FromBody;
 use Atom\Hydrator\Attributes\FromQuery;
@@ -94,7 +94,7 @@ final class ApiUsersController
         return new ApiUserResponse();
     }
 
-    #[ResponseGeneric("T", ApiArticleResponse::class)]
+    #[ResponseOf(ApiArticleResponse::class)]
     #[ErrorResponse(404, ApiNotFoundResponse::class, "Article was not found.")]
     public function articles(): ApiPageResponse
     {
@@ -126,7 +126,7 @@ final class ApiUserResponse
 
 final class ApiPageResponse
 {
-    #[ArrayOf("T")]
+    #[ArrayOf]
     public array $items = [];
 
     public int $total;

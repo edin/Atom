@@ -4,19 +4,24 @@ declare(strict_types=1);
 
 namespace Atom\Tests\ApiExplorer;
 
-use Atom\ApiExplorer\ApiExplorer;
-use Atom\ApiExplorer\ApiExplorerHandler;
-use Atom\ApiExplorer\ApiExplorerRouteMetadata;
-use Atom\ApiExplorer\UI\Components\AppShell;
-use Atom\ApiExplorer\UI\Components\EndpointDetails;
-use Atom\ApiExplorer\UI\Components\EndpointList;
-use Atom\ApiExplorer\UI\Components\TryRequestPanel;
-use Atom\ApiExplorer\UI\Pages\ApiExplorerPage;
-use Atom\ApiExplorer\UI\Pages\ApiExplorerPreviewPage;
+use Atom\Api\Attributes\ArrayOf;
+use Atom\Api\Attributes\ErrorResponse;
+use Atom\Api\Attributes\ResponseOf;
+use Atom\Modules\ApiExplorer\ApiExplorer;
+use Atom\Modules\ApiExplorer\ApiExplorerRouteMetadata;
+use Atom\Modules\ApiExplorer\UI\Components\AppShell;
+use Atom\Modules\ApiExplorer\UI\Components\EndpointDetails;
+use Atom\Modules\ApiExplorer\UI\Components\EndpointList;
+use Atom\Modules\ApiExplorer\UI\Components\TryRequestPanel;
+use Atom\Modules\ApiExplorer\UI\Pages\ApiExplorerPage;
 use Atom\Application;
 use Atom\Di\InjectionContext;
 use Atom\Di\Injector;
 use Atom\Dispatcher\Dispatcher;
+use Atom\Hydrator\Attributes\Dto;
+use Atom\Hydrator\Attributes\FromBody;
+use Atom\Hydrator\Attributes\FromQuery;
+use Atom\Hydrator\Attributes\FromRoute;
 use Atom\Http\Response;
 use Atom\Http\Request;
 use Atom\Page\PageRenderer;
@@ -25,6 +30,8 @@ use Atom\Router\MatchedRoute;
 use Atom\Router\RouteEntry;
 use Atom\Router\RouteAction;
 use Atom\Router\Router;
+use Atom\Validation\Rules\MaxLength;
+use Atom\Validation\Rules\Required;
 use Atom\View\Component\ComponentRegistry;
 use PHPUnit\Framework\TestCase;
 
@@ -47,8 +54,7 @@ final class ApiExplorerTest extends TestCase
 
         $this->assertSame("/dev/api", $entry->getFullPath());
         $this->assertSame("GET", $entry->getMethod());
-        $this->assertSame(ApiExplorerHandler::class, $entry->getController());
-        $this->assertSame("index", $entry->getMethodName());
+        $this->assertTrue($entry->getRouteAction()->isClosure());
     }
 
     public function testCreatesExplorerModule(): void
@@ -63,17 +69,14 @@ final class ApiExplorerTest extends TestCase
         $entry = $this->routeByName($router, "atom.api-explorer");
         $frameworkResources = $this->routeByPath($router, "/atom/framework/resources/{path*}");
         $apiResources = $this->routeByPath($router, "/dev/api/resources/{path*}");
-        $page = $this->routeByPath($router, "/dev/api/page");
-        $preview = $this->routeByPath($router, "/dev/api/preview");
+        $page = $this->routeByPath($router, "/dev/api/explorer");
 
         $this->assertSame("/dev/api", $entry->getFullPath());
         $this->assertSame("/atom/framework/resources/{path*}", $frameworkResources->getFullPath());
         $this->assertSame("/dev/api/resources/{path*}", $apiResources->getFullPath());
-        $this->assertSame(ApiExplorerHandler::class, $entry->getController());
+        $this->assertTrue($entry->getRouteAction()->isClosure());
         $this->assertSame("/dev/api/resources", $entry->getMetadataOfType(ApiExplorerRouteMetadata::class)->resourcePath);
         $this->assertSame("/api", $entry->getMetadataOfType(ApiExplorerRouteMetadata::class)->apiPathPrefix);
-        $this->assertSame("/dev/api/preview", $preview->getFullPath());
-        $this->assertSame(ApiExplorerPreviewPage::class, $preview->getMetadataOfType(PageRouteMetadata::class)?->pageClass);
         $this->assertSame("/api", $page->getMetadataOfType(ApiExplorerRouteMetadata::class)?->apiPathPrefix);
         $this->assertSame(ApiExplorerPage::class, $page->getMetadataOfType(PageRouteMetadata::class)?->pageClass);
     }
@@ -82,9 +85,10 @@ final class ApiExplorerTest extends TestCase
     {
         $app = new ApiExplorerTestApplication();
         $app->initialize();
+        $this->registerDocumentedApiRoutes($app->getRouter());
         $app->registerModule(ApiExplorer::module("/dev/api"));
 
-        $html = $app->getInjector()->get(PageRenderer::class)->render(ApiExplorerPreviewPage::class);
+        $html = $app->getInjector()->get(PageRenderer::class)->render(ApiExplorerPage::class);
 
         $this->assertSame(AppShell::class, $app->getInjector()->get(ComponentRegistry::class)->get("ApiExplorer.AppShell"));
         $this->assertSame(EndpointList::class, $app->getInjector()->get(ComponentRegistry::class)->get("ApiExplorer.EndpointList"));
@@ -103,9 +107,9 @@ final class ApiExplorerTest extends TestCase
         $this->assertStringNotContainsString("<th>Model</th>", $html);
         $this->assertStringNotContainsString("<td><code>query.page</code></td>", $html);
         $this->assertStringContainsString("Response shape", $html);
-        $this->assertStringContainsString("ArticleListResponse", $html);
+        $this->assertStringContainsString("ApiExplorerPageResponse", $html);
         $this->assertStringContainsString('<span class="schema-field">items</span>', $html);
-        $this->assertStringContainsString('<span class="schema-type">ArticleResponse[]</span>', $html);
+        $this->assertStringContainsString('<span class="schema-type">ApiExplorerArticleResponse[]</span>', $html);
         $this->assertStringContainsString('href="?id=1"', $html);
         $this->assertStringContainsString('class="selected" href="?id=0"', $html);
     }
@@ -114,11 +118,12 @@ final class ApiExplorerTest extends TestCase
     {
         $app = new ApiExplorerTestApplication();
         $app->initialize();
+        $this->registerDocumentedApiRoutes($app->getRouter());
         $app->registerModule(ApiExplorer::module("/dev/api"));
 
         $context = new InjectionContext();
-        $context->set(Request::class, new Request("GET", "/dev/api/preview", ["id" => 1]));
-        $html = $app->getInjector()->get(PageRenderer::class, $context)->render(ApiExplorerPreviewPage::class);
+        $context->set(Request::class, new Request("GET", "/dev/api/explorer", ["id" => 1]));
+        $html = $app->getInjector()->get(PageRenderer::class, $context)->render(ApiExplorerPage::class);
 
         $this->assertStringContainsString('class="selected" href="?id=1"', $html);
         $this->assertStringContainsString("<code>/api/articles</code>", $html);
@@ -126,7 +131,7 @@ final class ApiExplorerTest extends TestCase
         $this->assertStringContainsString('<span class="request-method">POST</span>', $html);
         $this->assertStringContainsString("Error responses", $html);
         $this->assertStringContainsString('<span class="status-code">422</span>', $html);
-        $this->assertStringContainsString("ValidationErrorResponse", $html);
+        $this->assertStringContainsString("ApiExplorerValidationErrorResponse", $html);
         $this->assertStringNotContainsString('<article id="operation-0"', $html);
     }
 
@@ -152,7 +157,7 @@ final class ApiExplorerTest extends TestCase
         $this->assertStringContainsString("Health check endpoint.", $html);
         $this->assertStringContainsString("1 operation", $html);
         $this->assertStringNotContainsString("/dashboard", $html);
-        $this->assertStringNotContainsString("/dev/api/page", $html);
+        $this->assertStringNotContainsString("/dev/api/explorer", $html);
         $this->assertStringNotContainsString("/dev/api/resources", $html);
     }
 
@@ -167,7 +172,7 @@ final class ApiExplorerTest extends TestCase
         );
         $app->registerModule(ApiExplorer::module("/dev/api"));
 
-        $request = new Request("POST", "/dev/api/page", [], [
+        $request = new Request("POST", "/dev/api/explorer", [], [
             "_action" => "try",
             "id" => "0",
             "method" => "POST",
@@ -197,7 +202,7 @@ final class ApiExplorerTest extends TestCase
         );
         $app->registerModule(ApiExplorer::module("/dev/api"));
 
-        $request = new Request("POST", "/dev/api/page", [], [
+        $request = new Request("POST", "/dev/api/explorer", [], [
             "_action" => "try",
             "id" => "0",
             "method" => "GET",
@@ -222,7 +227,7 @@ final class ApiExplorerTest extends TestCase
         $app->registerModule(ApiExplorer::module("/dev/api", "/internal"));
 
         $context = new InjectionContext();
-        $context->set(MatchedRoute::class, new MatchedRoute($this->routeByPath($app->getRouter(), "/dev/api/page")));
+        $context->set(MatchedRoute::class, new MatchedRoute($this->routeByPath($app->getRouter(), "/dev/api/explorer")));
         $html = $app->getInjector()->get(PageRenderer::class, $context)->render(ApiExplorerPage::class);
 
         $this->assertStringContainsString("/internal/ping", $html);
@@ -230,23 +235,37 @@ final class ApiExplorerTest extends TestCase
         $this->assertStringContainsString("1 operation", $html);
     }
 
-    public function testHandlerRendersApiModelAsHtml(): void
+    public function testExplorerRootRedirectsToPage(): void
     {
         $router = new Router();
-        $router->add(RouteEntry::route("GET", "/api/ping", RouteAction::fromClosure(fn(): string => "pong")));
-        $entry = $router->add(
-            RouteEntry::route("GET", "/atom/api", RouteAction::fromMethod(ApiExplorerHandler::class, "index"))
-                ->metadata(new ApiExplorerRouteMetadata("/atom/api/resources"))
+        $entry = ApiExplorer::register($router, "/atom/api");
+        $action = $entry->getRouteAction();
+
+        $this->assertTrue($action->isClosure());
+
+        $response = ($action->closure)(new Response());
+
+        $this->assertSame(302, $response->getStatus());
+        $this->assertSame(["/atom/api/explorer"], $response->headers()->all("Location"));
+    }
+
+    private function registerDocumentedApiRoutes(Router $router): void
+    {
+        $router->add(
+            RouteEntry::route("GET", "/api/articles", RouteAction::fromMethod(ApiExplorerArticlesController::class, "index"))
+                ->name("articles.index")
+                ->description("Returns published articles with optional search and paging.")
         );
-
-        $response = (new ApiExplorerHandler($router))->index(new Response(), new MatchedRoute($entry));
-
-        $this->assertSame(["text/html; charset=utf-8"], $response->headers()->all("Content-Type"));
-        $this->assertStringContainsString("Atom API Explorer", $response->getContent());
-        $this->assertStringContainsString('/atom/api/resources/api-explorer.css', $response->getContent());
-        $this->assertStringContainsString("Try request", $response->getContent());
-        $this->assertStringContainsString("/api/ping", $response->getContent());
-        $this->assertStringContainsString("Closure", $response->getContent());
+        $router->add(
+            RouteEntry::route("POST", "/api/articles", RouteAction::fromMethod(ApiExplorerArticlesController::class, "create"))
+                ->name("articles.create")
+                ->description("Creates a draft article and returns the stored model.")
+        );
+        $router->add(
+            RouteEntry::route("DELETE", "/api/articles/{id}", RouteAction::fromMethod(ApiExplorerArticlesController::class, "delete"))
+                ->name("articles.item")
+                ->description("Reads, updates, or deletes a single article.")
+        );
     }
 
     private function routeByName(Router $router, string $name): RouteEntry
@@ -277,4 +296,85 @@ final class ApiExplorerTestApplication extends Application
     protected function bootstrap(Injector $injector): void
     {
     }
+}
+
+final class ApiExplorerArticlesController
+{
+    #[ResponseOf(ApiExplorerArticleResponse::class)]
+    public function index(ApiExplorerArticleListRequest $query): ApiExplorerPageResponse
+    {
+        return new ApiExplorerPageResponse();
+    }
+
+    #[ErrorResponse(422, ApiExplorerValidationErrorResponse::class, "Request body failed validation.")]
+    public function create(ApiExplorerCreateArticleRequest $request): ApiExplorerArticleResponse
+    {
+        return new ApiExplorerArticleResponse();
+    }
+
+    #[ErrorResponse(404, ApiExplorerNotFoundResponse::class, "Article was not found.")]
+    public function delete(#[FromRoute] int $id): ApiExplorerArticleResponse
+    {
+        return new ApiExplorerArticleResponse();
+    }
+}
+
+#[Dto]
+final class ApiExplorerArticleListRequest
+{
+    #[FromQuery("q")]
+    public ?string $search = null;
+
+    #[FromQuery]
+    public int $page = 1;
+}
+
+#[Dto]
+final class ApiExplorerCreateArticleRequest
+{
+    #[FromBody]
+    #[Required]
+    #[MaxLength(120)]
+    public string $title;
+}
+
+final class ApiExplorerPageResponse
+{
+    #[ArrayOf]
+    public array $items = [];
+
+    public int $total;
+    public int $page;
+}
+
+final class ApiExplorerArticleResponse
+{
+    public int $id;
+    public string $title;
+    public ApiExplorerAuthorResponse $author;
+}
+
+final class ApiExplorerAuthorResponse
+{
+    public int $id;
+    public string $name;
+}
+
+final class ApiExplorerValidationErrorResponse
+{
+    public string $message;
+
+    #[ArrayOf(ApiExplorerValidationErrorItemResponse::class)]
+    public array $errors = [];
+}
+
+final class ApiExplorerValidationErrorItemResponse
+{
+    public string $field;
+    public string $message;
+}
+
+final class ApiExplorerNotFoundResponse
+{
+    public string $message;
 }

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Atom\ApiExplorer\UI\Components;
+namespace Atom\Modules\ApiExplorer\UI\Components;
 
-use Atom\ApiExplorer\ApiFieldDescriptor;
-use Atom\ApiExplorer\UI\ApiOperationDescriptor;
+use Atom\Api\ApiFieldDescriptor;
+use Atom\Modules\ApiExplorer\UI\Models\ApiOperationDescriptor;
 use Atom\View\Component\TemplateComponent;
 
 final class TryRequestPanel extends TemplateComponent
