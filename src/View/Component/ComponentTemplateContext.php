@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace Atom\View\Component;
 
+use Atom\View\Html;
 use Atom\View\Render\HtmlString;
 
 final readonly class ComponentTemplateContext
 {
     public function encode(mixed $value): string
     {
-        return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, "UTF-8");
+        return Html::escape($value);
     }
 
     /**

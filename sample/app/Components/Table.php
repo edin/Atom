@@ -7,6 +7,7 @@ namespace App\Components;
 use Atom\View\Component\Children;
 use Atom\View\Component\ComponentInterface;
 use Atom\View\Component\Fragment;
+use Atom\View\Html;
 
 final class Table implements ComponentInterface
 {
@@ -33,7 +34,7 @@ final class Table implements ComponentInterface
             $html .= "<tr>";
 
             foreach ($this->columns as $column) {
-                $html .= '<td data-label="' . $this->escape($column->plainTitle()) . '">'
+                $html .= '<td data-label="' . Html::escape($column->plainTitle()) . '">'
                     . $column->cell()->render(["item" => $item])
                     . "</td>";
             }
@@ -44,8 +45,4 @@ final class Table implements ComponentInterface
         return $html . "</tbody></table></div>";
     }
 
-    private function escape(string $value): string
-    {
-        return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, "UTF-8");
-    }
 }

@@ -19,6 +19,7 @@ use Atom\View\Component\ComponentHydrator;
 use Atom\View\Component\ComponentInterface;
 use Atom\View\Component\ComponentRegistry;
 use Atom\View\Component\NewComponentFactory;
+use Atom\View\Html;
 use ReflectionObject;
 use ReflectionProperty;
 
@@ -263,6 +264,6 @@ final readonly class ViewRenderer
             return $value->toHtml();
         }
 
-        return htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, "UTF-8");
+        return Html::escape($value);
     }
 }

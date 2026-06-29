@@ -42,6 +42,18 @@
     </Column>
 
     <Column title="Actions">
-        <button class="link-button" type="button" atom:action="edit({{ $item->id }})">Edit</button>
+        <div class="row-actions">
+            <button class="link-button" type="button" atom:action="edit({{ $item->id }})">Edit</button>
+            <button class="link-button danger-link" type="button" atom:action="askDelete({{ $item->id }})">Delete</button>
+        </div>
     </Column>
 </Table>
+
+<ConfirmDialog :show="$this->confirmingDelete()" title="Delete article?">
+    <p>Delete <strong>{{ $this->deleteTitle() }}</strong>? This action cannot be undone.</p>
+
+    <ConfirmDialog.Actions>
+        <button class="button ghost-button" type="button" atom:action="cancelDelete">Cancel</button>
+        <button class="button danger-button" type="button" atom:action="deleteConfirmed">Delete</button>
+    </ConfirmDialog.Actions>
+</ConfirmDialog>

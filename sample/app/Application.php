@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App;
 
+use App\Components\ConfirmDialog;
 use App\Components\Table;
 use Atom\Config\Env;
 use App\Controllers\ApiController;
@@ -51,7 +52,8 @@ final class Application extends \Atom\Application
         Model::useDb($injector->get(Db::class));
 
         $injector->get(ComponentRegistry::class)
-            ->register("Table", Table::class);
+            ->register("Table", Table::class)
+            ->register("ConfirmDialog", ConfirmDialog::class);
 
         Route::attach(ApiController::class);
         $this->registerModule(Framework::module());

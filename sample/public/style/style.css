@@ -151,6 +151,20 @@ p {
     text-decoration: underline;
 }
 
+.danger-link {
+    color: #b91c1c;
+}
+
+.danger-link:hover {
+    color: #991b1b;
+}
+
+.row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
 .secondary-button {
     background: #0f766e;
     border-color: #0f766e;
@@ -168,6 +182,15 @@ p {
 .ghost-button:hover {
     background: #eff6ff;
     color: var(--accent-dark);
+}
+
+.danger-button {
+    border-color: #dc2626;
+    background: #dc2626;
+}
+
+.danger-button:hover {
+    background: #b91c1c;
 }
 
 .counter-page {
@@ -342,6 +365,37 @@ html.is-atom-loading .counter-page {
 .validation-summary ul {
     margin: 0;
     padding-left: 18px;
+}
+
+.dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.36);
+}
+
+.dialog {
+    width: min(100%, 420px);
+    display: grid;
+    gap: 14px;
+    padding: 20px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--panel);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+}
+
+.dialog-content p {
+    margin: 0;
+}
+
+.dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
 }
 
 label {

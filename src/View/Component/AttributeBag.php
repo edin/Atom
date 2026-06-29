@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Atom\View\Component;
 
+use Atom\View\Html;
+
 final readonly class AttributeBag
 {
     /**
@@ -45,7 +47,7 @@ final readonly class AttributeBag
                 continue;
             }
 
-            $output .= " " . $name . '="' . htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, "UTF-8") . '"';
+            $output .= " " . $name . '="' . Html::escape($value) . '"';
         }
 
         return $output;

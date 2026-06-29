@@ -13,6 +13,7 @@ use Atom\View\Ast\ElementNode;
 use Atom\View\Ast\ExpressionNode;
 use Atom\View\Ast\RawTextNode;
 use Atom\View\Ast\TemplateNode;
+use Atom\View\Html;
 use Atom\View\Parser\ViewParser;
 use Atom\View\Render\ViewRenderer;
 use ReflectionClass;
@@ -115,7 +116,7 @@ final readonly class PageRenderer
             return $html;
         }
 
-        $meta = '<meta name="atom-state" content="' . htmlspecialchars($state, ENT_QUOTES | ENT_SUBSTITUTE, "UTF-8") . '">';
+        $meta = '<meta name="atom-state" content="' . Html::escape($state) . '">';
 
         if (str_contains($html, 'name="atom-state"')) {
             return preg_replace('/<meta\s+name="atom-state"\s+content="[^"]*"\s*\/?>/i', $meta, $html, 1) ?? $html;

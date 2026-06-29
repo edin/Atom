@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atom\View\Component;
 
 use Atom\Page\Page;
+use Atom\View\Html;
 use Atom\View\Ast\AttributeNode;
 use Atom\View\Ast\AttributeSpreadNode;
 use Atom\View\Ast\ElementNode;
@@ -388,7 +389,7 @@ final readonly class ComponentHydrator
 
     private function fragmentFromValue(mixed $value): Fragment
     {
-        return new Fragment(static fn(): string => htmlspecialchars((string) $value, ENT_QUOTES | ENT_SUBSTITUTE, "UTF-8"));
+        return new Fragment(static fn(): string => Html::escape($value));
     }
 
     /**

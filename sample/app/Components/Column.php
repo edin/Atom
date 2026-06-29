@@ -6,6 +6,7 @@ namespace App\Components;
 
 use Atom\View\Component\ComponentInterface;
 use Atom\View\Component\Fragment;
+use Atom\View\Html;
 
 final class Column implements ComponentInterface
 {
@@ -24,7 +25,7 @@ final class Column implements ComponentInterface
 
     public function header(): string
     {
-        return $this->header?->renderOr($this->escape($this->title)) ?? $this->escape($this->title);
+        return $this->header?->renderOr(Html::escape($this->title)) ?? Html::escape($this->title);
     }
 
     public function cell(): Fragment
@@ -37,8 +38,4 @@ final class Column implements ComponentInterface
         return trim(strip_tags($this->header?->render() ?? $this->title));
     }
 
-    private function escape(string $value): string
-    {
-        return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, "UTF-8");
-    }
 }

@@ -23,6 +23,9 @@ final class ArticlesPage extends AppPage
     #[State]
     public ?int $editingId = null;
 
+    #[State]
+    public ?int $deleteId = null;
+
     #[FromBody]
     #[Required("Give this article a title.")]
     #[MaxLength(120)]
@@ -49,6 +52,7 @@ final class ArticlesPage extends AppPage
         }
 
         $this->editingId = $article->id;
+        $this->deleteId = null;
         $this->editTitle = $article->title;
         $this->editSummary = $article->summary;
         $this->loadArticles();
@@ -60,6 +64,33 @@ final class ArticlesPage extends AppPage
         $this->editingId = null;
         $this->editTitle = "";
         $this->editSummary = "";
+        $this->loadArticles();
+    }
+
+    #[PageAction("askDelete")]
+    public function askDelete(int $id): void
+    {
+        $article = Article::find($id);
+        $this->deleteId = $article instanceof Article ? $article->id : null;
+        $this->editingId = null;
+        $this->loadArticles();
+    }
+
+    #[PageAction("cancelDelete")]
+    public function cancelDelete(): void
+    {
+        $this->deleteId = null;
+        $this->loadArticles();
+    }
+
+    #[PageAction("deleteConfirmed")]
+    public function deleteConfirmed(): void
+    {
+        if ($this->deleteId !== null) {
+            Article::find($this->deleteId)?->delete();
+        }
+
+        $this->deleteId = null;
         $this->loadArticles();
     }
 
@@ -87,6 +118,26 @@ final class ArticlesPage extends AppPage
         $article->save();
 
         $this->cancel();
+    }
+
+    public function confirmingDelete(): bool
+    {
+        return $this->deleteId !== null;
+    }
+
+    public function deleteTitle(): string
+    {
+        if ($this->deleteId === null) {
+            return "";
+        }
+
+        foreach ($this->articles as $article) {
+            if ($article->id === $this->deleteId) {
+                return $article->title;
+            }
+        }
+
+        return "";
     }
 
     private function loadArticles(): void

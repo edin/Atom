@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Atom\ApiExplorer;
 
+use Atom\View\Html;
+
 final readonly class ApiExplorerHtmlRenderer
 {
     public function render(ApiDescription $description, string $resourcePath): string
@@ -172,7 +174,7 @@ final readonly class ApiExplorerHtmlRenderer
 
     private function e(string $value): string
     {
-        return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, "UTF-8");
+        return Html::escape($value);
     }
 
     private function shortName(string $className): string
