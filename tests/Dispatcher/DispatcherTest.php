@@ -17,7 +17,6 @@ use Atom\Http\MiddlewareInterface;
 use Atom\Http\Request;
 use Atom\Http\RequestHandlerInterface;
 use Atom\Http\Response;
-use Atom\Interfaces\IResponsable;
 use Atom\Router\RouteAction;
 use Atom\Router\RouteEntry;
 use Atom\Router\Router;
@@ -44,17 +43,6 @@ final class DispatcherTest extends TestCase
         $converter = $this->converter($response);
 
         $this->assertSame($response, $converter->toResponse($response));
-    }
-
-    public function testResultConverterUsesResponsableResult(): void
-    {
-        $response = new Response();
-        $converter = $this->converter($response);
-
-        $result = $converter->toResponse(new ResponsableResult());
-
-        $this->assertSame("responsable", $result->getContent());
-        $this->assertSame("yes", $result->headers()->get("X-Responsable"));
     }
 
     public function testResultConverterUsesResponseResultInterface(): void
@@ -158,16 +146,6 @@ final readonly class TextHandler implements RequestHandlerInterface
     public function handle(Request $request): Response
     {
         return (new Response())->content($this->text);
-    }
-}
-
-final readonly class ResponsableResult implements IResponsable
-{
-    public function toResponse($context): Response
-    {
-        return (new Response())
-            ->header("X-Responsable", "yes")
-            ->content("responsable");
     }
 }
 

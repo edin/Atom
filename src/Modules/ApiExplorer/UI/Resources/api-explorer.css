@@ -2,30 +2,33 @@
     --api-font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     --api-font-mono: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
 
-    --api-color-page: #f7f7f4;
-    --api-color-surface: #ffffff;
-    --api-color-surface-muted: #f0f2f1;
-    --api-color-surface-subtle: #f1f4f3;
-    --api-color-surface-hover: #e4ebe8;
-    --api-color-table-header: #fafaf8;
-    --api-color-border: #deded8;
-    --api-color-border-muted: #e5e5df;
-    --api-color-control-border: #d1d5db;
-    --api-color-control-border-muted: #d8dedb;
+    --api-color-page: #0d1117;
+    --api-color-surface: #111821;
+    --api-color-surface-muted: #0f151d;
+    --api-color-surface-subtle: #151f2a;
+    --api-color-surface-hover: #1b2836;
+    --api-color-table-header: #141d27;
+    --api-color-border: #263240;
+    --api-color-border-muted: #202b38;
+    --api-color-control-border: #344454;
+    --api-color-control-border-muted: #263544;
 
-    --api-color-text: #1f2937;
-    --api-color-text-strong: #111827;
-    --api-color-text-muted: #6b7280;
-    --api-color-text-subtle: #4b5563;
-    --api-color-inverse: #f9fafb;
+    --api-color-text: #d8dee9;
+    --api-color-text-strong: #f5f7fa;
+    --api-color-text-muted: #8d9aab;
+    --api-color-text-subtle: #aab4c2;
+    --api-color-inverse: #f8fafc;
 
-    --api-color-accent: #5b21b6;
-    --api-color-accent-bg: #f4efff;
-    --api-color-accent-border: #d6c5ff;
-    --api-color-action: #0f766e;
-    --api-color-warning: #92400e;
-    --api-color-warning-bg: #fef3c7;
-    --api-color-code-bg: #111827;
+    --api-color-accent: #9f7aea;
+    --api-color-accent-bg: #261f3b;
+    --api-color-accent-border: #4d3c78;
+    --api-color-action: #14b8a6;
+    --api-color-action-hover: #2dd4bf;
+    --api-color-action-text: #041312;
+    --api-color-warning: #f6c177;
+    --api-color-warning-bg: #332416;
+    --api-color-code-bg: #070b12;
+    --api-color-focus: #38bdf8;
 
     --api-space-1: 4px;
     --api-space-2: 8px;
@@ -42,7 +45,7 @@
     --api-radius-md: 6px;
     --api-radius-lg: 7px;
 
-    --api-shadow-topbar: 0 1px 2px rgba(17, 24, 39, 0.04);
+    --api-shadow-topbar: 0 1px 0 rgba(255, 255, 255, 0.03);
     --api-shell-height: 57px;
 }
 
@@ -51,6 +54,11 @@ body {
     font-family: var(--api-font-sans);
     color: var(--api-color-text);
     background: var(--api-color-page);
+}
+
+::selection {
+    color: var(--api-color-inverse);
+    background: rgba(56, 189, 248, 0.36);
 }
 
 html.is-atom-loading {
@@ -95,7 +103,7 @@ h1 {
 
 .workspace {
     display: grid;
-    grid-template-columns: minmax(220px, 280px) minmax(420px, 1fr) minmax(480px, 560px);
+    grid-template-columns: minmax(220px, 280px) minmax(480px, 1fr) minmax(420px, 500px);
     gap: 0;
     align-items: stretch;
     min-height: calc(100vh - var(--api-shell-height));
@@ -154,7 +162,8 @@ h1 {
 }
 
 .sidebar a.selected {
-    background: var(--api-color-surface);
+    background: var(--api-color-surface-subtle);
+    box-shadow: inset 2px 0 0 var(--api-color-action);
 }
 
 .endpoint-icon,
@@ -168,6 +177,8 @@ h1 {
     width: 22px;
     height: 22px;
     border-radius: var(--api-radius-md);
+    color: var(--api-color-accent);
+    background: var(--api-color-accent-bg);
 }
 
 .endpoint-icon svg,
@@ -336,6 +347,11 @@ th {
     color: var(--api-color-text-subtle);
     font-weight: 600;
     background: var(--api-color-table-header);
+    white-space: nowrap;
+}
+
+tr:hover td {
+    background: rgba(255, 255, 255, 0.015);
 }
 
 code {
@@ -418,6 +434,15 @@ small {
     font-weight: 400;
 }
 
+.request-form select:focus,
+.request-form input:focus,
+.request-form textarea:focus,
+.request-form button:focus-visible,
+.sidebar a:focus-visible {
+    outline: 2px solid var(--api-color-focus);
+    outline-offset: 2px;
+}
+
 .request-form textarea {
     min-height: 54px;
     resize: vertical;
@@ -434,10 +459,14 @@ small {
     border: 0;
     border-radius: var(--api-radius-none);
     background: var(--api-color-action);
-    color: var(--api-color-surface);
+    color: var(--api-color-action-text);
     font-weight: 700;
     cursor: pointer;
     transition: filter 160ms ease, opacity 160ms ease;
+}
+
+.request-form button:hover {
+    background: var(--api-color-action-hover);
 }
 
 .request-form button:disabled {

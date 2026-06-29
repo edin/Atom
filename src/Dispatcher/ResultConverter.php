@@ -7,7 +7,6 @@ namespace Atom\Dispatcher;
 use Atom\Di\InjectionContext;
 use Atom\Di\Injector;
 use Atom\Http\Response;
-use Atom\Interfaces\IResponsable;
 
 final readonly class ResultConverter
 {
@@ -28,10 +27,6 @@ final readonly class ResultConverter
 
         if ($result instanceof ResponseResultInterface) {
             return $result->toResponse($this->injector, $context);
-        }
-
-        if ($result instanceof IResponsable) {
-            return $result->toResponse($this->injector);
         }
 
         $handler = $this->handlers->getHandler($result, $context);

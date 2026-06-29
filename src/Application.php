@@ -23,7 +23,6 @@ use Atom\Router\MatchedRoute;
 use Atom\Router\Route;
 use Atom\Router\Router;
 use Atom\View\Component\ComponentRegistry;
-use Atom\View\ViewServices;
 use RuntimeException;
 
 abstract class Application
@@ -110,8 +109,7 @@ abstract class Application
         $providers
             ->add(ConsoleServices::class)
             ->add(DispatcherServices::class)
-            ->add(PageServices::class)
-            ->add(ViewServices::class);
+            ->add(PageServices::class);
     }
 
     protected function services(ServiceProviderRegistry $providers): void

@@ -8,7 +8,6 @@ use Atom\Di\InjectionContext;
 use Atom\Di\Injector;
 use Atom\Dispatcher\ResultHandler\JsonResultHandler;
 use Atom\Dispatcher\ResultHandler\StringResultHandler;
-use Atom\Dispatcher\ResultHandler\ViewInfoResultHandler;
 
 class ResultHandlerRegistry
 {
@@ -19,7 +18,6 @@ class ResultHandlerRegistry
     public function __construct(private Injector $injector, ?array $handlers = null)
     {
         $this->handlers = $handlers ?? [
-            ViewInfoResultHandler::class,
             StringResultHandler::class,
             JsonResultHandler::class,
         ];
