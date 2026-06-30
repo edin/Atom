@@ -41,8 +41,6 @@ The sample application's bootstrap is intentionally small:
 ```php
 protected function bootstrap(Injector $injector): void
 {
-    Model::useDb($injector->get(Db::class));
-
     Route::attach(ApiController::class);
 }
 ```

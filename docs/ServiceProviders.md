@@ -22,8 +22,6 @@ namespace App;
 use App\Components\Table;
 use App\Controllers\ApiController;
 use Atom\Database\DatabaseServices;
-use Atom\Database\Db;
-use Atom\Database\Model;
 use Atom\Di\Injector;
 use Atom\Di\ServiceProviderRegistry;
 use Atom\Module\ModuleRegistry;
@@ -61,8 +59,6 @@ final class Application extends \Atom\Application
 
     protected function bootstrap(Injector $injector): void
     {
-        Model::useDb($injector->get(Db::class));
-
         Route::attach(ApiController::class);
     }
 }

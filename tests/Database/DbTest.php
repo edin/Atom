@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atom\Tests\Database;
 
+use Atom\Application;
 use Atom\Config\Config;
 use Atom\Database\DatabaseConnection;
 use Atom\Database\DatabaseConfig;
@@ -22,6 +23,7 @@ use Atom\Database\Orm\Attributes\Table;
 use Atom\Database\Orm\Provider\NowProvider;
 use Atom\Database\Sql\Query;
 use DateTimeImmutable;
+use Atom\Di\Injector;
 use Atom\Di\ServiceProviderRegistry;
 use Atom\Support\Paths;
 use PHPUnit\Framework\TestCase;
@@ -378,6 +380,25 @@ final class DbTest extends TestCase
 
         $this->assertDirectoryExists($root . "/storage/nested");
     }
+
+    public function testDatabaseServicesConfiguresModelBaseDuringApplicationBootstrap(): void
+    {
+        \Atom\Application::$app = null;
+        $app = new DbModelApplication();
+
+        try {
+            $app->initialize();
+
+            $user = new DbBootstrappedModelUser();
+            $user->name = "Atom";
+            $user->save();
+
+            $this->assertSame(1, DbBootstrappedModelUser::count());
+            $this->assertSame("Atom", DbBootstrappedModelUser::find(1)?->name);
+        } finally {
+            \Atom\Application::$app = null;
+        }
+    }
 }
 
 #[Table("users")]
@@ -495,4 +516,28 @@ final class DbTimestampedPost
 
     #[Column("updated_at", onInsert: NowProvider::class, onUpdate: NowProvider::class)]
     public DateTimeImmutable $updatedAt;
+}
+
+final class DbModelApplication extends Application
+{
+    protected function services(ServiceProviderRegistry $providers): void
+    {
+        $providers->add(new DatabaseServices(SqliteDriver::memory()));
+    }
+
+    protected function bootstrap(Injector $injector): void
+    {
+        $injector->get(DatabaseConnection::class)
+            ->execute("CREATE TABLE bootstrapped_users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT)");
+    }
+}
+
+#[Table("bootstrapped_users")]
+final class DbBootstrappedModelUser extends Model
+{
+    #[PrimaryKey("id")]
+    public int $id;
+
+    #[Column("name")]
+    public string $name;
 }

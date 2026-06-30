@@ -66,17 +66,7 @@ DB_PATH_MIGRATIONS=@root/database/migrations
 DB_PATH_SEEDERS=@root/database/seeders
 ```
 
-Configure the model base during bootstrap:
-
-```php
-use Atom\Database\Db;
-use Atom\Database\Model;
-
-protected function bootstrap(Injector $injector): void
-{
-    Model::useDb($injector->get(Db::class));
-}
-```
+`DatabaseServices` configures the `Model` base class during application startup, so model classes can use `query()`, `find()`, `save()`, and `delete()` without manual bootstrap code.
 
 ## Query Builder
 

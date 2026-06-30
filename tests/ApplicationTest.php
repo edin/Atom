@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Atom\Tests;
 
 use Atom\Application;
+use Atom\ApplicationBootstrapper;
+use Atom\ApplicationBootstrapperProviderInterface;
+use Atom\ApplicationBootstrappers;
 use Atom\Config\Config;
 use Atom\Config\Options;
 use Atom\Di\Bindings;
@@ -154,6 +157,15 @@ final class ApplicationTest extends TestCase
         $this->assertSame(TestApplicationComponent::class, $components->get("App.Test"));
         $this->assertTrue($app->componentWasAvailableInBootstrap);
     }
+
+    public function testServiceProviderBootstrappersRunBeforeApplicationBootstrap(): void
+    {
+        $app = new TestBootstrapperApplication();
+        $app->initialize();
+
+        $this->assertSame(["provider", "app"], $app->events);
+        $this->assertCount(1, $app->getBootstrappers()->all());
+    }
 }
 
 final class TestApplication extends Application
@@ -189,6 +201,50 @@ final readonly class TestApplicationProvider implements ServiceProviderInterface
 
         $bindings->bind(ResponseEmitterInterface::class)
             ->toValue($this->emitter);
+    }
+}
+
+final class TestBootstrapperApplication extends Application
+{
+    /** @var list<string> */
+    public array $events = [];
+
+    protected function services(ServiceProviderRegistry $providers): void
+    {
+        $providers->add(new TestBootstrapperProvider($this));
+    }
+
+    protected function bootstrap(Injector $injector): void
+    {
+        $this->events[] = "app";
+    }
+}
+
+final readonly class TestBootstrapperProvider implements ServiceProviderInterface, ApplicationBootstrapperProviderInterface
+{
+    public function __construct(private TestBootstrapperApplication $app)
+    {
+    }
+
+    public function register(Bindings $bindings): void
+    {
+    }
+
+    public function bootstrappers(ApplicationBootstrappers $bootstrappers): void
+    {
+        $bootstrappers->add(new TestBootstrapper($this->app));
+    }
+}
+
+final readonly class TestBootstrapper implements ApplicationBootstrapper
+{
+    public function __construct(private TestBootstrapperApplication $app)
+    {
+    }
+
+    public function bootstrap(Injector $injector): void
+    {
+        $this->app->events[] = "provider";
     }
 }
 
