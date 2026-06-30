@@ -77,11 +77,45 @@ The base application registers framework services for:
 
 Application providers are added on top of those defaults.
 
+## Handling Requests
+
+Use `handle()` when you want a response object without emitting content:
+
+```php
+$response = $app->handle($request);
+```
+
+Use `run()` in a front controller. It calls `handle()`, emits the response, and returns it:
+
+```php
+(new App\Application())->run();
+```
+
 ## Bootstrappers
 
 Service providers can contribute runtime bootstrappers by implementing `BootstrapProvider`.
 
 Bootstrappers run after modules, components, and pages are registered, and before the application `bootstrap()` hook. `DatabaseServices` uses this to configure the `Model` base class automatically.
+
+## Profiling
+
+`Profiler` is bound in the application container and supports begin/end spans plus callback measurement:
+
+```php
+use Atom\Profiler\Profile;
+
+$span = Profile::begin("view.render");
+
+try {
+    // work
+} finally {
+    $span->end();
+}
+
+$result = Profile::measure("request.dispatch", fn() => $handler->handle($request));
+```
+
+Application responses include grouped timing headers such as `X-Atom-Time`, `X-Atom-Time-App-Initialize`, `X-Atom-Time-Request-Dispatch`, `X-Atom-Time-Page-Render`, `X-Atom-Time-View-Parse`, and `X-Atom-Time-View-Render`. Repeated spans include a count, for example `0.42ms; count=3`.
 
 ## Service Providers
 

@@ -1,0 +1,19 @@
+.atom-panel {
+    border: 1px solid var(--atom-color-line);
+    border-radius: var(--atom-radius);
+    background: var(--atom-color-surface);
+}
+
+.atom-panel__header {
+    padding: 16px 18px 0;
+}
+
+.atom-panel__title {
+    margin: 0;
+    font-size: 1.1rem;
+    line-height: 1.25;
+}
+
+.atom-panel__body {
+    padding: 18px;
+}

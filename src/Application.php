@@ -27,6 +27,7 @@ use Atom\Module\ModuleRegistry;
 use Atom\Page\PageRegistry;
 use Atom\Page\PageRouteRegistrar;
 use Atom\Page\PageServices;
+use Atom\Profiler\Profiler;
 use Atom\Router\MatchedRoute;
 use Atom\Router\Route;
 use Atom\Router\Router;
@@ -43,6 +44,7 @@ abstract class Application
     private ?ModuleRegistry $modules = null;
     private ?PageRegistry $pages = null;
     private ?Bootstrappers $bootstrappers = null;
+    private ?Profiler $profiler = null;
     private ?Bindings $bindings = null;
     private ?Injector $injector = null;
     private ?InjectionContext $currentContext = null;
@@ -95,6 +97,11 @@ abstract class Application
     final public function getInjector(): Injector
     {
         return $this->injector ?? throw new RuntimeException("Application has not been initialized.");
+    }
+
+    final public function getProfiler(): Profiler
+    {
+        return $this->profiler ?? throw new RuntimeException("Application has not been initialized.");
     }
 
     final public function getRouter(): Router
@@ -215,81 +222,90 @@ abstract class Application
             return;
         }
 
-        $root = $this->rootPath();
-        $paths = new Paths($root);
-        $paths->alias("app", $root . "/app");
-        $this->paths = $paths;
-        $this->configurePaths($paths);
+        $profiler = new Profiler();
+        $this->profiler = $profiler;
+        $span = $profiler->begin("app.initialize");
 
-        foreach ($this->environmentFiles() as $path) {
-            Env::loadIfExists($paths->resolve($path));
-        }
+        try {
+            $root = $this->rootPath();
+            $paths = new Paths($root);
+            $paths->alias("app", $root . "/app");
+            $this->paths = $paths;
+            $this->configurePaths($paths);
 
-        $config = Config::fromEnv();
-        $this->config = $config;
-        $this->configure($config);
-
-        $providers = ServiceProviderRegistry::create();
-        $this->registerDefaultServices($providers);
-        $this->services($providers);
-
-        $bindings = $providers->bindings();
-        $bindings->value(Application::class, $this);
-        $bindings->value(Paths::class, $paths);
-        $bindings->value(Config::class, $config);
-        $bindings->addTypeFactory(TypeFactory::match(
-            fn(TypeInfo $type): bool => $type->hasAttribute(Options::class),
-            fn(string $className, Injector $injector, InjectionContext $context): object =>
-                $injector->get(Config::class, $context)->options($className)
-        ));
-        if (static::class !== Application::class) {
-            $bindings->value(static::class, $this);
-        }
-        $bindings->value(ServiceProviderRegistry::class, $providers);
-        $bindings->value(Bindings::class, $bindings);
-
-        $this->providers = $providers;
-        $this->bindings = $bindings;
-        $this->injector = new Injector($bindings);
-        $this->modules = new ModuleRegistry();
-        $this->pages = new PageRegistry();
-        $this->bootstrappers = new Bootstrappers();
-
-        Route::setRouter($this->injector->get(Router::class));
-
-        $this->modules($this->modules);
-        foreach ($this->modules->all() as $registration) {
-            $this->registerModule($registration->module, $registration->basePath);
-        }
-
-        $this->components($this->injector->get(ComponentRegistry::class));
-
-        $this->pages($this->pages);
-        $pageRegistrar = new PageRouteRegistrar();
-        foreach ($this->pages->directories() as $directory) {
-            $pageRegistrar->registerDirectory(
-                $this->getRouter(),
-                $paths->resolve($directory->directory),
-                $directory->pathPrefix
-            );
-        }
-
-        foreach ($providers->providers() as $provider) {
-            if ($provider instanceof BootstrapProvider) {
-                $provider->bootstrappers($this->bootstrappers);
+            foreach ($this->environmentFiles() as $path) {
+                Env::loadIfExists($paths->resolve($path));
             }
+
+            $config = Config::fromEnv();
+            $this->config = $config;
+            $this->configure($config);
+
+            $providers = ServiceProviderRegistry::create();
+            $this->registerDefaultServices($providers);
+            $this->services($providers);
+
+            $bindings = $providers->bindings();
+            $bindings->value(Application::class, $this);
+            $bindings->value(Profiler::class, $profiler);
+            $bindings->value(Paths::class, $paths);
+            $bindings->value(Config::class, $config);
+            $bindings->addTypeFactory(TypeFactory::match(
+                fn(TypeInfo $type): bool => $type->hasAttribute(Options::class),
+                fn(string $className, Injector $injector, InjectionContext $context): object =>
+                    $injector->get(Config::class, $context)->options($className)
+            ));
+            if (static::class !== Application::class) {
+                $bindings->value(static::class, $this);
+            }
+            $bindings->value(ServiceProviderRegistry::class, $providers);
+            $bindings->value(Bindings::class, $bindings);
+
+            $this->providers = $providers;
+            $this->bindings = $bindings;
+            $this->injector = new Injector($bindings);
+            $this->modules = new ModuleRegistry();
+            $this->pages = new PageRegistry();
+            $this->bootstrappers = new Bootstrappers();
+
+            Route::setRouter($this->injector->get(Router::class));
+
+            $this->modules($this->modules);
+            foreach ($this->modules->all() as $registration) {
+                $this->registerModule($registration->module, $registration->basePath);
+            }
+
+            $this->components($this->injector->get(ComponentRegistry::class));
+
+            $this->pages($this->pages);
+            $pageRegistrar = new PageRouteRegistrar();
+            foreach ($this->pages->directories() as $directory) {
+                $pageRegistrar->registerDirectory(
+                    $this->getRouter(),
+                    $paths->resolve($directory->directory),
+                    $directory->pathPrefix
+                );
+            }
+
+            foreach ($providers->providers() as $provider) {
+                if ($provider instanceof BootstrapProvider) {
+                    $provider->bootstrappers($this->bootstrappers);
+                }
+            }
+
+            foreach ($this->bootstrappers->all() as $bootstrapper) {
+                $bootstrapper->bootstrap($this->injector);
+            }
+
+            $this->bootstrap($this->injector);
+
+            $this->initialized = true;
+        } finally {
+            $span->end();
         }
-
-        foreach ($this->bootstrappers->all() as $bootstrapper) {
-            $bootstrapper->bootstrap($this->injector);
-        }
-
-        $this->bootstrap($this->injector);
-
-        $this->initialized = true;
     }
 
-    final public function run(?Request $request = null): Response
+    final public function handle(?Request $request = null): Response
     {
         $this->initialize();
 
@@ -298,9 +314,36 @@ abstract class Application
             $this->currentContext->set(Request::class, $request);
         }
 
-        $response = $this->getDispatcher()->handle($this->getRequest());
+        $response = $this->getProfiler()->measure(
+            "request.dispatch",
+            fn(): Response => $this->getDispatcher()->handle($this->getRequest())
+        );
+        $this->addProfilerHeaders($response);
+
+        return $response;
+    }
+
+    final public function run(?Request $request = null): Response
+    {
+        $response = $this->handle($request);
         $this->getResponseEmitter()->emit($response);
 
         return $response;
+    }
+
+    private function addProfilerHeaders(Response $response): void
+    {
+        $profiler = $this->getProfiler();
+        $response->header("X-Atom-Time", number_format($profiler->totalMs(), 2, ".", "") . "ms");
+
+        foreach ($profiler->summary() as $summary) {
+            $header = "X-Atom-Time-" . str_replace(".", "-", ucwords($summary->name, "."));
+            $value = number_format($summary->totalMs, 2, ".", "") . "ms";
+            if ($summary->count > 1) {
+                $value .= "; count=" . $summary->count;
+            }
+
+            $response->header($header, $value);
+        }
     }
 }

@@ -11,6 +11,7 @@ use Atom\View\Component\Children;
 use Atom\View\Component\ComponentHydrator;
 use Atom\View\Component\ComponentInterface;
 use Atom\View\Component\Fragment;
+use Atom\View\Component\FromContext;
 use Atom\View\Parser\ViewParser;
 use Atom\View\Render\PhpExpressionEvaluator;
 use Atom\View\Render\ViewContext;
@@ -210,6 +211,20 @@ final class ComponentHydratorTest extends TestCase
         $this->assertSame(["data-id" => "42", "disabled" => true], $component->attributes->all());
     }
 
+    public function testInitializesEmptyAttributeBagWhenNoUnknownAttributesExist(): void
+    {
+        $component = new AttributeBagComponent();
+
+        $this->hydrator()->hydrate(
+            $component,
+            $this->element('<Card title="Hello" />'),
+            new ViewContext(),
+            static fn(): string => ""
+        );
+
+        $this->assertSame([], $component->attributes->all());
+    }
+
     public function testThrowsForUnknownAttributeWithoutAttributeBag(): void
     {
         $this->expectException(ViewRenderException::class);
@@ -236,6 +251,34 @@ final class ComponentHydratorTest extends TestCase
         );
 
         $this->assertSame($page, $component->page);
+    }
+
+    public function testAssignsPropertiesFromContextWhenNotProvidedExplicitly(): void
+    {
+        $component = new ContextAwareComponent();
+
+        $this->hydrator()->hydrate(
+            $component,
+            $this->element('<Card />'),
+            new ViewContext(["model" => "context-value"]),
+            static fn(): string => ""
+        );
+
+        $this->assertSame("context-value", $component->model);
+    }
+
+    public function testExplicitAttributesOverrideContextProperties(): void
+    {
+        $component = new ContextAwareComponent();
+
+        $this->hydrator()->hydrate(
+            $component,
+            $this->element('<Card model="explicit-value" />'),
+            new ViewContext(["model" => "context-value"]),
+            static fn(): string => ""
+        );
+
+        $this->assertSame("explicit-value", $component->model);
     }
 
     public function testThrowsHelpfulMessageForUnknownNamedFragment(): void
@@ -378,6 +421,17 @@ final class HydratedPageContextPage extends Page
 final class PageAwareComponent implements ComponentInterface
 {
     public Page $page;
+
+    public function render(): string
+    {
+        return "";
+    }
+}
+
+final class ContextAwareComponent implements ComponentInterface
+{
+    #[FromContext("model")]
+    public ?string $model = null;
 
     public function render(): string
     {

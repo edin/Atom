@@ -1,0 +1,51 @@
+.atom-stack {
+    display: grid;
+    gap: var(--atom-space-4);
+}
+
+.atom-inline,
+.atom-form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--atom-space-3);
+}
+
+.atom-inline[data-gap="xs"],
+.atom-stack[data-gap="xs"] {
+    gap: var(--atom-space-1);
+}
+
+.atom-inline[data-gap="sm"],
+.atom-stack[data-gap="sm"] {
+    gap: var(--atom-space-2);
+}
+
+.atom-inline[data-gap="lg"],
+.atom-stack[data-gap="lg"] {
+    gap: var(--atom-space-5);
+}
+
+.atom-inline[data-align="start"] {
+    align-items: flex-start;
+}
+
+.atom-inline[data-align="center"] {
+    align-items: center;
+}
+
+.atom-inline[data-align="end"] {
+    align-items: flex-end;
+}
+
+.atom-inline[data-justify="between"] {
+    justify-content: space-between;
+}
+
+.atom-inline[data-justify="end"],
+.atom-form-actions[data-align="end"] {
+    justify-content: flex-end;
+}
+
+.atom-form-actions {
+    align-items: center;
+}

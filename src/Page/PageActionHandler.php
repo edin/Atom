@@ -19,7 +19,8 @@ final readonly class PageActionHandler
         private Injector $injector,
         private InjectionContext $context,
         private PageStateSerializer $state = new JsonPageStateSerializer(),
-        private PageInputHydratorInterface $input = new PageInputHydrator()
+        private PageInputHydratorInterface $input = new PageInputHydrator(),
+        private PageActionParameterBinder $parameters = new PageActionParameterBinder()
     ) {
     }
 
@@ -36,7 +37,7 @@ final readonly class PageActionHandler
         $this->input->hydrate($page, $request, $route);
         $call = $this->parseAction($request->post()->string("_action", "default"));
         $action = $this->resolveAction($page, $request, $call);
-        $parameters = $this->actionParameters($route, $call, $action);
+        $parameters = $this->parameters->bind($page, $request, $route, $call, $action);
 
         try {
             $result = $this->injector->invoke(
@@ -88,24 +89,6 @@ final readonly class PageActionHandler
         );
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    private function actionParameters(MatchedRoute $route, PageActionCall $call, ReflectionMethod $method): array
-    {
-        $this->assertArgumentCount($call, $method);
-        $parameters = $route->getParams();
-
-        foreach ($call->arguments as $index => $argument) {
-            $reflectionParameter = $method->getParameters()[$index] ?? null;
-            if ($reflectionParameter !== null) {
-                $parameters[$reflectionParameter->getName()] = $argument;
-            }
-        }
-
-        return $parameters;
-    }
-
     private function parseAction(string $expression): PageActionCall
     {
         $expression = trim($expression);
@@ -129,9 +112,8 @@ final readonly class PageActionHandler
         }
 
         $arguments = [];
-        $tokens = str_getcsv($source, ",", "\"", "\\");
 
-        foreach ($tokens as $token) {
+        foreach ($this->argumentTokens($source) as $token) {
             $token = trim($token);
             if ($token === "") {
                 throw new PageActionException("Page action arguments are invalid. Empty arguments are not supported.");
@@ -141,6 +123,63 @@ final readonly class PageActionHandler
         }
 
         return $arguments;
+    }
+
+    /**
+     * @return string[]
+     */
+    private function argumentTokens(string $source): array
+    {
+        $tokens = [];
+        $token = "";
+        $quote = null;
+        $escaped = false;
+        $length = strlen($source);
+
+        for ($index = 0; $index < $length; $index++) {
+            $char = $source[$index];
+
+            if ($escaped) {
+                $token .= "\\" . $char;
+                $escaped = false;
+                continue;
+            }
+
+            if ($char === "\\") {
+                $escaped = true;
+                continue;
+            }
+
+            if ($quote !== null) {
+                $token .= $char;
+                if ($char === $quote) {
+                    $quote = null;
+                }
+                continue;
+            }
+
+            if ($char === "'" || $char === '"') {
+                $quote = $char;
+                $token .= $char;
+                continue;
+            }
+
+            if ($char === ",") {
+                $tokens[] = $token;
+                $token = "";
+                continue;
+            }
+
+            $token .= $char;
+        }
+
+        if ($escaped || $quote !== null) {
+            throw new PageActionException("Page action arguments are invalid. Quotes or escapes are not closed.");
+        }
+
+        $tokens[] = $token;
+
+        return $tokens;
     }
 
     private function parseArgument(string $value): mixed
@@ -157,8 +196,21 @@ final readonly class PageActionHandler
             "true" => true,
             "false" => false,
             "null" => null,
-            default => filter_var($value, FILTER_VALIDATE_INT) !== false ? (int) $value : $value,
+            default => $this->parseNumber($value),
         };
+    }
+
+    private function parseNumber(string $value): mixed
+    {
+        if (filter_var($value, FILTER_VALIDATE_INT) !== false) {
+            return (int) $value;
+        }
+
+        if (filter_var($value, FILTER_VALIDATE_FLOAT) !== false) {
+            return (float) $value;
+        }
+
+        return $value;
     }
 
     /**
@@ -203,16 +255,4 @@ final readonly class PageActionHandler
         return $methods;
     }
 
-    private function assertArgumentCount(PageActionCall $call, ReflectionMethod $method): void
-    {
-        if (count($call->arguments) <= $method->getNumberOfParameters()) {
-            return;
-        }
-
-        throw new PageActionException(
-            "Page action '{$call->name}' was called with " . count($call->arguments) .
-            " argument(s), but " . $method->getDeclaringClass()->getName() . "::" . $method->getName() .
-            "() accepts " . $method->getNumberOfParameters() . "."
-        );
-    }
 }

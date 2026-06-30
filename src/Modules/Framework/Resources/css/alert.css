@@ -1,0 +1,13 @@
+.atom-alert {
+    padding: 12px 14px;
+    border: 1px solid var(--atom-color-line);
+    border-radius: var(--atom-radius);
+    background: var(--atom-color-soft);
+    color: var(--atom-color-text);
+}
+
+.atom-alert[data-variant="danger"] {
+    border-color: var(--atom-color-danger-line);
+    background: var(--atom-color-danger-soft);
+    color: var(--atom-color-danger-text);
+}

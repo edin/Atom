@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atom\Modules\Framework\Components;
 
 use Atom\View\Component\ComponentInterface;
+use Atom\View\Html;
 
 final class TextInput implements ComponentInterface
 {
@@ -14,7 +15,7 @@ final class TextInput implements ComponentInterface
 
     public function render(): string
     {
-        return "<input" . $this->renderAttributes([
+        return Html::voidTag("input", Html::mergeAttributes([
             "type" => $this->type,
             "id" => $this->fieldId(),
             "name" => $this->name,
@@ -22,6 +23,6 @@ final class TextInput implements ComponentInterface
             "class" => $this->fieldClass(),
             "aria-invalid" => $this->hasError() ? "true" : null,
             "aria-describedby" => $this->hasError() ? $this->fieldId() . "-error" : null,
-        ]) . $this->extraAttributes() . ">";
+        ], $this->extraAttributes()));
     }
 }

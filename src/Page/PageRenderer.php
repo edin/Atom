@@ -7,6 +7,7 @@ namespace Atom\Page;
 use Atom\Di\InjectionContext;
 use Atom\Di\Injector;
 use Atom\Http\Request;
+use Atom\Profiler\Profile;
 use Atom\Router\MatchedRoute;
 use Atom\View\Ast\AttributeNode;
 use Atom\View\Ast\ElementNode;
@@ -14,6 +15,7 @@ use Atom\View\Ast\ExpressionNode;
 use Atom\View\Ast\RawTextNode;
 use Atom\View\Ast\TemplateNode;
 use Atom\View\Html;
+use Atom\View\TemplateCache;
 use Atom\View\Parser\ViewParser;
 use Atom\View\Render\ViewRenderer;
 use ReflectionClass;
@@ -25,6 +27,7 @@ final readonly class PageRenderer
         private InjectionContext $context,
         private PageViewLocator $viewLocator = new PageViewLocator(),
         private ViewParser $parser = new ViewParser(),
+        private TemplateCache $templates = new TemplateCache(),
         private ViewRenderer $renderer = new ViewRenderer(),
         private PageStateSerializer $state = new JsonPageStateSerializer()
     ) {
@@ -35,15 +38,19 @@ final readonly class PageRenderer
      */
     public function render(string $pageClass): mixed
     {
-        $page = $this->injector->instantiate($pageClass, context: $this->context);
-        $this->restoreState($page);
+        return Profile::measure("page.render", function () use ($pageClass): mixed {
+            $page = $this->injector->instantiate($pageClass, context: $this->context);
+            $this->restoreState($page);
 
-        return $this->renderPage($page);
+            return $this->renderPage($page);
+        }, ["page" => $pageClass]);
     }
 
     public function renderPage(Page $page, bool $invokeGet = true): mixed
     {
-        $result = $invokeGet ? $this->invokeGet($page) : null;
+        $result = $invokeGet
+            ? Profile::measure("page.invoke.get", fn(): mixed => $this->invokeGet($page), ["page" => $page::class])
+            : null;
 
         if ($result !== null) {
             return $result;
@@ -54,10 +61,29 @@ final readonly class PageRenderer
             "page" => $page,
         ];
 
-        $template = $this->parser->parse(file_get_contents($this->viewLocator->locate($page::class)) ?: "");
-        $content = $this->renderer->render($template, $variables);
+        $templatePath = $this->viewLocator->locate($page::class);
+        $template = $this->templates->remember(
+            $templatePath,
+            fn(): TemplateNode => Profile::measure(
+                "view.parse",
+                fn(): TemplateNode => $this->parser->parse(file_get_contents($templatePath) ?: ""),
+                ["page" => $page::class, "template" => $templatePath]
+            )
+        );
+        $content = Profile::measure(
+            "view.render",
+            fn(): string => $this->renderer->render($template, $variables),
+            ["page" => $page::class, "template" => $templatePath]
+        );
 
-        return $this->injectState($this->renderLayout($page, $content, $variables), $this->state->serialize($page));
+        $html = Profile::measure(
+            "page.layout",
+            fn(): string => $this->renderLayout($page, $content, $variables),
+            ["page" => $page::class]
+        );
+        $state = Profile::measure("page.state", fn(): string => $this->state->serialize($page), ["page" => $page::class]);
+
+        return $this->injectState($html, $state);
     }
 
     /**

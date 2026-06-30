@@ -20,11 +20,11 @@ final class ValidationSummary implements ComponentInterface
             return "";
         }
 
-        $html = '<div class="' . Html::escape($this->class) . '"><ul>';
+        $items = "";
         foreach ($errors as $error) {
-            $html .= '<li>' . Html::escape($error->message) . '</li>';
+            $items .= Html::tag("li", content: Html::escape($error->message));
         }
 
-        return $html . '</ul></div>';
+        return Html::tag("div", ["class" => $this->class], Html::tag("ul", content: $items));
     }
 }

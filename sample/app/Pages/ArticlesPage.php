@@ -9,8 +9,7 @@ use Atom\Hydrator\Attributes\FromBody;
 use Atom\Page\PageAction;
 use Atom\Page\PageRoute;
 use Atom\Page\State;
-use Atom\Validation\Rules\MaxLength;
-use Atom\Validation\Rules\Required;
+use Atom\Validation\Schema;
 
 #[PageRoute("/articles", name: "articles.index")]
 final class ArticlesPage extends AppPage
@@ -26,15 +25,15 @@ final class ArticlesPage extends AppPage
     #[State]
     public ?int $deleteId = null;
 
-    #[FromBody]
-    #[Required("Give this article a title.")]
-    #[MaxLength(120)]
-    public string $editTitle = "";
-
-    #[FromBody]
-    #[Required("Add a short summary.")]
-    #[MaxLength(220)]
-    public string $editSummary = "";
+    /**
+     * @var array{id: int, title: string, summary: string}
+     */
+    #[State]
+    public array $edit = [
+        "id" => 0,
+        "title" => "",
+        "summary" => "",
+    ];
 
     public function get(): void
     {
@@ -53,8 +52,11 @@ final class ArticlesPage extends AppPage
 
         $this->editingId = $article->id;
         $this->deleteId = null;
-        $this->editTitle = $article->title;
-        $this->editSummary = $article->summary;
+        $this->edit = [
+            "id" => $article->id,
+            "title" => $article->title,
+            "summary" => $article->summary,
+        ];
         $this->loadArticles();
     }
 
@@ -62,8 +64,11 @@ final class ArticlesPage extends AppPage
     public function cancel(): void
     {
         $this->editingId = null;
-        $this->editTitle = "";
-        $this->editSummary = "";
+        $this->edit = [
+            "id" => 0,
+            "title" => "",
+            "summary" => "",
+        ];
         $this->loadArticles();
     }
 
@@ -95,9 +100,17 @@ final class ArticlesPage extends AppPage
     }
 
     #[PageAction("save")]
-    public function save(): void
+    public function save(
+        #[FromBody]
+        string $title = "",
+        #[FromBody]
+        string $summary = ""
+    ): void
     {
-        if (!$this->validate()) {
+        $this->edit["title"] = $title;
+        $this->edit["summary"] = $summary;
+
+        if (!$this->validateEdit()) {
             $this->loadArticles();
             return;
         }
@@ -113,8 +126,8 @@ final class ArticlesPage extends AppPage
             return;
         }
 
-        $article->title = $this->editTitle;
-        $article->summary = $this->editSummary;
+        $article->title = $this->edit["title"];
+        $article->summary = $this->edit["summary"];
         $article->save();
 
         $this->cancel();
@@ -147,5 +160,22 @@ final class ArticlesPage extends AppPage
             ->orderByDesc("created_at")
             ->with("category")
             ->all();
+    }
+
+    private function validateEdit(): bool
+    {
+        $validation = Schema::make(static function (Schema $schema): void {
+            $schema->field("title")
+                ->required("Give this article a title.")
+                ->maxLength(120);
+
+            $schema->field("summary")
+                ->required("Add a short summary.")
+                ->maxLength(220);
+        })->validate($this->edit);
+
+        $this->setValidation($validation);
+
+        return $validation->passed();
     }
 }

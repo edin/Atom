@@ -57,4 +57,9 @@ abstract class Page
     {
         return $this->validation ??= ValidationResult::valid();
     }
+
+    protected function setValidation(ValidationResult $validation): void
+    {
+        $this->validation = $validation;
+    }
 }

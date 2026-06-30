@@ -1,0 +1,6 @@
+.atom-component,
+.atom-component *,
+.atom-component *::before,
+.atom-component *::after {
+    box-sizing: border-box;
+}

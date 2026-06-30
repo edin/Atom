@@ -35,16 +35,31 @@ Then use it from a template:
 
 Framework internals may also use component class names directly, but application templates should usually prefer registered names.
 
-The framework module registers a few default form components:
+The framework module registers default UI and form components:
 
 ```html
+<Button>Save</Button>
+<Button variant="link" atom:action="edit(1)">Edit</Button>
+<Alert variant="danger">Could not save.</Alert>
+<Badge>Published</Badge>
+<Panel title="Articles">...</Panel>
+<Stack gap="sm">...</Stack>
+<Inline align="center" justify="between">...</Inline>
+<Form submit="save">...</Form>
+<FormActions>...</FormActions>
+<Field label="Title" name="title">...</Field>
 <TextInput name="title" maxlength="120" />
 <TextArea name="body" rows="8" />
+<TextField label="Title" name="title" maxlength="120" />
+<TextAreaField label="Body" name="body" />
+<SelectField label="Category" name="category_id" bind="categoryId" :options="$this->categories" />
 <FieldError name="title" />
 <ValidationSummary />
 ```
 
 `TextInput` and `TextArea` read values from the current page property matching `name`, unless a `value` attribute is provided. When validation errors exist, they render `aria-invalid`, `aria-describedby`, and the `is-invalid` class.
+
+`TextField`, `TextAreaField`, and `SelectField` are composite field entries. They render the field wrapper, control, validation state, and field error.
 
 ## Properties
 
@@ -97,6 +112,7 @@ Use `AttributeBag` when a component should forward arbitrary HTML attributes.
 use Atom\View\Component\AttributeBag;
 use Atom\View\Component\ComponentInterface;
 use Atom\View\Component\Fragment;
+use Atom\View\Html;
 
 final class Button implements ComponentInterface
 {
@@ -105,9 +121,7 @@ final class Button implements ComponentInterface
 
     public function render(): string
     {
-        return "<button{$this->attributes->render()}>"
-            . $this->content?->render()
-            . "</button>";
+        return Html::tag("button", $this->attributes->all(), $this->content?->render() ?? "");
     }
 }
 ```
@@ -115,6 +129,40 @@ final class Button implements ComponentInterface
 ```html
 <Button id="save" class="primary" disabled>Save</Button>
 ```
+
+`AttributeBag` properties are initialized automatically during component hydration. Components only need to declare:
+
+```php
+public AttributeBag $attributes;
+```
+
+## HTML Helpers
+
+Small framework components are usually built with `Html` helpers instead of hand-written string concatenation.
+
+```php
+use Atom\View\Html;
+
+return Html::tag("button", Html::mergeAttributes([
+    "type" => "button",
+    "class" => Html::classes("atom-button", $this->class),
+    "data-variant" => $this->variant,
+], $this->attributes->all()), $this->content?->render() ?? "");
+```
+
+Available helpers:
+
+```php
+Html::escape($value)
+Html::attribute("disabled", true)
+Html::attributes(["class" => "button", "disabled" => true])
+Html::tag("div", ["class" => "panel"], $content)
+Html::voidTag("input", ["name" => "title"])
+Html::classes("atom-button", ["is-active" => $active], $extraClass)
+Html::mergeAttributes($defaults, $attributes)
+```
+
+`Html::tag()` does not escape content. Pass escaped text or rendered HTML intentionally.
 
 ## Default Content
 
@@ -147,6 +195,8 @@ Fragments are lazy. The component controls when the content is rendered and what
 $this->content?->render(["name" => "Ada"]);
 ```
 
+This is also how parent components can provide data to their child content. `Form`, for example, passes a `model` variable into its child fragment when `model` is set.
+
 Useful helpers:
 
 ```php
@@ -155,6 +205,43 @@ $this->content?->renderOr("<p>Empty</p>");
 ```
 
 Whitespace-only output counts as empty.
+
+## Context Injection
+
+Use `#[FromContext]` when a child component should receive a value provided by a parent fragment render.
+
+```php
+use Atom\View\Component\FromContext;
+
+final class TextField extends FieldEntry
+{
+    #[FromContext("model")]
+    public mixed $model = null;
+}
+```
+
+Explicit attributes win over context values:
+
+```html
+<TextField :model="$otherModel" name="title" />
+```
+
+Without an explicit attribute, context can fill the property:
+
+```html
+<Form :model="$this->editForm" submit="save">
+    <TextField label="Title" name="title" />
+    <TextAreaField label="Body" name="body" />
+</Form>
+```
+
+`Form` renders its child fragment with:
+
+```php
+$this->content?->render(["model" => $this->model]);
+```
+
+`FieldEntry` uses the context model before falling back to the page property. This avoids prop drilling in form components while keeping data flow explicit.
 
 ## Named Fragments
 

@@ -6,6 +6,7 @@ The main concepts are:
 
 - [Application and Service Providers](ServiceProviders.md)
 - [Pages and View Engine](PagesAndViews.md)
+- [SIPA](SIPA.md)
 - [Components](Components.md)
 - [Router](Router.md)
 - [Modules](Modules.md)

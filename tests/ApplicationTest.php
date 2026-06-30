@@ -18,6 +18,8 @@ use Atom\Dispatcher\ResponseEmitterInterface;
 use Atom\Http\Request;
 use Atom\Http\Response;
 use Atom\Page\PageRegistry;
+use Atom\Profiler\Profile;
+use Atom\Profiler\Profiler;
 use Atom\Router\Route;
 use Atom\Router\RouteMatcher;
 use Atom\Support\Paths;
@@ -60,6 +62,49 @@ final class ApplicationTest extends TestCase
         $this->assertSame("Hello Atom", $response->getContent());
         $this->assertSame($response, $app->emitter->response);
         $this->assertSame(["name" => "Atom"], $app->getCurrentRoute()?->getRouteParams());
+    }
+
+    public function testHandleReturnsResponseWithoutEmitting(): void
+    {
+        $app = new TestApplication();
+
+        $response = $app->handle(new Request("GET", "/hello/Atom"));
+
+        $this->assertSame("Hello Atom", $response->getContent());
+        $this->assertNull($app->emitter->response);
+        $this->assertSame(["name" => "Atom"], $app->getCurrentRoute()?->getRouteParams());
+    }
+
+    public function testRunAddsProfilerHeadersAndBindsProfiler(): void
+    {
+        $app = new TestApplication();
+
+        $response = $app->handle(new Request("GET", "/hello/Atom"));
+
+        $this->assertSame($app->getProfiler(), $app->getInjector()->get(Profiler::class));
+        $this->assertNotNull($response->headers()->get("X-Atom-Time"));
+        $this->assertNotNull($response->headers()->get("X-Atom-Time-App-Initialize"));
+        $this->assertNotNull($response->headers()->get("X-Atom-Time-Request-Dispatch"));
+    }
+
+    public function testPageResponsesIncludeViewProfilerHeaders(): void
+    {
+        $app = new TestPageApplication(__DIR__ . "/Page/PageFixtures");
+
+        $response = $app->handle(new Request("GET", "/app/hello-page"));
+
+        $this->assertNotNull($response->headers()->get("X-Atom-Time-Page-Render"));
+        $this->assertNotNull($response->headers()->get("X-Atom-Time-View-Parse"));
+        $this->assertNotNull($response->headers()->get("X-Atom-Time-View-Render"));
+    }
+
+    public function testProfilerHeadersSummarizeRepeatedSpans(): void
+    {
+        $app = new TestApplication();
+
+        $response = $app->handle(new Request("GET", "/profile/repeated"));
+
+        $this->assertStringContainsString("count=2", (string) $response->headers()->get("X-Atom-Time-Custom-Work"));
     }
 
     public function testApplicationProvidesConsoleWithFrameworkCommands(): void
@@ -184,6 +229,12 @@ final class TestApplication extends Application
         $this->bootstrapped = true;
 
         Route::get("/hello/{name}", fn(string $name) => "Hello " . $name);
+        Route::get("/profile/repeated", function (): string {
+            Profile::measure("custom.work", static fn(): null => null);
+            Profile::measure("custom.work", static fn(): null => null);
+
+            return "ok";
+        });
     }
 }
 

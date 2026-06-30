@@ -1,0 +1,51 @@
+.atom-form {
+    display: grid;
+    gap: var(--atom-space-4);
+    padding: 18px;
+    border: 1px solid var(--atom-color-line);
+    border-radius: var(--atom-radius);
+    background: var(--atom-color-surface);
+}
+
+.atom-field {
+    display: grid;
+    gap: 6px;
+    font-weight: 650;
+}
+
+.atom-input,
+.atom-textarea,
+.atom-select {
+    width: 100%;
+    border: 1px solid var(--atom-color-line);
+    border-radius: var(--atom-radius);
+    padding: 10px 12px;
+    color: var(--atom-color-text);
+    background: var(--atom-color-surface);
+    font: inherit;
+}
+
+.atom-textarea {
+    min-height: 140px;
+    resize: vertical;
+}
+
+.atom-field-error {
+    margin: 0;
+    color: var(--atom-color-danger-hover);
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.atom-validation-summary {
+    padding: 12px 14px;
+    border: 1px solid var(--atom-color-danger-line);
+    border-radius: var(--atom-radius);
+    background: var(--atom-color-danger-soft);
+    color: var(--atom-color-danger-text);
+}
+
+.atom-validation-summary ul {
+    margin: 0;
+    padding-left: 18px;
+}

@@ -21,6 +21,16 @@ final readonly class ViewContext
         return $this->variables;
     }
 
+    public function has(string $name): bool
+    {
+        return array_key_exists($name, $this->variables);
+    }
+
+    public function get(string $name, mixed $default = null): mixed
+    {
+        return $this->variables[$name] ?? $default;
+    }
+
     /**
      * @param array<string, mixed> $variables
      */

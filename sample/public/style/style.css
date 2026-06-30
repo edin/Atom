@@ -80,8 +80,7 @@ p {
 }
 
 .panel,
-.article,
-.form {
+.article {
     background: var(--panel);
     border: 1px solid var(--line);
     border-radius: 8px;
@@ -134,35 +133,6 @@ p {
 .button:hover {
     background: var(--accent-dark);
     text-decoration: none;
-}
-
-.link-button {
-    padding: 0;
-    border: 0;
-    background: transparent;
-    color: var(--accent);
-    font: inherit;
-    font-weight: 650;
-    cursor: pointer;
-}
-
-.link-button:hover {
-    color: var(--accent-dark);
-    text-decoration: underline;
-}
-
-.danger-link {
-    color: #b91c1c;
-}
-
-.danger-link:hover {
-    color: #991b1b;
-}
-
-.row-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
 }
 
 .secondary-button {
@@ -228,7 +198,7 @@ p {
     gap: 10px;
 }
 
-.counter-actions .button {
+.counter-actions .atom-button {
     min-width: 88px;
 }
 
@@ -251,14 +221,6 @@ p {
     border-color: var(--accent);
     background: #edf2ff;
     color: #1e40af;
-}
-
-html.is-atom-loading {
-    cursor: progress;
-}
-
-html.is-atom-loading .counter-page {
-    opacity: 0.86;
 }
 
 .article-list {
@@ -326,25 +288,13 @@ html.is-atom-loading .counter-page {
     font-size: 0.95rem;
 }
 
-.form {
-    display: grid;
-    gap: 14px;
-    padding: 18px;
-}
-
 .inline-edit {
-    display: grid;
-    gap: 12px;
+    padding: 0;
+    border: 0;
 }
 
 .inline-edit textarea {
     min-height: 86px;
-}
-
-.inline-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
 }
 
 .field-error {
@@ -396,27 +346,6 @@ html.is-atom-loading .counter-page {
     display: flex;
     justify-content: flex-end;
     gap: 10px;
-}
-
-label {
-    display: grid;
-    gap: 6px;
-    font-weight: 650;
-}
-
-input,
-textarea,
-select {
-    width: 100%;
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 10px 12px;
-    font: inherit;
-}
-
-textarea {
-    min-height: 140px;
-    resize: vertical;
 }
 
 @media (max-width: 760px) {

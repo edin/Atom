@@ -35,21 +35,6 @@ final readonly class AttributeBag
 
     public function render(): string
     {
-        $output = "";
-
-        foreach ($this->attributes as $name => $value) {
-            if ($value === false || $value === null) {
-                continue;
-            }
-
-            if ($value === true) {
-                $output .= " " . $name;
-                continue;
-            }
-
-            $output .= " " . $name . '="' . Html::escape($value) . '"';
-        }
-
-        return $output;
+        return Html::attributes($this->attributes);
     }
 }

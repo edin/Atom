@@ -230,22 +230,7 @@ final readonly class ViewRenderer
      */
     private function formatAttributes(array $attributes): string
     {
-        $output = "";
-
-        foreach ($attributes as $name => $value) {
-            if ($value === false || $value === null) {
-                continue;
-            }
-
-            if ($value === true) {
-                $output .= " " . $name;
-                continue;
-            }
-
-            $output .= " " . $name . '="' . $this->escape($value) . '"';
-        }
-
-        return $output;
+        return Html::attributes($attributes, $this->escape(...));
     }
 
     private function variableName(string $name): string

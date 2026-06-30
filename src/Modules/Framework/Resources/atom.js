@@ -1,6 +1,135 @@
 (function () {
     var actionAttribute = "atom:action";
+    var submitAttribute = "atom:submit";
     var navigateAttribute = "atom:navigate";
+    var updateRootAttribute = "atom:update-root";
+    var updateEngine = {
+        update: function (current, next) {
+            var state = captureUpdateState(current);
+
+            current.innerHTML = next.innerHTML;
+            restoreUpdateState(current, state);
+        }
+    };
+
+    function captureUpdateState(root) {
+        return {
+            focus: captureFocus(root),
+            scroll: {
+                x: window.scrollX || window.pageXOffset || 0,
+                y: window.scrollY || window.pageYOffset || 0
+            },
+            elementScroll: captureElementScroll(root)
+        };
+    }
+
+    function captureFocus(root) {
+        var active = document.activeElement;
+
+        if (!active || !root.contains(active) || !isFocusableStateElement(active)) {
+            return null;
+        }
+
+        return {
+            selector: stableSelector(active),
+            value: active.value,
+            checked: active.checked,
+            selectionStart: active.selectionStart,
+            selectionEnd: active.selectionEnd,
+            selectionDirection: active.selectionDirection
+        };
+    }
+
+    function captureElementScroll(root) {
+        var state = [];
+        var elements = root.querySelectorAll("[id]");
+
+        for (var index = 0; index < elements.length; index++) {
+            if (elements[index].scrollTop !== 0 || elements[index].scrollLeft !== 0) {
+                state.push({
+                    selector: "#" + cssEscape(elements[index].id),
+                    top: elements[index].scrollTop,
+                    left: elements[index].scrollLeft
+                });
+            }
+        }
+
+        return state;
+    }
+
+    function restoreUpdateState(root, state) {
+        restoreFocus(root, state.focus);
+        restoreElementScroll(root, state.elementScroll);
+        window.scrollTo(state.scroll.x, state.scroll.y);
+    }
+
+    function restoreFocus(root, state) {
+        if (state === null || state.selector === null) {
+            return;
+        }
+
+        var element = root.querySelector(state.selector);
+        if (!element || !isFocusableStateElement(element)) {
+            return;
+        }
+
+        if (element.type !== "file") {
+            element.value = state.value;
+        }
+
+        if (typeof state.checked === "boolean") {
+            element.checked = state.checked;
+        }
+
+        element.focus({ preventScroll: true });
+
+        if (canSelect(element) && state.selectionStart !== null && state.selectionEnd !== null) {
+            element.setSelectionRange(state.selectionStart, state.selectionEnd, state.selectionDirection || "none");
+        }
+    }
+
+    function restoreElementScroll(root, state) {
+        for (var index = 0; index < state.length; index++) {
+            var element = root.querySelector(state[index].selector);
+            if (element) {
+                element.scrollTop = state[index].top;
+                element.scrollLeft = state[index].left;
+            }
+        }
+    }
+
+    function isFocusableStateElement(element) {
+        return element.matches("input, textarea, select");
+    }
+
+    function canSelect(element) {
+        return element.matches("textarea, input[type=\"text\"], input[type=\"search\"], input[type=\"url\"], " +
+            "input[type=\"tel\"], input[type=\"password\"], input[type=\"email\"], input[type=\"number\"]");
+    }
+
+    function stableSelector(element) {
+        if (element.id) {
+            return "#" + cssEscape(element.id);
+        }
+
+        if (element.name) {
+            return element.tagName.toLowerCase() + "[name=\"" + attributeEscape(element.name) + "\"]";
+        }
+
+        return null;
+    }
+
+    function cssEscape(value) {
+        if (window.CSS && typeof window.CSS.escape === "function") {
+            return window.CSS.escape(value);
+        }
+
+        return value.replace(/[^a-zA-Z0-9_-]/g, "\\$&");
+    }
+
+    function attributeEscape(value) {
+        return String(value).replace(/\\/g, "\\\\").replace(/"/g, "\\\"");
+    }
 
     function request(method, url, body, done, fail) {
         var xhr = new XMLHttpRequest();
@@ -30,16 +159,32 @@
         return page;
     }
 
-    function morphPage(html, url) {
+    function updatePage(html, url) {
         var next = parsePage(html);
 
         document.title = next.title;
         syncState(next);
-        document.body.innerHTML = next.body.innerHTML;
+        updateDocument(document.body, next.body);
 
         if (url && window.location.href !== url) {
             window.history.pushState({}, "", url);
         }
+    }
+
+    function updateDocument(current, next) {
+        var currentRoot = updateRoot(current);
+        var nextRoot = updateRoot(next);
+
+        if (currentRoot !== null && nextRoot !== null) {
+            window.Atom.update(currentRoot, nextRoot);
+            return;
+        }
+
+        window.Atom.update(current, next);
+    }
+
+    function updateRoot(root) {
+        return root.querySelector("[" + updateRootAttribute.replace(":", "\\:") + "]");
     }
 
     function syncState(next) {
@@ -60,7 +205,6 @@
     }
 
     function setBusy(busy) {
-        document.documentElement.classList.toggle("is-atom-loading", busy);
     }
 
     function showError(message) {
@@ -88,6 +232,10 @@
     function formAction(form, submitter) {
         if (submitter !== null && submitter.hasAttribute(actionAttribute)) {
             return submitter.getAttribute(actionAttribute) || "";
+        }
+
+        if (form.hasAttribute(submitAttribute)) {
+            return form.getAttribute(submitAttribute) || "";
         }
 
         return form.getAttribute(actionAttribute) || "";
@@ -122,7 +270,7 @@
             url,
             body,
             function (html, responseUrl) {
-                morphPage(html, responseUrl);
+                updatePage(html, responseUrl);
                 setBusy(false);
             },
             function () {
@@ -147,7 +295,7 @@
             window.location.href,
             body,
             function (html, responseUrl) {
-                morphPage(html, responseUrl);
+                updatePage(html, responseUrl);
                 setBusy(false);
             },
             function () {
@@ -165,7 +313,7 @@
             anchor.href,
             null,
             function (html, responseUrl) {
-                morphPage(html, responseUrl);
+                updatePage(html, responseUrl);
                 setBusy(false);
             },
             function () {
@@ -178,7 +326,7 @@
     document.addEventListener("submit", function (event) {
         var form = event.target;
 
-        if (!form || form.tagName !== "FORM" || !form.hasAttribute(actionAttribute)) {
+        if (!form || form.tagName !== "FORM" || !isEnhancedForm(form)) {
             return;
         }
 
@@ -194,7 +342,7 @@
     document.addEventListener("click", function (event) {
         var button = event.target.closest ? event.target.closest("button[type=\"submit\"]") : null;
 
-        if (button === null || button.form === null || !button.form.hasAttribute(actionAttribute)) {
+        if (button === null || button.form === null || !isEnhancedForm(button.form)) {
             return;
         }
 
@@ -206,6 +354,10 @@
         event.__atomHandled = true;
         submitForm(button.form, button);
     }, true);
+
+    function isEnhancedForm(form) {
+        return form.hasAttribute(actionAttribute) || form.hasAttribute(submitAttribute);
+    }
 
     document.addEventListener("click", function (event) {
         if (event.__atomHandled) {
@@ -253,7 +405,7 @@
             window.location.href,
             null,
             function (html) {
-                morphPage(html);
+                updatePage(html);
                 setBusy(false);
             },
             function () {
@@ -265,6 +417,14 @@
 
     window.Atom = {
         enhanced: true,
+        setUpdateEngine: function (engine) {
+            if (engine && typeof engine.update === "function") {
+                updateEngine = engine;
+            }
+        },
+        update: function (current, next) {
+            updateEngine.update(current, next);
+        },
         action: function (name) {
             invokeAction(name, null);
         },
@@ -275,7 +435,7 @@
                 url,
                 null,
                 function (html, responseUrl) {
-                    morphPage(html, responseUrl);
+                    updatePage(html, responseUrl);
                     setBusy(false);
                 },
                 function () {

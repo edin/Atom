@@ -1,0 +1,25 @@
+:root {
+    --atom-font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --atom-color-text: #1c2430;
+    --atom-color-muted: #687386;
+    --atom-color-surface: #ffffff;
+    --atom-color-soft: #fafbfc;
+    --atom-color-line: #dfe4ec;
+    --atom-color-primary: #2563eb;
+    --atom-color-primary-hover: #1d4ed8;
+    --atom-color-primary-soft: #eff6ff;
+    --atom-color-secondary: #0f766e;
+    --atom-color-secondary-hover: #115e59;
+    --atom-color-danger: #dc2626;
+    --atom-color-danger-hover: #b91c1c;
+    --atom-color-danger-soft: #fff1f2;
+    --atom-color-danger-line: #fecaca;
+    --atom-color-danger-text: #991b1b;
+    --atom-radius: 8px;
+    --atom-control-height: 38px;
+    --atom-space-1: 4px;
+    --atom-space-2: 8px;
+    --atom-space-3: 12px;
+    --atom-space-4: 16px;
+    --atom-space-5: 20px;
+}

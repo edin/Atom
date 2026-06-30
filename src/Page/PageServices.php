@@ -10,6 +10,7 @@ use Atom\View\Component\ComponentFactoryInterface;
 use Atom\View\Component\ComponentHydrator;
 use Atom\View\Component\ComponentRegistry;
 use Atom\View\Component\NewComponentFactory;
+use Atom\View\TemplateCache;
 use Atom\View\Parser\ViewParser;
 use Atom\View\Render\ExpressionEvaluatorInterface;
 use Atom\View\Render\PhpExpressionEvaluator;
@@ -36,6 +37,10 @@ final readonly class PageServices implements ServiceProviderInterface
             ->scoped();
 
         $bindings->bind(ViewParser::class)
+            ->toSelf()
+            ->singleton();
+
+        $bindings->bind(TemplateCache::class)
             ->toSelf()
             ->singleton();
 

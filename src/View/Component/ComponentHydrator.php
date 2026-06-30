@@ -38,10 +38,12 @@ final readonly class ComponentHydrator
      */
     public function hydrate(ComponentInterface $component, ElementNode $node, ViewContext $context, Closure $renderNodes): void
     {
-        $this->assignProperties($component, $node, $this->evaluateAttributes($node, $context));
+        $assignedProperties = $this->assignProperties($component, $node, $this->evaluateAttributes($node, $context));
+        $this->assignContextAttributes($component, $context, $assignedProperties);
         $this->assignContextProperties($component, $context);
         $remainingChildren = $this->assignChildren($component, $node, $context, $renderNodes);
         $this->assignFragments($component, $node, $remainingChildren, $context, $renderNodes);
+        $this->initializeAttributeBags($component);
         $this->validateRequiredProperties($component, $node);
     }
 
@@ -95,12 +97,15 @@ final readonly class ComponentHydrator
     /**
      * @param array<string, mixed> $values
      */
-    private function assignProperties(ComponentInterface $component, ElementNode $node, array $values): void
+    private function assignProperties(ComponentInterface $component, ElementNode $node, array $values): array
     {
         $unassigned = [];
+        $assigned = [];
 
         foreach ($values as $name => $value) {
-            if ($this->assignProperty($component, $this->propertyName($name), $value)) {
+            $property = $this->propertyName($name);
+            if ($this->assignProperty($component, $property, $value)) {
+                $assigned[] = $property;
                 continue;
             }
 
@@ -108,11 +113,11 @@ final readonly class ComponentHydrator
         }
 
         if ($unassigned === []) {
-            return;
+            return $assigned;
         }
 
         if ($this->assignAttributeBag($component, $unassigned)) {
-            return;
+            return $assigned;
         }
 
         $attribute = array_key_first($unassigned);
@@ -343,6 +348,38 @@ final readonly class ComponentHydrator
         }
     }
 
+    /**
+     * @param string[] $assignedProperties
+     */
+    private function assignContextAttributes(ComponentInterface $component, ViewContext $context, array $assignedProperties): void
+    {
+        $reflection = new ReflectionObject($component);
+
+        foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+            if ($property->isStatic() || in_array($property->getName(), $assignedProperties, true)) {
+                continue;
+            }
+
+            foreach ($property->getAttributes(FromContext::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
+                /** @var FromContext $fromContext */
+                $fromContext = $attribute->newInstance();
+                $name = $fromContext->name ?? $property->getName();
+                if (!$context->has($name)) {
+                    continue;
+                }
+
+                try {
+                    $property->setValue($component, $context->get($name));
+                } catch (Throwable $exception) {
+                    throw new ViewRenderException(
+                        "Failed to assign component context property '{$property->getName()}' from '{$name}'.",
+                        previous: $exception
+                    );
+                }
+            }
+        }
+    }
+
     private function validateRequiredProperties(ComponentInterface $component, ElementNode $node): void
     {
         $reflection = new ReflectionObject($component);
@@ -356,6 +393,27 @@ final readonly class ComponentHydrator
                 throw new ViewRenderException(
                     "Required property {$reflection->getName()}::\${$property->getName()} was not provided for <{$node->name}>."
                 );
+            }
+        }
+    }
+
+    private function initializeAttributeBags(ComponentInterface $component): void
+    {
+        $reflection = new ReflectionObject($component);
+
+        foreach ($reflection->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+            if (
+                $property->isStatic() ||
+                $property->isInitialized($component) ||
+                !$this->acceptsAttributeBag($property->getType())
+            ) {
+                continue;
+            }
+
+            try {
+                $property->setValue($component, new AttributeBag());
+            } catch (Throwable $exception) {
+                throw new ViewRenderException("Failed to initialize component attribute bag '{$property->getName()}'.", previous: $exception);
             }
         }
     }

@@ -24,6 +24,9 @@ final class FieldError implements ComponentInterface
 
         $id = $this->id ?? str_replace([".", "[", "]"], "-", $this->name) . "-error";
 
-        return '<p id="' . Html::escape($id) . '" class="' . Html::escape($this->class) . '">' . Html::escape($message) . '</p>';
+        return Html::tag("p", [
+            "id" => $id,
+            "class" => $this->class,
+        ], Html::escape($message));
     }
 }

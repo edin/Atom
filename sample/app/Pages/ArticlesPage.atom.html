@@ -1,32 +1,24 @@
-<div class="toolbar">
+<Inline class="toolbar" align="center" justify="between">
     <div>
         <h1>Articles</h1>
         <p>Loaded through <code>DbSelect::with("category")</code>.</p>
     </div>
-    <a class="button" href="/articles/new">New article</a>
-</div>
+    <Button href="/articles/new" atom:navigate>New article</Button>
+</Inline>
 
 <Table :items="$this->articles">
     <Column title="Article">
         @if($this->editingId === $item->id)
-            <form class="inline-edit" method="post" atom:action="save">
-                <label>
-                    Title
-                    <TextInput name="editTitle" maxlength="120" />
-                    <FieldError name="editTitle" />
-                </label>
+            <Form submit="save" class="inline-edit" :model="$this->edit">
+                <TextField label="Title" name="title" maxlength="120" />
 
-                <label>
-                    Summary
-                    <TextArea name="editSummary" maxlength="220" />
-                    <FieldError name="editSummary" />
-                </label>
+                <TextAreaField label="Summary" name="summary" maxlength="220" />
 
-                <div class="inline-actions">
-                    <button class="button" type="submit">Save</button>
-                    <button class="button ghost-button" type="submit" atom:action="cancel">Cancel</button>
-                </div>
-            </form>
+                <FormActions>
+                    <Button type="submit">Save</Button>
+                    <Button type="submit" variant="ghost" atom:action="cancel">Cancel</Button>
+                </FormActions>
+            </Form>
         @else
             <a href="/articles/{{ $item->id }}">{{ $item->title }}</a>
             <p class="table-summary">{{ $item->summary }}</p>
@@ -34,7 +26,7 @@
     </Column>
 
     <Column title="Category">
-        <span class="pill">{{ $item->category?->name ?? "Uncategorized" }}</span>
+        <Badge>{{ $item->category?->name ?? "Uncategorized" }}</Badge>
     </Column>
 
     <Column title="Published">
@@ -42,10 +34,10 @@
     </Column>
 
     <Column title="Actions">
-        <div class="row-actions">
-            <button class="link-button" type="button" atom:action="edit({{ $item->id }})">Edit</button>
-            <button class="link-button danger-link" type="button" atom:action="askDelete({{ $item->id }})">Delete</button>
-        </div>
+        <Inline gap="sm">
+            <Button variant="link" atom:action="edit({{ $item->id }})">Edit</Button>
+            <Button variant="link-danger" atom:action="askDelete({{ $item->id }})">Delete</Button>
+        </Inline>
     </Column>
 </Table>
 
@@ -53,7 +45,7 @@
     <p>Delete <strong>{{ $this->deleteTitle() }}</strong>? This action cannot be undone.</p>
 
     <ConfirmDialog.Actions>
-        <button class="button ghost-button" type="button" atom:action="cancelDelete">Cancel</button>
-        <button class="button danger-button" type="button" atom:action="deleteConfirmed">Delete</button>
+        <Button variant="ghost" atom:action="cancelDelete">Cancel</Button>
+        <Button variant="danger" atom:action="deleteConfirmed">Delete</Button>
     </ConfirmDialog.Actions>
 </ConfirmDialog>

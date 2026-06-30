@@ -1,0 +1,21 @@
+.atom-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    padding: 0 9px;
+    border-radius: 999px;
+    background: var(--atom-color-primary-soft);
+    color: #1e40af;
+    font-size: 0.9rem;
+    line-height: 1;
+}
+
+.atom-badge[data-variant="soft"] {
+    background: var(--atom-color-soft);
+    color: var(--atom-color-muted);
+}
+
+.atom-badge[data-variant="danger"] {
+    background: var(--atom-color-danger-soft);
+    color: var(--atom-color-danger-text);
+}

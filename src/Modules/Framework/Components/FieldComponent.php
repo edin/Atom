@@ -6,7 +6,6 @@ namespace Atom\Modules\Framework\Components;
 
 use Atom\Page\Page;
 use Atom\View\Component\AttributeBag;
-use Atom\View\Html;
 
 trait FieldComponent
 {
@@ -17,11 +16,6 @@ trait FieldComponent
     public string $class = "";
     public string $invalidClass = "is-invalid";
     public AttributeBag $attributes;
-
-    public function __construct()
-    {
-        $this->attributes = new AttributeBag();
-    }
 
     private function fieldId(): string
     {
@@ -59,30 +53,10 @@ trait FieldComponent
     }
 
     /**
-     * @param array<string, mixed> $attributes
+     * @return array<string, mixed>
      */
-    private function renderAttributes(array $attributes): string
+    private function extraAttributes(): array
     {
-        $html = "";
-
-        foreach ($attributes as $name => $value) {
-            if ($value === false || $value === null || $value === "") {
-                continue;
-            }
-
-            if ($value === true) {
-                $html .= " " . $name;
-                continue;
-            }
-
-            $html .= " " . $name . '="' . Html::escape($value) . '"';
-        }
-
-        return $html;
-    }
-
-    private function extraAttributes(): string
-    {
-        return isset($this->attributes) ? $this->attributes->render() : "";
+        return isset($this->attributes) ? $this->attributes->all() : [];
     }
 }

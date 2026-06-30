@@ -1,7 +1,7 @@
 @if($this->operation === null)
     <p class="empty">Select an endpoint after routes are available.</p>
 @else
-    <form class="request-form" method="post" atom:action="try">
+    <form class="request-form" method="post" atom:submit="try">
         <input type="hidden" name="id" value="{{ $this->selectedId }}">
         <input type="hidden" name="method" value="{{ $this->operation->method }}">
         <div class="request-bar">

@@ -7,10 +7,12 @@ namespace Atom\Tests\Page;
 use Atom\Di\Bindings;
 use Atom\Di\InjectionContext;
 use Atom\Di\Injector;
+use Atom\Application;
 use Atom\Http\Request;
 use Atom\Hydrator\Attributes\FromBody;
 use Atom\Hydrator\Attributes\FromQuery;
 use Atom\Hydrator\Attributes\FromRoute;
+use Atom\Http\Response;
 use Atom\Page\Page;
 use Atom\Page\PageAction;
 use Atom\Page\PageActionException;
@@ -21,11 +23,14 @@ use Atom\Page\PageRouteHandler;
 use Atom\Page\PageRouteMetadata;
 use Atom\Page\PageRouteRegistrar;
 use Atom\Page\State;
+use Atom\Profiler\Profile;
 use Atom\Router\Route;
 use Atom\Router\RouteAction;
 use Atom\Router\RouteEntry;
 use Atom\Router\RouteMatcher;
 use Atom\Router\Router;
+use Atom\Validation\ValidationError;
+use Atom\Validation\ValidationResult;
 use Atom\Validation\Rules\MinLength;
 use Atom\Validation\Rules\Required;
 use Atom\View\Component\ComponentInterface;
@@ -36,6 +41,12 @@ require_once __DIR__ . "/DefaultRegistration/DefaultPageRegistration.php";
 
 final class PageRendererTest extends TestCase
 {
+    protected function tearDown(): void
+    {
+        Application::$app = null;
+        Profile::reset();
+    }
+
     public function testRendersPageTemplateWithPageAsThisAndPageVariable(): void
     {
         $renderer = new PageRenderer(new Injector(), new InjectionContext());
@@ -64,6 +75,23 @@ final class PageRendererTest extends TestCase
 
         $this->assertSame("<h1>Loaded</h1>\n", $html);
     }
+
+    public function testPageRendererCachesParsedTemplates(): void
+    {
+        $renderer = new PageRenderer(new Injector(), new InjectionContext());
+
+        $first = $renderer->render(RenderedTestPage::class);
+        $second = $renderer->render(RenderedTestPage::class);
+
+        $parseSpans = array_filter(
+            Profile::profiler()->spans(),
+            static fn($span): bool => $span->name === "view.parse"
+        );
+
+        $this->assertSame($first, $second);
+        $this->assertCount(1, $parseSpans);
+    }
+
 
     public function testPageActionHandlerInvokesAttributedActionAndRerendersPage(): void
     {
@@ -105,6 +133,58 @@ final class PageRendererTest extends TestCase
         $html = $handler->handle($renderer, $match->matchedRoute, $context->get(Request::class));
 
         $this->assertSame("<h1>Deleted 12 hard</h1>\n", $html);
+    }
+
+    public function testPageActionHandlerParsesQuotedActionArguments(): void
+    {
+        $html = $this->handlePageAction(
+            ParsedArgumentRenderedTestPage::class,
+            "/parsed-argument-page",
+            'set("hello, world", \'draft, yes\', true, 1.5)'
+        );
+
+        $this->assertSame("<h1>hello, world|draft, yes|yes|1.5</h1>\n", $html);
+    }
+
+    public function testPageActionHandlerBindsActionParametersFromRequest(): void
+    {
+        $html = $this->handlePageAction(ActionParameterRenderedTestPage::class, "/action-parameter-page/{id}", "save", [
+            "title" => "  Atom  ",
+            "published" => "true",
+        ], [
+            "mode" => "preview",
+        ]);
+
+        $this->assertSame("<h1>7 Atom preview yes</h1>\n", $html);
+    }
+
+    public function testPageActionHandlerBindsImplicitScalarActionParameters(): void
+    {
+        $html = $this->handlePageAction(ImplicitActionParameterRenderedTestPage::class, "/implicit-action-page/{id}", "save", [
+            "title" => "Atom",
+            "published" => "1",
+        ]);
+
+        $this->assertSame("<h1>7 Atom yes</h1>\n", $html);
+    }
+
+    public function testPageActionHandlerReportsInvalidActionParameter(): void
+    {
+        $this->expectException(PageActionException::class);
+        $this->expectExceptionMessage("Unable to bind parameter 'id'");
+        $this->expectExceptionMessage("expected int");
+
+        $this->handlePageAction(ImplicitActionParameterRenderedTestPage::class, "/implicit-action-page/{id}", "save", [
+            "title" => "Atom",
+        ], query: [], routeValues: ["id" => "nope"]);
+    }
+
+    public function testPageActionMayReturnResponse(): void
+    {
+        $result = $this->handlePageAction(ResponseActionRenderedTestPage::class, "/response-action-page", "save");
+
+        $this->assertInstanceOf(Response::class, $result);
+        $this->assertSame("saved", $result->getContent());
     }
 
     public function testPageStateIsRestoredBeforeActionAndCapturedAfterRender(): void
@@ -188,6 +268,16 @@ final class PageRendererTest extends TestCase
         $this->assertTrue($page->errors()->passed());
     }
 
+    public function testPageCanStoreCustomValidationResult(): void
+    {
+        $page = new CustomValidatedRenderedTestPage();
+
+        $page->failTitle();
+
+        $this->assertTrue($page->errors()->has("title"));
+        $this->assertSame("Nope.", $page->errors()->first("title"));
+    }
+
     public function testPageActionCanValidateHydratedInput(): void
     {
         $html = $this->handlePageAction(ValidatedRenderedTestPage::class, "/validated-page", "save", [
@@ -235,8 +325,8 @@ final class PageRendererTest extends TestCase
     public function testPageActionHandlerWrapsMissingRequiredParameterErrors(): void
     {
         $this->expectException(PageActionException::class);
-        $this->expectExceptionMessage("Unable to invoke page action 'delete'");
-        $this->expectExceptionMessage("Unable to resolve parameter 'id'");
+        $this->expectExceptionMessage("Unable to bind parameter 'id'");
+        $this->expectExceptionMessage("is required");
 
         $this->handlePageAction(DeleteRenderedTestPage::class, "/delete-page", "delete");
     }
@@ -255,19 +345,21 @@ final class PageRendererTest extends TestCase
         string $path,
         string $action,
         array $body = [],
-        array $query = []
+        array $query = [],
+        array $routeValues = ["id" => "7"]
     ): mixed
     {
         $router = new Router();
         (new PageRouteRegistrar())->register($router, [
             new \Atom\Page\PageDescriptor($path, $pageClass),
         ]);
-        $requestPath = preg_replace('/\{[^}]+}/', '7', $path) ?? $path;
+        $routeValue = reset($routeValues) ?: "7";
+        $requestPath = preg_replace('/\{[^}]+}/', (string) $routeValue, $path) ?? $path;
         $match = (new RouteMatcher($router))->match("POST", $requestPath);
         if (!$match->isFound()) {
             $entry = RouteEntry::create("POST", $path, RouteAction::method(PageActionHandler::class, "handle"))
                 ->metadata(new PageRouteMetadata($pageClass));
-            $match = \Atom\Router\RouteMatchResult::found(new \Atom\Router\MatchedRoute($entry, ["id" => "7"]));
+            $match = \Atom\Router\RouteMatchResult::found(new \Atom\Router\MatchedRoute($entry, $routeValues));
         }
 
         $body["_action"] = $action;
@@ -428,6 +520,76 @@ final class DeleteRenderedTestPage extends Page
     }
 }
 
+final class ParsedArgumentRenderedTestPage extends Page
+{
+    public string $title = "Before";
+
+    public function template(): ?string
+    {
+        return "GetRenderedTestPage.atom.html";
+    }
+
+    #[PageAction("set")]
+    public function set(string $name, string $mode, bool $published, float $score): void
+    {
+        $this->title = $name . "|" . $mode . "|" . ($published ? "yes" : "no") . "|" . $score;
+    }
+}
+
+final class ActionParameterRenderedTestPage extends Page
+{
+    public string $title = "";
+
+    public function template(): ?string
+    {
+        return "GetRenderedTestPage.atom.html";
+    }
+
+    #[PageAction("save")]
+    public function save(
+        #[FromRoute]
+        int $id,
+        #[FromBody]
+        string $title,
+        #[FromQuery]
+        string $mode,
+        #[FromBody]
+        bool $published
+    ): void {
+        $this->title = $id . " " . $title . " " . $mode . " " . ($published ? "yes" : "no");
+    }
+}
+
+final class ImplicitActionParameterRenderedTestPage extends Page
+{
+    public string $title = "";
+
+    public function template(): ?string
+    {
+        return "GetRenderedTestPage.atom.html";
+    }
+
+    #[PageAction("save")]
+    public function save(int $id, string $title, bool $published = false): void
+    {
+        $this->title = $id . " " . $title . " " . ($published ? "yes" : "no");
+    }
+}
+
+final class ResponseActionRenderedTestPage extends Page
+{
+    public function template(): ?string
+    {
+        return "GetRenderedTestPage.atom.html";
+    }
+
+    #[PageAction("save")]
+    public function save(): Response
+    {
+        return (new Response())->content("saved");
+    }
+}
+
 final class GetActionRenderedTestPage extends Page
 {
     public function template(): ?string
@@ -503,6 +665,16 @@ final class ValidatedRenderedTestPage extends Page
         $this->title = $this->validate()
             ? "valid"
             : "invalid: " . $this->errors()->errorsFor("title")[0]->code;
+    }
+}
+
+final class CustomValidatedRenderedTestPage extends Page
+{
+    public function failTitle(): void
+    {
+        $this->setValidation(
+            ValidationResult::valid()->add(new ValidationError("title", "Nope.", "custom"))
+        );
     }
 }
 

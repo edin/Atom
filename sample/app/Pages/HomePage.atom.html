@@ -6,12 +6,11 @@
             HTTP layer, and database foundation.
         </p>
         <p>
-            <a class="button" href="/articles">Browse articles</a>
+            <Button href="/articles" atom:navigate>Browse articles</Button>
         </p>
     </div>
-    <aside class="panel">
-        <h2>Smoke test</h2>
-        <p>This page is rendered through a discovered page route and atom.html template.</p>
+    <Panel title="Smoke test">
+        <Alert>This page is rendered through a discovered page route and atom.html template.</Alert>
         <div class="stats">
             <div class="stat">
                 <strong>{{ $this->articleCount }}</strong>
@@ -22,7 +21,7 @@
                 Loaded
             </div>
         </div>
-    </aside>
+    </Panel>
 </section>
 
 <section class="article-list">
@@ -30,7 +29,7 @@
         <article class="article">
             <h2><a href="/articles/{{ $article->id }}">{{ $article->title }}</a></h2>
             <div class="meta">
-                <span class="pill">{{ $article->category?->name ?? "Uncategorized" }}</span>
+                <Badge>{{ $article->category?->name ?? "Uncategorized" }}</Badge>
                 <span>{{ $article->createdAt->format("M j, Y") }}</span>
             </div>
             <p>{{ $article->summary }}</p>

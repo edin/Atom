@@ -1,0 +1,44 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Atom\Modules\Framework\Components;
+
+use Atom\View\Component\AttributeBag;
+use Atom\View\Component\ComponentInterface;
+use Atom\View\Component\Fragment;
+use Atom\View\Html;
+
+final class Field implements ComponentInterface
+{
+    public ?Fragment $content = null;
+    public AttributeBag $attributes;
+    public string $label = "";
+    public string $name = "";
+    public ?string $for = null;
+    public string $class = "";
+
+    public function render(): string
+    {
+        $content = "";
+        if ($this->label !== "") {
+            $content .= Html::tag("span", ["class" => "atom-field__label"], Html::escape($this->label));
+        }
+
+        $content .= $this->content?->render() ?? "";
+
+        return Html::tag("label", Html::mergeAttributes([
+            "class" => Html::classes("atom-field", $this->class),
+            "for" => $this->fieldId(),
+        ], $this->attributes->all()), $content);
+    }
+
+    private function fieldId(): ?string
+    {
+        if ($this->for !== null) {
+            return $this->for;
+        }
+
+        return $this->name === "" ? null : str_replace([".", "[", "]"], "-", $this->name);
+    }
+}

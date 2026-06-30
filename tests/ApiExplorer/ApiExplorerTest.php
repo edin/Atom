@@ -191,7 +191,7 @@ final class ApiExplorerTest extends TestCase
         $html = $app->getInjector()->get(Dispatcher::class, $context)->handle($request)->getContent();
 
         $this->assertStringContainsString('<form class="request-form" method="post"', $html);
-        $this->assertStringContainsString('atom:action="try"', $html);
+        $this->assertStringContainsString('atom:submit="try"', $html);
         $this->assertStringContainsString('name="url"', $html);
         $this->assertStringContainsString('HTTP 200 OK', $html);
         $this->assertStringContainsString('&quot;name&quot;: &quot;Atom&quot;', $html);

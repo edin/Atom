@@ -33,6 +33,8 @@ $pages->directory("@app/AdminPages", "/admin");
 
 `Page::registerPages()` is still available for manual registration.
 
+Page templates and `TemplateComponent` `.atom.html` templates are parsed into an AST and cached in memory by template path and modified time. Rendering stays dynamic; only the parsed template structure is reused.
+
 ## Page Class
 
 ```php
