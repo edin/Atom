@@ -33,8 +33,9 @@ At runtime the base application:
 7. registers application modules
 8. registers application components
 9. registers application page directories
-10. runs application bootstrap
-11. dispatches the request through the middleware pipeline
+10. runs service provider bootstrappers
+11. runs application bootstrap
+12. dispatches the request through the middleware pipeline
 
 The sample application's bootstrap is intentionally small:
 
