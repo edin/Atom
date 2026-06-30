@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Atom\Tests;
 
 use Atom\Application;
-use Atom\ApplicationBootstrapper;
-use Atom\ApplicationBootstrapperProviderInterface;
-use Atom\ApplicationBootstrappers;
+use Atom\Bootstrapper;
+use Atom\BootstrapProvider;
+use Atom\Bootstrappers;
 use Atom\Config\Config;
 use Atom\Config\Options;
 use Atom\Di\Bindings;
@@ -220,7 +220,7 @@ final class TestBootstrapperApplication extends Application
     }
 }
 
-final readonly class TestBootstrapperProvider implements ServiceProviderInterface, ApplicationBootstrapperProviderInterface
+final readonly class TestBootstrapperProvider implements ServiceProviderInterface, BootstrapProvider
 {
     public function __construct(private TestBootstrapperApplication $app)
     {
@@ -230,13 +230,13 @@ final readonly class TestBootstrapperProvider implements ServiceProviderInterfac
     {
     }
 
-    public function bootstrappers(ApplicationBootstrappers $bootstrappers): void
+    public function bootstrappers(Bootstrappers $bootstrappers): void
     {
         $bootstrappers->add(new TestBootstrapper($this->app));
     }
 }
 
-final readonly class TestBootstrapper implements ApplicationBootstrapper
+final readonly class TestBootstrapper implements Bootstrapper
 {
     public function __construct(private TestBootstrapperApplication $app)
     {

@@ -12,6 +12,7 @@ final class FieldError implements ComponentInterface
 {
     public Page $page;
     public string $name;
+    public ?string $id = null;
     public string $class = "field-error";
 
     public function render(): string
@@ -21,6 +22,8 @@ final class FieldError implements ComponentInterface
             return "";
         }
 
-        return '<p class="' . Html::escape($this->class) . '">' . Html::escape($message) . '</p>';
+        $id = $this->id ?? str_replace([".", "[", "]"], "-", $this->name) . "-error";
+
+        return '<p id="' . Html::escape($id) . '" class="' . Html::escape($this->class) . '">' . Html::escape($message) . '</p>';
     }
 }

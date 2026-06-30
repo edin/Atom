@@ -12,13 +12,13 @@
             <form class="inline-edit" method="post" atom:action="save">
                 <label>
                     Title
-                    <input name="editTitle" value="{{ $this->editTitle }}" maxlength="120">
+                    <TextInput name="editTitle" maxlength="120" />
                     <FieldError name="editTitle" />
                 </label>
 
                 <label>
                     Summary
-                    <textarea name="editSummary" maxlength="220">{{ $this->editSummary }}</textarea>
+                    <TextArea name="editSummary" maxlength="220" />
                     <FieldError name="editSummary" />
                 </label>
 

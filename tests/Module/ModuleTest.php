@@ -9,6 +9,8 @@ use Atom\Di\Injector;
 use Atom\Http\Response;
 use Atom\Module\ModuleRegistry;
 use Atom\Modules\Framework\Components\FieldError;
+use Atom\Modules\Framework\Components\TextArea;
+use Atom\Modules\Framework\Components\TextInput;
 use Atom\Modules\Framework\Components\ValidationSummary;
 use Atom\Modules\Framework\Framework;
 use Atom\Module\ModuleContext;
@@ -106,6 +108,8 @@ final class ModuleTest extends TestCase
         $components = $app->getInjector()->get(ComponentRegistry::class);
 
         $this->assertSame(FieldError::class, $components->get("FieldError"));
+        $this->assertSame(TextArea::class, $components->get("TextArea"));
+        $this->assertSame(TextInput::class, $components->get("TextInput"));
         $this->assertSame(ValidationSummary::class, $components->get("ValidationSummary"));
     }
 

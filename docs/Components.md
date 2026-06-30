@@ -35,6 +35,17 @@ Then use it from a template:
 
 Framework internals may also use component class names directly, but application templates should usually prefer registered names.
 
+The framework module registers a few default form components:
+
+```html
+<TextInput name="title" maxlength="120" />
+<TextArea name="body" rows="8" />
+<FieldError name="title" />
+<ValidationSummary />
+```
+
+`TextInput` and `TextArea` read values from the current page property matching `name`, unless a `value` attribute is provided. When validation errors exist, they render `aria-invalid`, `aria-describedby`, and the `is-invalid` class.
+
 ## Properties
 
 Attributes are assigned to public properties.

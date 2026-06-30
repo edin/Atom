@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Atom;
 
-final class ApplicationBootstrappers
+final class Bootstrappers
 {
-    /** @var list<ApplicationBootstrapper> */
+    /** @var list<Bootstrapper> */
     private array $bootstrappers = [];
 
-    public function add(ApplicationBootstrapper $bootstrapper): self
+    public function add(Bootstrapper $bootstrapper): self
     {
         $this->bootstrappers[] = $bootstrapper;
 
@@ -17,7 +17,7 @@ final class ApplicationBootstrappers
     }
 
     /**
-     * @return list<ApplicationBootstrapper>
+     * @return list<Bootstrapper>
      */
     public function all(): array
     {

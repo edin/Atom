@@ -6,7 +6,7 @@ namespace Atom;
 
 use Atom\Di\Injector;
 
-interface ApplicationBootstrapper
+interface Bootstrapper
 {
     public function bootstrap(Injector $injector): void;
 }

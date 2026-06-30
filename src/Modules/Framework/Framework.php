@@ -6,6 +6,8 @@ namespace Atom\Modules\Framework;
 
 use Atom\Module\ModuleContext;
 use Atom\Modules\Framework\Components\FieldError;
+use Atom\Modules\Framework\Components\TextArea;
+use Atom\Modules\Framework\Components\TextInput;
 use Atom\Modules\Framework\Components\ValidationSummary;
 use Atom\Router\RouteEntry;
 
@@ -21,6 +23,8 @@ final readonly class Framework
     public static function components(ModuleContext $context): void
     {
         $context->component("FieldError", FieldError::class);
+        $context->component("TextArea", TextArea::class);
+        $context->component("TextInput", TextInput::class);
         $context->component("ValidationSummary", ValidationSummary::class);
     }
 

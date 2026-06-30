@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Atom\Database;
 
-use Atom\ApplicationBootstrapper;
+use Atom\Bootstrapper;
 use Atom\Di\Injector;
 
-final readonly class ModelDatabaseBootstrapper implements ApplicationBootstrapper
+final readonly class ModelDatabaseBootstrapper implements Bootstrapper
 {
     public function bootstrap(Injector $injector): void
     {

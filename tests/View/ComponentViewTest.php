@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Atom\Tests\View;
 
 use Atom\Modules\Framework\Components\FieldError;
+use Atom\Modules\Framework\Components\TextArea;
+use Atom\Modules\Framework\Components\TextInput;
 use Atom\Modules\Framework\Components\ValidationSummary;
 use Atom\Page\Page;
 use Atom\Validation\Rules\Required;
@@ -55,7 +57,7 @@ final class ComponentViewTest extends TestCase
             ["page" => $page]
         );
 
-        $this->assertStringContainsString('<p class="field-error">The field is required.</p>', $html);
+        $this->assertStringContainsString('<p id="title-error" class="field-error">The field is required.</p>', $html);
         $this->assertStringContainsString('<div class="validation-summary"><ul><li>The field is required.</li></ul></div>', $html);
     }
 
@@ -73,6 +75,51 @@ final class ComponentViewTest extends TestCase
         );
 
         $this->assertSame("", $html);
+    }
+
+    public function testFrameworkInputComponentsBindPageValuesAndValidationState(): void
+    {
+        $page = new ValidationComponentPage();
+        $page->title = "";
+        $page->body = "Hello <Atom>";
+        $page->validate();
+
+        $registry = new ComponentRegistry();
+        $registry->register("TextInput", TextInput::class);
+        $registry->register("TextArea", TextArea::class);
+
+        $html = (new ViewRenderer(components: $registry))->render(
+            (new ViewParser())->parse('<TextInput name="title" maxlength="120" /><TextArea name="body" rows="5" />'),
+            ["page" => $page]
+        );
+
+        $this->assertStringContainsString(
+            '<input type="text" id="title" name="title" class="is-invalid" aria-invalid="true" aria-describedby="title-error" maxlength="120">',
+            $html
+        );
+        $this->assertStringContainsString(
+            '<textarea id="body" name="body" rows="5">Hello &lt;Atom&gt;</textarea>',
+            $html
+        );
+    }
+
+    public function testFrameworkInputComponentsRenderWithoutExtraAttributes(): void
+    {
+        $page = new ValidationComponentPage();
+        $page->title = "Atom";
+        $page->body = "Body";
+
+        $registry = new ComponentRegistry();
+        $registry->register("TextInput", TextInput::class);
+        $registry->register("TextArea", TextArea::class);
+
+        $html = (new ViewRenderer(components: $registry))->render(
+            (new ViewParser())->parse('<TextInput name="title" /><TextArea name="body" />'),
+            ["page" => $page]
+        );
+
+        $this->assertStringContainsString('<input type="text" id="title" name="title" value="Atom">', $html);
+        $this->assertStringContainsString('<textarea id="body" name="body">Body</textarea>', $html);
     }
 }
 
@@ -104,4 +151,6 @@ final class ValidationComponentPage extends Page
 {
     #[Required]
     public string $title = "";
+
+    public string $body = "";
 }

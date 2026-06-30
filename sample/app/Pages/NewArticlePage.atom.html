@@ -19,19 +19,19 @@
 
     <label>
         Title
-        <input name="titleInput" value="{{ $this->titleInput }}" maxlength="120">
+        <TextInput name="titleInput" maxlength="120" />
         <FieldError name="titleInput" />
     </label>
 
     <label>
         Summary
-        <input name="summary" value="{{ $this->summary }}" maxlength="220">
+        <TextInput name="summary" maxlength="220" />
         <FieldError name="summary" />
     </label>
 
     <label>
         Body
-        <textarea name="body">{{ $this->body }}</textarea>
+        <TextArea name="body" />
         <FieldError name="body" />
     </label>
 

@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Atom\Database;
 
-use Atom\ApplicationBootstrapperProviderInterface;
-use Atom\ApplicationBootstrappers;
+use Atom\BootstrapProvider;
+use Atom\Bootstrappers;
 use Atom\Config\Config;
 use Atom\Console\ConsoleCommandProviderInterface;
 use Atom\Console\ConsoleCommandSources;
@@ -29,7 +29,7 @@ use Atom\Database\Seeder\SeederOptions;
 use Atom\Database\Seeder\SeederRunner;
 use Atom\Support\Paths;
 
-final readonly class DatabaseServices implements ServiceProviderInterface, ConsoleCommandProviderInterface, ApplicationBootstrapperProviderInterface
+final readonly class DatabaseServices implements ServiceProviderInterface, ConsoleCommandProviderInterface, BootstrapProvider
 {
     public function __construct(
         private DatabaseDriver $driver,
@@ -132,7 +132,7 @@ final readonly class DatabaseServices implements ServiceProviderInterface, Conso
         $commands->add(__DIR__ . "/Seeder/Commands", __NAMESPACE__ . "\\Seeder\\Commands");
     }
 
-    public function bootstrappers(ApplicationBootstrappers $bootstrappers): void
+    public function bootstrappers(Bootstrappers $bootstrappers): void
     {
         $bootstrappers->add(new ModelDatabaseBootstrapper());
     }

@@ -42,7 +42,7 @@ abstract class Application
     private ?Paths $paths = null;
     private ?ModuleRegistry $modules = null;
     private ?PageRegistry $pages = null;
-    private ?ApplicationBootstrappers $bootstrappers = null;
+    private ?Bootstrappers $bootstrappers = null;
     private ?Bindings $bindings = null;
     private ?Injector $injector = null;
     private ?InjectionContext $currentContext = null;
@@ -87,7 +87,7 @@ abstract class Application
         return $this->pages ?? throw new RuntimeException("Application has not been initialized.");
     }
 
-    final public function getBootstrappers(): ApplicationBootstrappers
+    final public function getBootstrappers(): Bootstrappers
     {
         return $this->bootstrappers ?? throw new RuntimeException("Application has not been initialized.");
     }
@@ -253,7 +253,7 @@ abstract class Application
         $this->injector = new Injector($bindings);
         $this->modules = new ModuleRegistry();
         $this->pages = new PageRegistry();
-        $this->bootstrappers = new ApplicationBootstrappers();
+        $this->bootstrappers = new Bootstrappers();
 
         Route::setRouter($this->injector->get(Router::class));
 
@@ -275,7 +275,7 @@ abstract class Application
         }
 
         foreach ($providers->providers() as $provider) {
-            if ($provider instanceof ApplicationBootstrapperProviderInterface) {
+            if ($provider instanceof BootstrapProvider) {
                 $provider->bootstrappers($this->bootstrappers);
             }
         }
