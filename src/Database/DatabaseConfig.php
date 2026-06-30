@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace Atom\Database;
 
-use Atom\Config\Env;
+use Atom\Config\Options;
 
+#[Options(prefix: "DB_")]
 final readonly class DatabaseConfig
 {
     /**
@@ -25,28 +26,6 @@ final readonly class DatabaseConfig
 
     public static function fromEnv(): self
     {
-        return new self(
-            driver: Env::string("DB_DRIVER", "sqlite"),
-            database: Env::string("DB_DATABASE", "storage/app.sqlite"),
-            host: Env::string("DB_HOST", "localhost"),
-            port: self::optionalInt("DB_PORT"),
-            username: self::optionalString("DB_USERNAME"),
-            password: self::optionalString("DB_PASSWORD"),
-            charset: Env::string("DB_CHARSET", "utf8mb4")
-        );
-    }
-
-    private static function optionalString(string $key): ?string
-    {
-        $value = Env::get($key);
-
-        return $value === null || trim($value) === "" ? null : $value;
-    }
-
-    private static function optionalInt(string $key): ?int
-    {
-        $value = Env::get($key);
-
-        return $value === null || trim($value) === "" ? null : (int) $value;
+        return \Atom\Config\Config::fromEnv()->options(self::class);
     }
 }

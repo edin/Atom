@@ -23,6 +23,7 @@ final class Injector
     private array $singletons = [];
     /** @var TypeFactory[] */
     private array $typeFactories = [];
+    private ?Bindings $bindings = null;
 
     /**
      * @param iterable<Provider>|Bindings $providers
@@ -30,6 +31,7 @@ final class Injector
     public function __construct(iterable|Bindings $providers = [], private ?self $parent = null)
     {
         if ($providers instanceof Bindings) {
+            $this->bindings = $providers;
             $this->typeFactories = $providers->typeFactories();
             $providers = $providers->providers();
         }
@@ -58,6 +60,7 @@ final class Injector
     public function has(string $token): bool
     {
         return isset($this->providers[$token]) ||
+            isset($this->bindings?->providers()[$token]) ||
             $this->parent?->has($token) === true ||
             class_exists($token);
     }
@@ -197,7 +200,16 @@ final class Injector
 
     private function findProvider(string $token): ?Provider
     {
-        return $this->providers[$token] ?? $this->parent?->findProvider($token);
+        if (isset($this->providers[$token])) {
+            return $this->providers[$token];
+        }
+
+        $provider = $this->bindings?->providers()[$token] ?? null;
+        if ($provider !== null) {
+            return $this->providers[$token] = $provider;
+        }
+
+        return $this->parent?->findProvider($token);
     }
 
     private function findProviderOwner(string $token): ?self
@@ -213,7 +225,9 @@ final class Injector
     {
         $type = new TypeInfo($className);
 
-        foreach ($this->typeFactories as $typeFactory) {
+        $typeFactories = $this->bindings?->typeFactories() ?? $this->typeFactories;
+
+        foreach ($typeFactories as $typeFactory) {
             if ($typeFactory->matches($type)) {
                 return $typeFactory;
             }

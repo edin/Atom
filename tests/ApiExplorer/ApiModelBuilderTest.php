@@ -12,7 +12,6 @@ use Atom\Hydrator\Attributes\Dto;
 use Atom\Hydrator\Attributes\FromBody;
 use Atom\Hydrator\Attributes\FromQuery;
 use Atom\Router\RouteEntry;
-use Atom\Router\RouteAction;
 use Atom\Router\Router;
 use Atom\Validation\Rules\MaxLength;
 use Atom\Validation\Rules\Required;
@@ -24,13 +23,13 @@ final class ApiModelBuilderTest extends TestCase
     {
         $router = new Router();
         $router->add(
-            RouteEntry::route("POST", "/api/users/{id}", RouteAction::fromMethod(ApiUsersController::class, "update"))
+            RouteEntry::post("/api/users/{id}", [ApiUsersController::class, "update"])
                 ->name("users.update")
                 ->title("Update user")
                 ->description("Updates one user.")
         );
         $router->add(
-            RouteEntry::route("GET", "/api/articles", RouteAction::fromMethod(ApiUsersController::class, "articles"))
+            RouteEntry::get("/api/articles", [ApiUsersController::class, "articles"])
                 ->name("articles.index")
         );
 

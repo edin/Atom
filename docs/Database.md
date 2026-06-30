@@ -14,32 +14,17 @@ Atom's database layer has four parts:
 Register database services from the application:
 
 ```php
+use Atom\Database\DatabaseConfig;
+use Atom\Database\DatabasePaths;
 use Atom\Database\DatabaseServices;
-use Atom\Database\DatabaseDriverFactory;
-use Atom\Database\Driver\SqliteDriver;
-use Atom\Database\Migration\MigrationOptions;
-use Atom\Database\Seeder\SeederOptions;
 
 protected function services(ServiceProviderRegistry $providers): void
 {
-    $providers->add(new DatabaseServices(
-        new SqliteDriver(__DIR__ . "/../storage/app.sqlite"),
-        new MigrationOptions(__DIR__ . "/Database/Migrations"),
-        new SeederOptions(__DIR__ . "/Database/Seeders")
-    ));
+    $providers->add(DatabaseServices::fromConfig($this->getConfig(), $this->getPaths()));
 }
 ```
 
-Or build the driver from environment configuration:
-
-```php
-use Atom\Config\Env;
-use Atom\Database\DatabaseDriverFactory;
-
-Env::loadIfExists(dirname(__DIR__) . "/.env");
-
-$driver = DatabaseDriverFactory::fromEnv(dirname(__DIR__));
-```
+Connection settings come from the typed `DatabaseConfig` options class.
 
 The sample app reads its SQLite path from `.env`:
 
@@ -63,6 +48,23 @@ Supported driver values:
 - `postgresql`
 
 PostgreSQL has unit-level driver, SQL compiler, schema compiler, migration repository, inspector, resetter, and lock support. Real PostgreSQL integration tests are still optional and not part of the default test suite.
+
+Database structure paths come from `DatabasePaths` and can use path aliases:
+
+```php
+$config->set(new DatabasePaths(
+    root: "@root",
+    migrations: "@app/Database/Migrations",
+    seeders: "@app/Database/Seeders",
+));
+```
+
+They can also be hydrated from environment values:
+
+```env
+DB_PATH_MIGRATIONS=@root/database/migrations
+DB_PATH_SEEDERS=@root/database/seeders
+```
 
 Configure the model base during bootstrap:
 

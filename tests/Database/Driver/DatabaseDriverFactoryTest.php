@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atom\Tests\Database\Driver;
 
 use Atom\Config\Env;
+use Atom\Config\Config;
 use Atom\Database\DatabaseConfig;
 use Atom\Database\DatabaseDriverFactory;
 use Atom\Database\DatabaseDriverFactoryException;
@@ -108,6 +109,25 @@ final class DatabaseDriverFactoryTest extends TestCase
         $config = DatabaseConfig::fromEnv();
 
         $this->assertNull($config->port);
+        $this->assertNull($config->username);
+        $this->assertNull($config->password);
+    }
+
+    public function testCreatesConfigFromTypedOptions(): void
+    {
+        $config = Config::fromEnv([
+            "DB_DRIVER" => "pgsql",
+            "DB_DATABASE" => "atom",
+            "DB_HOST" => "db",
+            "DB_PORT" => "5432",
+            "DB_USERNAME" => "",
+            "DB_PASSWORD" => "",
+        ])->options(DatabaseConfig::class);
+
+        $this->assertSame("pgsql", $config->driver);
+        $this->assertSame("atom", $config->database);
+        $this->assertSame("db", $config->host);
+        $this->assertSame(5432, $config->port);
         $this->assertNull($config->username);
         $this->assertNull($config->password);
     }

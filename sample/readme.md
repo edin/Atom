@@ -4,8 +4,8 @@ This sample app lives inside the framework repository and consumes the local fra
 
 It demonstrates:
 
-- `Application::services()` and `Application::bootstrap()`
-- page discovery with `Page::registerPages()`
+- `Application::services()`, `modules()`, `components()`, `pages()`, and `bootstrap()`
+- page discovery through `Application::pages()`
 - `.atom.html` page templates
 - page layout composition through a component class
 - native `.atom.php` component templates with `$component` and `$context`

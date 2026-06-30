@@ -8,7 +8,8 @@ use Atom\Api\Attributes\ArrayOf;
 use Atom\Api\Attributes\ErrorResponse;
 use Atom\Api\Attributes\ResponseOf;
 use Atom\Modules\ApiExplorer\ApiExplorer;
-use Atom\Modules\ApiExplorer\ApiExplorerRouteMetadata;
+use Atom\Modules\ApiExplorer\ApiExplorerConfig;
+use Atom\Modules\ApiExplorer\ApiExplorerRedirectHandler;
 use Atom\Modules\ApiExplorer\UI\Components\AppShell;
 use Atom\Modules\ApiExplorer\UI\Components\EndpointDetails;
 use Atom\Modules\ApiExplorer\UI\Components\EndpointList;
@@ -28,7 +29,6 @@ use Atom\Page\PageRenderer;
 use Atom\Page\PageRouteMetadata;
 use Atom\Router\MatchedRoute;
 use Atom\Router\RouteEntry;
-use Atom\Router\RouteAction;
 use Atom\Router\Router;
 use Atom\Validation\Rules\MaxLength;
 use Atom\Validation\Rules\Required;
@@ -54,16 +54,18 @@ final class ApiExplorerTest extends TestCase
 
         $this->assertSame("/dev/api", $entry->getFullPath());
         $this->assertSame("GET", $entry->getMethod());
-        $this->assertTrue($entry->getRouteAction()->isClosure());
+        $this->assertSame(ApiExplorerRedirectHandler::class, $entry->getRouteAction()->controllerType);
+        $this->assertSame("redirect", $entry->getRouteAction()->methodName);
     }
 
     public function testCreatesExplorerModule(): void
     {
         $router = new Router();
-        ApiExplorer::module("/dev/api")->register(new \Atom\Module\ModuleContext(
+        ApiExplorer::module()->register(new \Atom\Module\ModuleContext(
             $router,
             \Atom\Di\Injector::create(),
             new \Atom\View\Component\ComponentRegistry(),
+            "/dev/api"
         ));
 
         $entry = $this->routeByName($router, "atom.api-explorer");
@@ -74,10 +76,12 @@ final class ApiExplorerTest extends TestCase
         $this->assertSame("/dev/api", $entry->getFullPath());
         $this->assertSame("/atom/framework/resources/{path*}", $frameworkResources->getFullPath());
         $this->assertSame("/dev/api/resources/{path*}", $apiResources->getFullPath());
-        $this->assertTrue($entry->getRouteAction()->isClosure());
-        $this->assertSame("/dev/api/resources", $entry->getMetadataOfType(ApiExplorerRouteMetadata::class)->resourcePath);
-        $this->assertSame("/api", $entry->getMetadataOfType(ApiExplorerRouteMetadata::class)->apiPathPrefix);
-        $this->assertSame("/api", $page->getMetadataOfType(ApiExplorerRouteMetadata::class)?->apiPathPrefix);
+        $this->assertSame(ApiExplorerRedirectHandler::class, $entry->getRouteAction()->controllerType);
+        $this->assertSame("redirect", $entry->getRouteAction()->methodName);
+        $this->assertSame("/dev/api/resources", $entry->getMetadataOfType(ApiExplorerConfig::class)->resourcePath);
+        $this->assertSame("/dev/api/explorer", $entry->getMetadataOfType(ApiExplorerConfig::class)->pagePath);
+        $this->assertSame("/api", $entry->getMetadataOfType(ApiExplorerConfig::class)->apiPathPrefix);
+        $this->assertSame("/api", $page->getMetadataOfType(ApiExplorerConfig::class)?->apiPathPrefix);
         $this->assertSame(ApiExplorerPage::class, $page->getMetadataOfType(PageRouteMetadata::class)?->pageClass);
     }
 
@@ -86,16 +90,18 @@ final class ApiExplorerTest extends TestCase
         $app = new ApiExplorerTestApplication();
         $app->initialize();
         $this->registerDocumentedApiRoutes($app->getRouter());
-        $app->registerModule(ApiExplorer::module("/dev/api"));
+        $app->registerModule(ApiExplorer::module(), "/dev/api");
 
-        $html = $app->getInjector()->get(PageRenderer::class)->render(ApiExplorerPage::class);
+        $context = new InjectionContext();
+        $context->set(MatchedRoute::class, new MatchedRoute($this->routeByPath($app->getRouter(), "/dev/api/explorer")));
+        $html = $app->getInjector()->get(PageRenderer::class, $context)->render(ApiExplorerPage::class);
 
         $this->assertSame(AppShell::class, $app->getInjector()->get(ComponentRegistry::class)->get("ApiExplorer.AppShell"));
         $this->assertSame(EndpointList::class, $app->getInjector()->get(ComponentRegistry::class)->get("ApiExplorer.EndpointList"));
         $this->assertSame(EndpointDetails::class, $app->getInjector()->get(ComponentRegistry::class)->get("ApiExplorer.EndpointDetails"));
         $this->assertSame(TryRequestPanel::class, $app->getInjector()->get(ComponentRegistry::class)->get("ApiExplorer.TryRequest"));
         $this->assertStringContainsString("<!doctype html>", $html);
-        $this->assertStringContainsString('/atom/api/resources/api-explorer.css', $html);
+        $this->assertStringContainsString('/dev/api/resources/api-explorer.css', $html);
         $this->assertStringContainsString('/atom/framework/resources/atom.js?v=2', $html);
         $this->assertStringContainsString('<header class="topbar">', $html);
         $this->assertStringContainsString("/api/articles/{id}", $html);
@@ -119,7 +125,7 @@ final class ApiExplorerTest extends TestCase
         $app = new ApiExplorerTestApplication();
         $app->initialize();
         $this->registerDocumentedApiRoutes($app->getRouter());
-        $app->registerModule(ApiExplorer::module("/dev/api"));
+        $app->registerModule(ApiExplorer::module(), "/dev/api");
 
         $context = new InjectionContext();
         $context->set(Request::class, new Request("GET", "/dev/api/explorer", ["id" => 1]));
@@ -140,15 +146,15 @@ final class ApiExplorerTest extends TestCase
         $app = new ApiExplorerTestApplication();
         $app->initialize();
         $app->getRouter()->add(
-            RouteEntry::route("GET", "/api/ping", RouteAction::fromClosure(fn(): string => "pong"))
+            RouteEntry::get("/api/ping", fn(): string => "pong")
                 ->name("api.ping")
                 ->description("Health check endpoint.")
         );
         $app->getRouter()->add(
-            RouteEntry::route("GET", "/dashboard", RouteAction::fromClosure(fn(): string => "dashboard"))
+            RouteEntry::get("/dashboard", fn(): string => "dashboard")
                 ->name("dashboard")
         );
-        $app->registerModule(ApiExplorer::module("/dev/api"));
+        $app->registerModule(ApiExplorer::module(), "/dev/api");
 
         $html = $app->getInjector()->get(PageRenderer::class)->render(ApiExplorerPage::class);
 
@@ -166,11 +172,11 @@ final class ApiExplorerTest extends TestCase
         $app = new ApiExplorerTestApplication();
         $app->initialize();
         $app->getRouter()->add(
-            RouteEntry::route("POST", "/api/echo", RouteAction::fromClosure(
+            RouteEntry::post("/api/echo",
                 fn(Request $request): array => ["name" => $request->post()->string("name")]
-            ))
+            )
         );
-        $app->registerModule(ApiExplorer::module("/dev/api"));
+        $app->registerModule(ApiExplorer::module(), "/dev/api");
 
         $request = new Request("POST", "/dev/api/explorer", [], [
             "_action" => "try",
@@ -196,11 +202,11 @@ final class ApiExplorerTest extends TestCase
         $app = new ApiExplorerTestApplication();
         $app->initialize();
         $app->getRouter()->add(
-            RouteEntry::route("GET", "/api/echo", RouteAction::fromClosure(
+            RouteEntry::get("/api/echo",
                 fn(Request $request): array => ["name" => $request->query()->string("name")]
-            ))
+            )
         );
-        $app->registerModule(ApiExplorer::module("/dev/api"));
+        $app->registerModule(ApiExplorer::module(), "/dev/api");
 
         $request = new Request("POST", "/dev/api/explorer", [], [
             "_action" => "try",
@@ -222,9 +228,9 @@ final class ApiExplorerTest extends TestCase
     {
         $app = new ApiExplorerTestApplication();
         $app->initialize();
-        $app->getRouter()->add(RouteEntry::route("GET", "/internal/ping", RouteAction::fromClosure(fn(): string => "pong")));
-        $app->getRouter()->add(RouteEntry::route("GET", "/api/ping", RouteAction::fromClosure(fn(): string => "pong")));
-        $app->registerModule(ApiExplorer::module("/dev/api", "/internal"));
+        $app->getRouter()->add(RouteEntry::get("/internal/ping", fn(): string => "pong"));
+        $app->getRouter()->add(RouteEntry::get("/api/ping", fn(): string => "pong"));
+        $app->registerModule(ApiExplorer::module("/internal"), "/dev/api");
 
         $context = new InjectionContext();
         $context->set(MatchedRoute::class, new MatchedRoute($this->routeByPath($app->getRouter(), "/dev/api/explorer")));
@@ -241,9 +247,10 @@ final class ApiExplorerTest extends TestCase
         $entry = ApiExplorer::register($router, "/atom/api");
         $action = $entry->getRouteAction();
 
-        $this->assertTrue($action->isClosure());
+        $this->assertSame(ApiExplorerRedirectHandler::class, $action->controllerType);
+        $this->assertSame("redirect", $action->methodName);
 
-        $response = ($action->closure)(new Response());
+        $response = (new ApiExplorerRedirectHandler())->redirect(new MatchedRoute($entry), new Response());
 
         $this->assertSame(302, $response->getStatus());
         $this->assertSame(["/atom/api/explorer"], $response->headers()->all("Location"));
@@ -252,17 +259,17 @@ final class ApiExplorerTest extends TestCase
     private function registerDocumentedApiRoutes(Router $router): void
     {
         $router->add(
-            RouteEntry::route("GET", "/api/articles", RouteAction::fromMethod(ApiExplorerArticlesController::class, "index"))
+            RouteEntry::get("/api/articles", [ApiExplorerArticlesController::class, "index"])
                 ->name("articles.index")
                 ->description("Returns published articles with optional search and paging.")
         );
         $router->add(
-            RouteEntry::route("POST", "/api/articles", RouteAction::fromMethod(ApiExplorerArticlesController::class, "create"))
+            RouteEntry::post("/api/articles", [ApiExplorerArticlesController::class, "create"])
                 ->name("articles.create")
                 ->description("Creates a draft article and returns the stored model.")
         );
         $router->add(
-            RouteEntry::route("DELETE", "/api/articles/{id}", RouteAction::fromMethod(ApiExplorerArticlesController::class, "delete"))
+            RouteEntry::delete("/api/articles/{id}", [ApiExplorerArticlesController::class, "delete"])
                 ->name("articles.item")
                 ->description("Reads, updates, or deletes a single article.")
         );

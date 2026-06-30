@@ -59,10 +59,10 @@ final class RouterTest extends TestCase
     public function testRouterAddsRouteEntry(): void
     {
         $router = new Router();
-        $entry = RouteEntry::route(
+        $entry = RouteEntry::create(
             "GET",
             "/health",
-            RouteAction::fromClosure(function () {
+            RouteAction::closure(function () {
                 return "ok";
             })
         );
@@ -85,10 +85,10 @@ final class RouterTest extends TestCase
         $root = new Router();
         $api = new Router("/api");
 
-        $api->add(RouteEntry::route(
+        $api->add(RouteEntry::create(
             "GET",
             "/users",
-            RouteAction::fromClosure(function () {
+            RouteAction::closure(function () {
                 return [];
             })
         ));

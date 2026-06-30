@@ -16,10 +16,10 @@ final class ActionTest extends TestCase
 {
     public function testActionInvokesClosureWithRouteParameters(): void
     {
-        $route = RouteEntry::route(
+        $route = RouteEntry::create(
             "GET",
             "/users/{id}",
-            RouteAction::fromClosure(function (string $id) {
+            RouteAction::closure(function (string $id) {
                 return "user-" . $id;
             })
         );
@@ -31,10 +31,10 @@ final class ActionTest extends TestCase
 
     public function testMatchedRouteKeepsRouteDefinitionSeparateFromParams(): void
     {
-        $route = RouteEntry::route(
+        $route = RouteEntry::create(
             "GET",
             "/users/{id}",
-            RouteAction::fromClosure(fn () => null)
+            RouteAction::closure(fn () => null)
         );
 
         $matchedRoute = new MatchedRoute($route, ["id" => "42"], ["tab" => "profile"]);
@@ -47,10 +47,10 @@ final class ActionTest extends TestCase
 
     public function testActionInvokesControllerMethodWithRouteParameters(): void
     {
-        $route = RouteEntry::route(
+        $route = RouteEntry::create(
             "GET",
             "/users/{id}",
-            RouteAction::fromMethod(ActionTestController::class, "show")
+            RouteAction::method(ActionTestController::class, "show")
         );
 
         $action = new Action(new Injector(), new MatchedRoute($route, ["id" => "42"]));
@@ -58,38 +58,49 @@ final class ActionTest extends TestCase
         $this->assertSame("user-42", $action->execute());
     }
 
-    public function testRouteEntryCanReplaceRouteActionWithControllerMethod(): void
+    public function testActionInvokesControllerInvokeMethodByDefault(): void
     {
-        $route = RouteEntry::route(
+        $route = RouteEntry::create(
             "GET",
             "/users/{id}",
-            RouteAction::fromClosure(fn () => "old")
-        )->toController(ActionTestController::class, "show");
+            RouteAction::method(ActionInvokeController::class)
+        );
+
+        $action = new Action(new Injector(), new MatchedRoute($route, ["id" => "42"]));
+
+        $this->assertSame("invoked-42", $action->execute());
+    }
+
+    public function testRouteEntryCreateAcceptsCallableAndArrayAndInvokableClass(): void
+    {
+        $closure = RouteEntry::get("/users/{id}", fn(string $id): string => "closure-" . $id);
+        $method = RouteEntry::get("/users/{id}", [ActionTestController::class, "show"]);
+        $invoke = RouteEntry::get("/users/{id}", ActionInvokeController::class);
+
+        $this->assertSame("closure-42", (new Action(new Injector(), new MatchedRoute($closure, ["id" => "42"])))->execute());
+        $this->assertSame("user-42", (new Action(new Injector(), new MatchedRoute($method, ["id" => "42"])))->execute());
+        $this->assertSame("invoked-42", (new Action(new Injector(), new MatchedRoute($invoke, ["id" => "42"])))->execute());
+    }
+
+    public function testRouteEntryCanReplaceRouteAction(): void
+    {
+        $route = RouteEntry::create(
+            "GET",
+            "/users/{id}",
+            RouteAction::closure(fn () => "old")
+        )->action(RouteAction::method(ActionTestController::class, "show"));
 
         $action = new Action(new Injector(), new MatchedRoute($route, ["id" => "42"]));
 
         $this->assertSame("user-42", $action->execute());
     }
 
-    public function testRouteEntryCanReplaceRouteActionWithClosure(): void
-    {
-        $route = RouteEntry::route(
-            "GET",
-            "/users/{id}",
-            RouteAction::fromMethod(ActionTestController::class, "show")
-        )->toClosure(fn (string $id) => "closure-" . $id);
-
-        $action = new Action(new Injector(), new MatchedRoute($route, ["id" => "42"]));
-
-        $this->assertSame("closure-42", $action->execute());
-    }
-
     public function testActionReusesScopedDependenciesAcrossControllerAndMethod(): void
     {
-        $route = RouteEntry::route(
+        $route = RouteEntry::create(
             "GET",
             "/users/{id}",
-            RouteAction::fromMethod(ActionScopedController::class, "show")
+            RouteAction::method(ActionScopedController::class, "show")
         );
 
         $bindings = Bindings::create();
@@ -108,6 +119,14 @@ final class ActionTestController
     public function show(string $id): string
     {
         return "user-" . $id;
+    }
+}
+
+final class ActionInvokeController
+{
+    public function __invoke(string $id): string
+    {
+        return "invoked-" . $id;
     }
 }
 

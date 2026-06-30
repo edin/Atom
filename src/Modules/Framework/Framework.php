@@ -29,23 +29,6 @@ final readonly class Framework
      */
     public static function resources(ModuleContext $context, string $path = self::DEFAULT_RESOURCE_PATH): array
     {
-        $routePath = self::joinPaths($context->basePath, $path, "{path*}");
-        foreach ($context->router->getAllRoutes() as $route) {
-            if ($route->getFullPath() === $routePath && $route->getMethod() === "GET") {
-                return [$route];
-            }
-        }
-
         return $context->resources($path, __DIR__ . "/Resources");
-    }
-
-    private static function joinPaths(string ...$segments): string
-    {
-        $segments = array_filter(
-            array_map(static fn(string $segment): string => trim($segment, " /"), $segments),
-            static fn(string $segment): bool => $segment !== ""
-        );
-
-        return "/" . implode("/", $segments);
     }
 }

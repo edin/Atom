@@ -25,12 +25,47 @@ final class RouteEntry
         $this->path = $path;
     }
 
-    public static function route(string|array $method, string $path, RouteAction $routeAction): self
+    public static function create(string|array $method, string $path, mixed $handler): self
     {
         $entry = new self($path);
         $entry->method = $method;
-        $entry->routeAction = $routeAction;
+        $entry->routeAction = RouteAction::from($handler);
         return $entry;
+    }
+
+    public static function get(string $path, mixed $handler): self
+    {
+        return self::create("GET", $path, $handler);
+    }
+
+    public static function post(string $path, mixed $handler): self
+    {
+        return self::create("POST", $path, $handler);
+    }
+
+    public static function put(string $path, mixed $handler): self
+    {
+        return self::create("PUT", $path, $handler);
+    }
+
+    public static function patch(string $path, mixed $handler): self
+    {
+        return self::create("PATCH", $path, $handler);
+    }
+
+    public static function delete(string $path, mixed $handler): self
+    {
+        return self::create("DELETE", $path, $handler);
+    }
+
+    public static function head(string $path, mixed $handler): self
+    {
+        return self::create("HEAD", $path, $handler);
+    }
+
+    public static function options(string $path, mixed $handler): self
+    {
+        return self::create("OPTIONS", $path, $handler);
     }
 
     public function bindRouter(Router $router): void
@@ -154,15 +189,9 @@ final class RouteEntry
         return array_merge($this->router?->getMiddlewares() ?? [], $this->middlewares);
     }
 
-    public function toController(string $controllerType, string $actionName): self
+    public function action(RouteAction $action): self
     {
-        $this->routeAction = RouteAction::fromMethod($controllerType, $actionName);
-        return $this;
-    }
-
-    public function toClosure(callable $closure): self
-    {
-        $this->routeAction = RouteAction::fromClosure($closure);
+        $this->routeAction = $action;
         return $this;
     }
 

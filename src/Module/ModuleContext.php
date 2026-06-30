@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Atom\Module;
 
+use Atom\Config\Config;
+use Atom\Di\BindingBuilder;
+use Atom\Di\Bindings;
 use Atom\Di\Injector;
 use Atom\Http\StaticFileHandler;
 use Atom\Http\StaticFileRouteMetadata;
 use Atom\Page\PageRouteRegistrar;
-use Atom\Router\RouteAction;
 use Atom\Router\RouteEntry;
 use Atom\Router\Router;
 use Atom\View\Component\ComponentInterface;
@@ -16,22 +18,61 @@ use Atom\View\Component\ComponentRegistry;
 
 final readonly class ModuleContext
 {
+    public Router $router;
+    public Injector $injector;
+    public ComponentRegistry $components;
+    public string $basePath;
+    public Bindings $bindings;
+    public Config $config;
+
     public function __construct(
-        public Router $router,
-        public Injector $injector,
-        public ComponentRegistry $components,
-        public string $basePath = ""
+        Router $router,
+        Injector $injector,
+        ComponentRegistry $components,
+        string $basePath = "",
+        ?Bindings $bindings = null,
+        ?Config $config = null
     ) {
+        $this->router = $router;
+        $this->injector = $injector;
+        $this->components = $components;
+        $this->basePath = $basePath;
+        $this->bindings = $bindings ?? Bindings::create();
+        $this->config = $config ?? Config::fromEnv();
     }
 
     public function withBasePath(string $basePath): self
     {
-        return new self($this->router, $this->injector, $this->components, $basePath);
+        return new self($this->router, $this->injector, $this->components, $basePath, $this->bindings, $this->config);
+    }
+
+    public function root(): self
+    {
+        return $this->withBasePath("");
+    }
+
+    public function mountedPath(string $relativePath = ""): string
+    {
+        $base = rtrim($this->basePath, " /");
+        $relativePath = trim($relativePath, " /");
+        $segments = array_filter([$base, $relativePath], static fn(string $segment): bool => $segment !== "");
+
+        return "/" . implode("/", array_map(static fn(string $segment): string => trim($segment, " /"), $segments));
+    }
+
+    public function resourcePath(string $path = "/resources", string $file = ""): string
+    {
+        return $this->mountedPath($this->joinRelative($path, $file));
     }
 
     public function route(RouteEntry $entry): RouteEntry
     {
         return $this->router->add($entry);
+    }
+
+    public function bind(string $token): BindingBuilder
+    {
+        return $this->bindings->bind($token);
     }
 
     /**
@@ -61,10 +102,17 @@ final readonly class ModuleContext
             return [];
         }
 
-        $entry = RouteEntry::route(
+        $routePath = $this->resourcePath($path, "{path*}");
+        foreach ($this->router->getAllRoutes() as $route) {
+            if ($route->getFullPath() === $routePath && $route->getMethod() === "GET") {
+                return [$route];
+            }
+        }
+
+        $entry = RouteEntry::create(
             "GET",
-            $this->joinPaths($path, "{path*}"),
-            RouteAction::fromMethod(StaticFileHandler::class, "serve")
+            $routePath,
+            [StaticFileHandler::class, "serve"]
         )->metadata(new StaticFileRouteMetadata($directory));
 
         $this->route($entry);
@@ -72,14 +120,13 @@ final readonly class ModuleContext
         return [$entry];
     }
 
-    private function joinPaths(string $path, string $relativePath): string
+    private function joinRelative(string $path, string $relativePath): string
     {
-        $base = rtrim($this->basePath, " /");
         $path = trim($path, " /");
         $relativePath = ltrim($relativePath, " /");
-        $segments = array_filter([$base, $path, $relativePath], static fn(string $segment): bool => $segment !== "");
+        $segments = array_filter([$path, $relativePath], static fn(string $segment): bool => trim($segment, " /") !== "");
 
-        return "/" . implode("/", array_map(static fn(string $segment): string => trim($segment, " /"), $segments));
+        return implode("/", array_map(static fn(string $segment): string => trim($segment, " /"), $segments));
     }
 
 }

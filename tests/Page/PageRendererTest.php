@@ -265,7 +265,7 @@ final class PageRendererTest extends TestCase
         $requestPath = preg_replace('/\{[^}]+}/', '7', $path) ?? $path;
         $match = (new RouteMatcher($router))->match("POST", $requestPath);
         if (!$match->isFound()) {
-            $entry = RouteEntry::route("POST", $path, RouteAction::fromMethod(PageActionHandler::class, "handle"))
+            $entry = RouteEntry::create("POST", $path, RouteAction::method(PageActionHandler::class, "handle"))
                 ->metadata(new PageRouteMetadata($pageClass));
             $match = \Atom\Router\RouteMatchResult::found(new \Atom\Router\MatchedRoute($entry, ["id" => "7"]));
         }

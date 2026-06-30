@@ -1,4 +1,4 @@
-<ApiExplorer.AppShell title="{{ $this->title }}" count="{{ count($this->operations) }}">
+<ApiExplorer.AppShell title="{{ $this->title }}" count="{{ count($this->operations) }}" :resourcePath="$this->resourcePath()">
     <div class="workspace">
         <aside class="sidebar">
             <ApiExplorer.EndpointList :operations="$this->operations" :selectedIndex="$this->selectedId" />

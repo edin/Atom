@@ -60,6 +60,28 @@ final class InjectorTest extends TestCase
         $this->assertSame($first, $second);
     }
 
+    public function testLastBindingWinsBeforeResolution(): void
+    {
+        $bindings = Bindings::create();
+        $bindings->value("name", "first");
+        $bindings->value("name", "second");
+
+        $injector = Injector::create($bindings);
+
+        $this->assertSame("second", $injector->get("name"));
+    }
+
+    public function testInjectorObservesBindingsAddedAfterConstruction(): void
+    {
+        $bindings = Bindings::create();
+        $injector = Injector::create($bindings);
+
+        $bindings->value("name", "module");
+
+        $this->assertTrue($injector->has("name"));
+        $this->assertSame("module", $injector->get("name"));
+    }
+
     public function testBindingsCanRegisterTypeFactories(): void
     {
         $bindings = Bindings::create()

@@ -9,6 +9,8 @@ The main concepts are:
 - [Components](Components.md)
 - [Router](Router.md)
 - [Modules](Modules.md)
+- [Paths](Paths.md)
+- [Logging](Logging.md)
 - [API Explorer](ApiExplorer.md)
 - [Database](Database.md)
 - [PostgreSQL Support Plan](PostgreSQLSupport.md)
@@ -22,12 +24,17 @@ The main concepts are:
 
 At runtime the base application:
 
-1. registers framework service providers
-2. lets the application register its services
-3. creates the injector
-4. configures the shared router
-5. runs application bootstrap
-6. dispatches the request through the middleware pipeline
+1. registers default path aliases and applies path overrides
+2. loads environment files
+3. creates typed config
+4. registers framework and application service providers
+5. creates the injector
+6. configures the shared router
+7. registers application modules
+8. registers application components
+9. registers application page directories
+10. runs application bootstrap
+11. dispatches the request through the middleware pipeline
 
 The sample application's bootstrap is intentionally small:
 
@@ -37,8 +44,6 @@ protected function bootstrap(Injector $injector): void
     Model::useDb($injector->get(Db::class));
 
     Route::attach(ApiController::class);
-
-    Page::registerPages();
 }
 ```
 

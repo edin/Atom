@@ -25,7 +25,14 @@ class Router
 
 final class RouteEntry
 {
-    public static function route($method, string $path, RouteAction $routeAction): self;
+    public static function create(string|array $method, string $path, mixed $handler): self;
+    public static function get(string $path, mixed $handler): self;
+    public static function post(string $path, mixed $handler): self;
+    public static function put(string $path, mixed $handler): self;
+    public static function patch(string $path, mixed $handler): self;
+    public static function delete(string $path, mixed $handler): self;
+    public static function head(string $path, mixed $handler): self;
+    public static function options(string $path, mixed $handler): self;
 
     public function getRouter(): ?Router;
 
@@ -46,8 +53,7 @@ final class RouteEntry
     public function getMetadataOfType(string $typeName): ?object;
     public function getMetadataArrayOfType(string $typeName): array;
 
-    public function toController(string $controllerType, string $actionName): self;
-    public function toClosure(callable $closure): self;
+    public function action(RouteAction $action): self;
     public function getMethod(): string|array;
     public function getMethodList(): string;
     public function getRouteAction(): RouteAction;
@@ -159,11 +165,18 @@ Route::attachTo("/v1", ApiController::class);
 Add an entry directly to a router:
 
 ```php
-$router->add(RouteEntry::route(
+$router->add(RouteEntry::create(
     "GET",
     "/health",
-    RouteAction::fromClosure(fn () => "ok")
+    fn () => "ok"
 ));
+```
+
+Shorthand helpers are available for common HTTP methods:
+
+```php
+$router->add(RouteEntry::get("/dashboard", DashboardController::class));
+$router->add(RouteEntry::post("/users", [UserController::class, "create"]));
 ```
 
 ## Route Metadata
@@ -171,10 +184,10 @@ $router->add(RouteEntry::route(
 Route entries can carry small metadata objects:
 
 ```php
-$entry = RouteEntry::route(
+$entry = RouteEntry::create(
     "GET",
     "/dashboard",
-    RouteAction::fromMethod(DashboardController::class, "index")
+    [DashboardController::class, "index"]
 )->metadata(new RequiresRole("admin"));
 ```
 

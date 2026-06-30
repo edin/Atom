@@ -23,9 +23,13 @@ use Atom\Api\Attributes\ResponseOf;
 Atom can also register a read-only HTML explorer:
 
 ```php
+use Atom\Module\ModuleRegistry;
 use Atom\Modules\ApiExplorer\ApiExplorer;
 
-$this->registerModule(ApiExplorer::module("/atom/api"));
+protected function modules(ModuleRegistry $modules): void
+{
+    $modules->add(ApiExplorer::module(), "/atom/api");
+}
 ```
 
 This adds a module page that renders the generated API model as a PHP-built developer page. The module root redirects to the page URL:

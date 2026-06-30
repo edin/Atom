@@ -14,7 +14,7 @@ final class RouteMatcherTest extends TestCase
 {
     public function testMatcherFindsStaticRoute(): void
     {
-        $route = RouteEntry::route("GET", "/health", RouteAction::fromClosure(fn () => "ok"));
+        $route = RouteEntry::create("GET", "/health", RouteAction::closure(fn () => "ok"));
         $router = new Router();
         $router->add($route);
 
@@ -26,7 +26,7 @@ final class RouteMatcherTest extends TestCase
 
     public function testMatcherFindsRouteWithParams(): void
     {
-        $route = RouteEntry::route("GET", "/users/{id}", RouteAction::fromClosure(fn () => []));
+        $route = RouteEntry::create("GET", "/users/{id}", RouteAction::closure(fn () => []));
         $router = new Router("/api");
         $router->add($route);
 
@@ -40,8 +40,8 @@ final class RouteMatcherTest extends TestCase
     public function testMatcherHandlesMethodNotAllowed(): void
     {
         $router = new Router();
-        $router->add(RouteEntry::route("GET", "/users", RouteAction::fromClosure(fn () => [])));
-        $router->add(RouteEntry::route("POST", "/users", RouteAction::fromClosure(fn () => [])));
+        $router->add(RouteEntry::create("GET", "/users", RouteAction::closure(fn () => [])));
+        $router->add(RouteEntry::create("POST", "/users", RouteAction::closure(fn () => [])));
 
         $result = (new RouteMatcher($router))->match("DELETE", "/users");
 
@@ -53,7 +53,7 @@ final class RouteMatcherTest extends TestCase
     public function testMatcherHandlesNotFound(): void
     {
         $router = new Router();
-        $router->add(RouteEntry::route("GET", "/users", RouteAction::fromClosure(fn () => [])));
+        $router->add(RouteEntry::create("GET", "/users", RouteAction::closure(fn () => [])));
 
         $result = (new RouteMatcher($router))->match("GET", "/missing");
 
@@ -63,7 +63,7 @@ final class RouteMatcherTest extends TestCase
 
     public function testMatcherHandlesMultipleMethodsOnRoute(): void
     {
-        $route = RouteEntry::route(["GET", "POST"], "/users", RouteAction::fromClosure(fn () => []));
+        $route = RouteEntry::create(["GET", "POST"], "/users", RouteAction::closure(fn () => []));
         $router = new Router();
         $router->add($route);
 
@@ -75,7 +75,7 @@ final class RouteMatcherTest extends TestCase
 
     public function testMatcherFindsRouteWithWildcardParam(): void
     {
-        $route = RouteEntry::route("GET", "/resources/{path*}", RouteAction::fromClosure(fn () => []));
+        $route = RouteEntry::create("GET", "/resources/{path*}", RouteAction::closure(fn () => []));
         $router = new Router();
         $router->add($route);
 

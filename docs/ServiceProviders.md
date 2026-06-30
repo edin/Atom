@@ -6,38 +6,57 @@ An Atom application extends `Atom\Application`.
 
 Application setup is split into two hooks:
 
+- `rootPath()` and `configurePaths()` control path aliases
+- `environmentFiles()` customizes `.env` files loaded before config and services
 - `services()` registers providers and bindings
-- `bootstrap()` performs runtime setup such as model database configuration, API routes, and page discovery
+- `modules()` registers framework and application modules
+- `components()` registers application component tags
+- `pages()` registers page directories
+- `bootstrap()` performs runtime setup such as model database configuration and API routes
 
 ## Application Example
 
 ```php
 namespace App;
 
+use App\Components\Table;
 use App\Controllers\ApiController;
-use Atom\Config\Env;
-use Atom\Database\DatabaseDriverFactory;
 use Atom\Database\DatabaseServices;
 use Atom\Database\Db;
 use Atom\Database\Model;
-use Atom\Database\Migration\MigrationOptions;
-use Atom\Database\Seeder\SeederOptions;
 use Atom\Di\Injector;
 use Atom\Di\ServiceProviderRegistry;
-use Atom\Page\Page;
+use Atom\Module\ModuleRegistry;
+use Atom\Modules\Framework\Framework;
+use Atom\Page\PageRegistry;
 use Atom\Router\Route;
+use Atom\View\Component\ComponentRegistry;
 
 final class Application extends \Atom\Application
 {
+    protected function rootPath(): string
+    {
+        return dirname(__DIR__);
+    }
+
     protected function services(ServiceProviderRegistry $providers): void
     {
-        Env::loadIfExists(__DIR__ . "/../.env");
+        $providers->add(DatabaseServices::fromConfig($this->getConfig(), $this->getPaths()));
+    }
 
-        $providers->add(new DatabaseServices(
-            DatabaseDriverFactory::fromEnv(dirname(__DIR__)),
-            new MigrationOptions(__DIR__ . "/Database/Migrations"),
-            new SeederOptions(__DIR__ . "/Database/Seeders")
-        ));
+    protected function modules(ModuleRegistry $modules): void
+    {
+        $modules->add(Framework::module());
+    }
+
+    protected function pages(PageRegistry $pages): void
+    {
+        $pages->directory("@app/Pages");
+    }
+
+    protected function components(ComponentRegistry $components): void
+    {
+        $components->register("Table", Table::class);
     }
 
     protected function bootstrap(Injector $injector): void
@@ -45,8 +64,6 @@ final class Application extends \Atom\Application
         Model::useDb($injector->get(Db::class));
 
         Route::attach(ApiController::class);
-
-        Page::registerPages();
     }
 }
 ```

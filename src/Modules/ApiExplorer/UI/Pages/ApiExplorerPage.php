@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Atom\Modules\ApiExplorer\UI\Pages;
 
 use Atom\Api\ApiDescription;
-use Atom\Modules\ApiExplorer\ApiExplorerRouteMetadata;
+use Atom\Modules\ApiExplorer\ApiExplorerConfig;
 use Atom\Api\ApiModelBuilder;
 use Atom\Modules\ApiExplorer\UI\Models\ApiOperationDescriptor;
 use Atom\Di\InjectionContext;
@@ -88,6 +88,11 @@ final class ApiExplorerPage extends Page
         return $this->operations[$this->selectedId] ?? null;
     }
 
+    public function resourcePath(): string
+    {
+        return $this->config()->resourcePath;
+    }
+
     private function normalizeSelectedId(int $id): int
     {
         if ($this->operations === []) {
@@ -115,13 +120,16 @@ final class ApiExplorerPage extends Page
 
     private function apiPathPrefix(): string
     {
-        if ($this->route === null) {
-            return "/api";
-        }
+        return $this->config()->apiPathPrefix;
+    }
 
-        $metadata = $this->route->getRouteEntry()->getMetadataOfType(ApiExplorerRouteMetadata::class);
+    private function config(): ApiExplorerConfig
+    {
+        $config = $this->route?->getRouteEntry()->getMetadataOfType(ApiExplorerConfig::class);
 
-        return $metadata instanceof ApiExplorerRouteMetadata ? $metadata->apiPathPrefix : "/api";
+        return $config instanceof ApiExplorerConfig
+            ? $config
+            : new ApiExplorerConfig("/atom/api/resources", "/atom/api/explorer");
     }
 
     /**

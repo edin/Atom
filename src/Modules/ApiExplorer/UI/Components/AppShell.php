@@ -10,6 +10,7 @@ use Atom\View\Component\TemplateComponent;
 final class AppShell extends TemplateComponent
 {
     public string $title = "API Explorer";
+    public string $resourcePath = "/atom/api/resources";
     public int $count = 0;
     public ?Fragment $content = null;
 

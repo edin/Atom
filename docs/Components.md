@@ -21,7 +21,10 @@ Register a component when you want a short tag name:
 use App\Components\Button;
 use Atom\View\Component\ComponentRegistry;
 
-$registry->register("Button", Button::class);
+protected function components(ComponentRegistry $components): void
+{
+    $components->register("Button", Button::class);
+}
 ```
 
 Then use it from a template:

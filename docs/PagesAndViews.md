@@ -14,20 +14,24 @@ app/Pages/
 
 ## Register Pages
 
-In application bootstrap:
+Register page directories from the application `pages()` hook:
 
 ```php
-use Atom\Page\Page;
+use Atom\Page\PageRegistry;
 
-Page::registerPages();
+protected function pages(PageRegistry $pages): void
+{
+    $pages->directory("@app/Pages");
+}
 ```
 
-When called from `app/Application.php`, this scans `app/Pages`.
-You can also pass a directory explicitly:
+You can also mount a page directory under a route prefix:
 
 ```php
-Page::registerPages(__DIR__ . "/AdminPages");
+$pages->directory("@app/AdminPages", "/admin");
 ```
+
+`Page::registerPages()` is still available for manual registration.
 
 ## Page Class
 

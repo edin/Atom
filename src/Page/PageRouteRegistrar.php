@@ -37,10 +37,10 @@ final readonly class PageRouteRegistrar
         );
 
         foreach ($descriptors as $descriptor) {
-            $entry = RouteEntry::route(
+            $entry = RouteEntry::create(
                 "GET",
                 $this->joinPaths($pathPrefix, $descriptor->path),
-                RouteAction::fromMethod(PageRouteHandler::class, "render")
+                RouteAction::method(PageRouteHandler::class, "render")
             )->metadata(new PageRouteMetadata($descriptor->pageClass));
 
             if ($descriptor->name !== null) {
@@ -51,10 +51,10 @@ final readonly class PageRouteRegistrar
             $entries[] = $entry;
 
             foreach ($this->actionMethods($descriptor->pageClass) as $method) {
-                $actionEntry = RouteEntry::route(
+                $actionEntry = RouteEntry::create(
                     $method,
                     $this->joinPaths($pathPrefix, $descriptor->path),
-                    RouteAction::fromMethod(PageActionHandler::class, "handle")
+                    RouteAction::method(PageActionHandler::class, "handle")
                 )->metadata(new PageRouteMetadata($descriptor->pageClass));
 
                 $router->add($actionEntry);

@@ -78,7 +78,7 @@ final class Route
             $handler = RouteAction::from($handler);
         }
 
-        return RouteEntry::route($method, $path, $handler);
+        return RouteEntry::create($method, $path, $handler);
     }
 
     private static function requireCurrentController(): string
@@ -211,10 +211,10 @@ final class Route
         foreach ($class->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
             foreach ($method->getAttributes(HttpRoute::class, \ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
                 $route = $attribute->newInstance();
-                $router->add(RouteEntry::route(
+                $router->add(RouteEntry::create(
                     $route->method,
                     self::joinPaths($controllerPath, $route->path),
-                    RouteAction::fromMethod($controller, $method->getName())
+                    [$controller, $method->getName()]
                 ));
             }
         }

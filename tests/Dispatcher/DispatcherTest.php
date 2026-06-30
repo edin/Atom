@@ -17,7 +17,6 @@ use Atom\Http\MiddlewareInterface;
 use Atom\Http\Request;
 use Atom\Http\RequestHandlerInterface;
 use Atom\Http\Response;
-use Atom\Router\RouteAction;
 use Atom\Router\RouteEntry;
 use Atom\Router\Router;
 use PHPUnit\Framework\TestCase;
@@ -97,7 +96,7 @@ final class DispatcherTest extends TestCase
     public function testDispatcherReturnsMethodNotAllowedResponse(): void
     {
         $router = new Router();
-        $router->add(RouteEntry::route("POST", "/articles", RouteAction::fromClosure(fn(): string => "created")));
+        $router->add(RouteEntry::post("/articles", fn(): string => "created"));
         $dispatcher = $this->dispatcher($router);
 
         $response = $dispatcher->handle(new Request("GET", "/articles"));
