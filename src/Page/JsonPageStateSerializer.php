@@ -6,6 +6,7 @@ namespace Atom\Page;
 
 use ReflectionAttribute;
 use ReflectionClass;
+use ReflectionNamedType;
 use ReflectionProperty;
 
 final readonly class JsonPageStateSerializer implements PageStateSerializer
@@ -47,7 +48,7 @@ final readonly class JsonPageStateSerializer implements PageStateSerializer
         foreach ($this->properties($page) as $property) {
             $name = $property->getName();
             if (array_key_exists($name, $values)) {
-                $property->setValue($page, $values[$name]);
+                $property->setValue($page, $this->restoreValue($page, $property, $values[$name]));
             }
         }
     }
@@ -70,6 +71,45 @@ final readonly class JsonPageStateSerializer implements PageStateSerializer
         }
 
         return $properties;
+    }
+
+    private function restoreValue(Page $page, ReflectionProperty $property, mixed $value): mixed
+    {
+        $type = $property->getType();
+        if (!$type instanceof ReflectionNamedType || $type->isBuiltin() || !is_array($value)) {
+            return $value;
+        }
+
+        $className = $type->getName();
+        if (!class_exists($className)) {
+            return $value;
+        }
+
+        $instance = $property->isInitialized($page) ? $property->getValue($page) : null;
+        if (!$instance instanceof $className) {
+            $reflection = new ReflectionClass($className);
+            $constructor = $reflection->getConstructor();
+            $instance = $constructor === null || $constructor->getNumberOfRequiredParameters() === 0
+                ? $reflection->newInstance()
+                : $reflection->newInstanceWithoutConstructor();
+        }
+
+        $reflection = new ReflectionClass($className);
+        foreach ($reflection->getProperties() as $field) {
+            if ($field->isStatic() || $field->isReadOnly()) {
+                continue;
+            }
+
+            $fieldName = $field->getName();
+            if (!array_key_exists($fieldName, $value)) {
+                continue;
+            }
+
+            $field->setAccessible(true);
+            $field->setValue($instance, $value[$fieldName]);
+        }
+
+        return $instance;
     }
 
     private function encode(string $json): string

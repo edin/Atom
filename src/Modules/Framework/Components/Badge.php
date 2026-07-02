@@ -14,7 +14,9 @@ final class Badge implements ComponentInterface
     public ?Fragment $content = null;
     public AttributeBag $attributes;
     public string $text = "";
-    public string $variant = "";
+    public string $variant = "primary";
+    public string $appearance = "soft";
+    public string $size = "";
     public string $class = "";
 
     public function render(): string
@@ -22,6 +24,8 @@ final class Badge implements ComponentInterface
         return Html::tag("span", Html::mergeAttributes([
             "class" => Html::classes("atom-badge", $this->class),
             "data-variant" => $this->variant,
+            "data-appearance" => $this->appearance,
+            "data-size" => $this->size,
         ], $this->attributes->all()), $this->content());
     }
 

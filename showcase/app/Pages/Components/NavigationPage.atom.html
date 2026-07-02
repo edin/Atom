@@ -1,0 +1,24 @@
+<section class="story-header">
+    <div>
+        <h1>Navigation</h1>
+        <p>Navigation components help users understand location, switch views, and move through pages.</p>
+    </div>
+    <Badge>Primitive</Badge>
+</section>
+
+<Stack gap="md">
+    <ComponentExample title="Breadcrumbs" description="Breadcrumbs collect plain Breadcrumb child tags.">
+        <Breadcrumbs>
+            <Breadcrumb href="/" atom:navigate>Home</Breadcrumb>
+            <Breadcrumb href="/components/buttons" atom:navigate>Components</Breadcrumb>
+            <Breadcrumb>Navigation</Breadcrumb>
+        </Breadcrumbs>
+    </ComponentExample>
+
+    <ComponentExample title="Related components" description="Tabs and Pagination have their own pages because they can render URL-backed content.">
+        <Inline gap="sm">
+            <Button href="/components/pagination" atom:navigate>Open pagination</Button>
+            <Button href="/components/tabs" variant="ghost" atom:navigate>Open tabs</Button>
+        </Inline>
+    </ComponentExample>
+</Stack>

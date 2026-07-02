@@ -17,7 +17,7 @@ final readonly class ComponentTemplateContext
     /**
      * @param array<string, mixed> $variables
      */
-    public function fragment(?Fragment $fragment, array $variables = []): string
+    public function fragment(Fragment|TemplateFragment|null $fragment, array $variables = []): string
     {
         return $fragment?->render($variables) ?? "";
     }
@@ -25,7 +25,7 @@ final readonly class ComponentTemplateContext
     /**
      * @param array<string, mixed> $variables
      */
-    public function fragmentHtml(?Fragment $fragment, array $variables = []): HtmlString
+    public function fragmentHtml(Fragment|TemplateFragment|null $fragment, array $variables = []): HtmlString
     {
         return new HtmlString($fragment?->render($variables) ?? "");
     }

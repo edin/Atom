@@ -1,0 +1,107 @@
+<section class="story-header">
+    <div>
+        <h1>Surfaces</h1>
+        <p>Panels structure page workflows. Cards represent repeated objects and compact summaries.</p>
+    </div>
+    <Badge>Primitive</Badge>
+</section>
+
+<Stack gap="md">
+    <ComponentExample title="Stats" description="Stats summarize dashboard numbers and can render an icon on the side.">
+        <div class="component-grid">
+            <Stats label="Published" value="48" description="Live articles" trend="+4 this week">
+                <Stats.Icon>
+                    <Icon>A</Icon>
+                </Stats.Icon>
+            </Stats>
+
+            <Stats label="Drafts" value="12" description="Waiting for review" href="/components/data">
+                <Stats.Icon>
+                    <Icon variant="secondary">D</Icon>
+                </Stats.Icon>
+            </Stats>
+
+            <Stats label="Comments" value="3" description="Need moderation" trend="+1 today">
+                <Stats.Icon>
+                    <Icon variant="warning">C</Icon>
+                </Stats.Icon>
+            </Stats>
+        </div>
+    </ComponentExample>
+
+    <ComponentExample title="Panel" description="Panels group a section of a page with optional header actions and footer actions.">
+        <Panel title="Article settings" description="Tune the publishing options for this article.">
+            <Panel.Actions>
+                <Button size="sm" appearance="soft">Preview</Button>
+            </Panel.Actions>
+
+            <Stack gap="sm">
+                <TextField name="slug" label="Slug" value="building-atom" />
+                <TextField name="status" label="Status" value="draft" />
+            </Stack>
+
+            <Panel.Footer>
+                <Button variant="ghost">Cancel</Button>
+                <Button>Save changes</Button>
+            </Panel.Footer>
+        </Panel>
+    </ComponentExample>
+
+    <ComponentExample title="Body only panel" description="Panels can also be used as a plain framed surface.">
+        <Panel>
+            <div>This is useful for simple content blocks, generated previews, or empty dashboard states that need a quiet frame.</div>
+        </Panel>
+    </ComponentExample>
+
+    <ComponentExample title="Table panel" description="Use padding none when the child component already owns its own spacing.">
+        <Panel title="Recent articles" description="A common admin list shape." padding="none">
+            <Panel.Actions>
+                <Button size="sm" appearance="soft">New article</Button>
+            </Panel.Actions>
+
+            <Table :items="$this->articles" as="article">
+                <Column label="Title" field="title" />
+                <Column label="Status">
+                    <Badge>{{ $article["status"] }}</Badge>
+                </Column>
+                <Column label="Updated" field="updated" />
+            </Table>
+        </Panel>
+    </ComponentExample>
+
+    <ComponentExample title="List" description="Lists are compact surfaces for settings, activity feeds, and row-style summaries.">
+        <List :items="$this->activity" as="activity">
+            <ListItem :title="$activity['title']" :description="$activity['description']" :icon="$activity['icon']">
+                <ListItem.Actions>
+                    @if(isset($activity["badge"]))
+                        <Badge variant="success">{{ $activity["badge"] }}</Badge>
+                    @else
+                        <Button size="sm" variant="ghost">Open</Button>
+                    @endif
+                </ListItem.Actions>
+            </ListItem>
+        </List>
+    </ComponentExample>
+
+    <ComponentExample title="Cards" description="Cards are compact item surfaces for lists, dashboards, and navigation clusters.">
+        <div class="component-grid">
+            <Card title="Draft articles" description="12 waiting for review" href="/components/data">
+                <Card.Actions>
+                    <Button size="sm" appearance="soft">Open</Button>
+                </Card.Actions>
+            </Card>
+
+            <Card title="Published" description="48 public articles" href="/components/data">
+                <p>Latest article was published today.</p>
+
+                <Card.Actions>
+                    <Button size="sm" variant="ghost">View list</Button>
+                </Card.Actions>
+            </Card>
+
+            <Card title="Comments" description="3 need moderation">
+                <Badge variant="warning">Needs review</Badge>
+            </Card>
+        </div>
+    </ComponentExample>
+</Stack>

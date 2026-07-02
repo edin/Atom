@@ -1,0 +1,19 @@
+<section class="story-header">
+    <div>
+        <h1>Data</h1>
+        <p>Data components render tables and list-like views from parent-owned child tags.</p>
+    </div>
+    <Badge>Placeholder</Badge>
+</section>
+
+<ComponentExample title="Table columns" description="Table maps plain Column tags into column objects before rendering rows.">
+    <Table :items="$this->users" as="user">
+        <Column label="Name" field="name" />
+        <Column label="Role">
+            <Badge>{{ $user["role"] }}</Badge>
+        </Column>
+        <Column label="Status">
+            <Badge :variant="$user['status'] === 'Draft' ? 'secondary' : ''">{{ $user["status"] }}</Badge>
+        </Column>
+    </Table>
+</ComponentExample>

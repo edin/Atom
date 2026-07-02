@@ -23,7 +23,7 @@ abstract class FieldEntry implements ComponentInterface
     #[FromContext("model")]
     public mixed $model = null;
 
-    final public function render(): string
+    public function render(): string
     {
         return $this->field($this->renderControl() . $this->error());
     }
@@ -32,7 +32,7 @@ abstract class FieldEntry implements ComponentInterface
 
     protected function field(string $content): string
     {
-        $label = $this->label === "" ? "" : Html::tag("span", ["class" => "atom-field__label"], Html::escape($this->label));
+        $label = $this->label === "" ? "" : Html::tag("span", ["class" => "atom-field-label"], Html::escape($this->label));
 
         return Html::tag("label", [
             "class" => "atom-field",
@@ -46,7 +46,7 @@ abstract class FieldEntry implements ComponentInterface
 
         return $message === null
             ? ""
-            : Html::tag("p", ["id" => $this->fieldId() . "-error", "class" => "field-error"], Html::escape($message));
+            : Html::tag("p", ["id" => $this->fieldId() . "-error", "class" => "atom-field-error"], Html::escape($message));
     }
 
     protected function fieldId(): string

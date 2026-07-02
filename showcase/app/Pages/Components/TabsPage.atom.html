@@ -1,0 +1,57 @@
+<section class="story-header">
+    <div>
+        <h1>Tabs</h1>
+        <p>Tabs can be plain links to the same page, letting URL state decide which content renders.</p>
+    </div>
+    <Badge>Primitive</Badge>
+</section>
+
+<Stack gap="md">
+    <ComponentExample title="URL backed tabs" description="Each tab points to the same page with a different query value.">
+        <Stack gap="sm">
+            <Tabs :active="$this->tab">
+                <Tab name="overview" label="Overview" href="/components/tabs?tab=overview" atom:navigate atom:preserve-state>
+                    <Stack gap="sm">
+                        <Alert variant="info">Overview content is rendered from the current URL.</Alert>
+                        <p>This is the default tab at <code>/components/tabs</code>.</p>
+                    </Stack>
+                </Tab>
+
+                <Tab name="drafts" label="Drafts" href="/components/tabs?tab=drafts" atom:navigate atom:preserve-state>
+                    <Stack gap="sm">
+                        <Alert variant="warning">Drafts can show a filtered list or pending workflow.</Alert>
+                        <Badge variant="warning">3 drafts</Badge>
+                    </Stack>
+                </Tab>
+
+                <Tab name="settings" label="Settings" href="/components/tabs?tab=settings" atom:navigate atom:preserve-state>
+                    <Stack gap="sm">
+                        <Alert variant="neutral">Settings can render a completely different section.</Alert>
+                        <Button appearance="soft">Save settings</Button>
+                    </Stack>
+                </Tab>
+            </Tabs>
+        </Stack>
+    </ComponentExample>
+
+    <ComponentExample title="Action backed tabs" description="Without href, Tab renders a button; atom:action can update page state and rerender the active panel.">
+        <Tabs :active="$this->localTab">
+            <Tab name="preview" label="Preview" atom:action="setLocalTab('preview')">
+                <Alert variant="success">Preview is stored in page state.</Alert>
+            </Tab>
+
+            <Tab name="source" label="Source" atom:action="setLocalTab('source')">
+                <Panel title="Source">
+                    This tab changed without changing the URL.
+                </Panel>
+            </Tab>
+
+            <Tab name="history" label="History" atom:action="setLocalTab('history')">
+                <Stack gap="sm">
+                    <Badge variant="info">Version 3</Badge>
+                    <p>History content can be rendered from the same Tabs component.</p>
+                </Stack>
+            </Tab>
+        </Tabs>
+    </ComponentExample>
+</Stack>

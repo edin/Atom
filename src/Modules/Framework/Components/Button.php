@@ -17,6 +17,8 @@ final class Button implements ComponentInterface
     public string $type = "button";
     public ?string $href = null;
     public string $variant = "";
+    public string $appearance = "";
+    public string $size = "";
     public string $class = "";
 
     public function render(): string
@@ -27,6 +29,8 @@ final class Button implements ComponentInterface
             "type" => $tag === "button" ? $this->type : null,
             "class" => Html::classes("atom-button", $this->class),
             "data-variant" => $this->variant,
+            "data-appearance" => $this->appearance,
+            "data-size" => $this->size,
         ], $this->attributes->all());
 
         return Html::tag($tag, $attributes, $this->content());

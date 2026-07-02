@@ -1,0 +1,38 @@
+<section class="story-header">
+    <div>
+        <h1>Badges</h1>
+        <p>Badges label short metadata such as status, category, and counts.</p>
+    </div>
+    <Badge>Primitive</Badge>
+</section>
+
+<Stack gap="md">
+    <ComponentExample title="Variants" description="Badges use the shared primitive variant vocabulary.">
+        <Inline gap="sm">
+            <Badge>Primary</Badge>
+            <Badge variant="secondary">Secondary</Badge>
+            <Badge variant="success">Success</Badge>
+            <Badge variant="info">Info</Badge>
+            <Badge variant="warning">Warning</Badge>
+            <Badge variant="danger">Danger</Badge>
+            <Badge variant="neutral">Neutral</Badge>
+        </Inline>
+    </ComponentExample>
+
+    <ComponentExample title="Appearance" description="Outline badges keep the same variant color with lighter visual weight.">
+        <Inline gap="sm">
+            <Badge appearance="outline">Primary</Badge>
+            <Badge variant="success" appearance="outline">Success</Badge>
+            <Badge variant="warning" appearance="outline">Warning</Badge>
+            <Badge variant="danger" appearance="outline">Danger</Badge>
+        </Inline>
+    </ComponentExample>
+
+    <ComponentExample title="Sizes" description="Badges support sm, default, and lg sizes.">
+        <Inline gap="sm" align="center">
+            <Badge size="sm">Small</Badge>
+            <Badge>Default</Badge>
+            <Badge size="lg">Large</Badge>
+        </Inline>
+    </ComponentExample>
+</Stack>

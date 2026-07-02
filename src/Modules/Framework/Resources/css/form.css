@@ -13,6 +13,10 @@
     font-weight: 650;
 }
 
+.atom-field-label {
+    color: var(--atom-color-text);
+}
+
 .atom-input,
 .atom-textarea,
 .atom-select {
@@ -25,9 +29,63 @@
     font: inherit;
 }
 
+.atom-input:focus,
+.atom-textarea:focus,
+.atom-select:focus {
+    outline: 2px solid var(--atom-color-focus);
+    outline-offset: 2px;
+    border-color: var(--atom-color-primary);
+}
+
+.atom-input.is-invalid,
+.atom-textarea.is-invalid,
+.atom-select.is-invalid,
+.atom-input[aria-invalid="true"],
+.atom-textarea[aria-invalid="true"],
+.atom-select[aria-invalid="true"] {
+    border-color: var(--atom-color-danger);
+}
+
+.atom-input:disabled,
+.atom-textarea:disabled,
+.atom-select:disabled {
+    cursor: not-allowed;
+    color: var(--atom-color-muted);
+    background: var(--atom-color-soft);
+    opacity: 0.75;
+}
+
 .atom-textarea {
     min-height: 140px;
     resize: vertical;
+}
+
+.atom-check-field {
+    display: flex;
+    align-items: center;
+    gap: var(--atom-space-2);
+}
+
+.atom-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--atom-color-primary);
+}
+
+.atom-checkbox:focus {
+    outline: 2px solid var(--atom-color-focus);
+    outline-offset: 2px;
+}
+
+.atom-checkbox.is-invalid,
+.atom-checkbox[aria-invalid="true"] {
+    outline: 2px solid var(--atom-color-danger-line);
+    outline-offset: 2px;
+}
+
+.atom-checkbox:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
 }
 
 .atom-field-error {

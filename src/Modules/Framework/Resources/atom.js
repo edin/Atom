@@ -2,6 +2,7 @@
     var actionAttribute = "atom:action";
     var submitAttribute = "atom:submit";
     var navigateAttribute = "atom:navigate";
+    var preserveStateAttribute = "atom:preserve-state";
     var updateRootAttribute = "atom:update-root";
     var updateEngine = {
         update: function (current, next) {
@@ -131,11 +132,15 @@
         return String(value).replace(/\\/g, "\\\\").replace(/"/g, "\\\"");
     }
 
-    function request(method, url, body, done, fail) {
+    function request(method, url, body, done, fail, headers) {
         var xhr = new XMLHttpRequest();
 
         xhr.open(method, url, true);
         xhr.setRequestHeader("X-Requested-With", "Atom");
+        headers = headers || {};
+        Object.keys(headers).forEach(function (name) {
+            xhr.setRequestHeader(name, headers[name]);
+        });
         xhr.onreadystatechange = function () {
             if (xhr.readyState !== 4) {
                 return;
@@ -307,11 +312,25 @@
     }
 
     function followLink(anchor) {
+        var body = null;
+        var method = "GET";
+        var headers = null;
+
+        if (anchor.hasAttribute(preserveStateAttribute)) {
+            method = "POST";
+            body = new FormData();
+            body.append("_state", currentState());
+            headers = {
+                "X-Atom-Intent": "navigate",
+                "X-Atom-Method": "GET"
+            };
+        }
+
         setBusy(true);
         request(
-            "GET",
+            method,
             anchor.href,
-            null,
+            body,
             function (html, responseUrl) {
                 updatePage(html, responseUrl);
                 setBusy(false);
@@ -319,7 +338,8 @@
             function () {
                 setBusy(false);
                 window.location.href = anchor.href;
-            }
+            },
+            headers
         );
     }
 

@@ -22,7 +22,7 @@ final class Field implements ComponentInterface
     {
         $content = "";
         if ($this->label !== "") {
-            $content .= Html::tag("span", ["class" => "atom-field__label"], Html::escape($this->label));
+            $content .= Html::tag("span", ["class" => "atom-field-label"], Html::escape($this->label));
         }
 
         $content .= $this->content?->render() ?? "";

@@ -1,0 +1,40 @@
+<section class="story-header">
+    <div>
+        <h1>Alerts</h1>
+        <p>Alerts communicate status, warnings, and short contextual messages.</p>
+    </div>
+    <Badge>Primitive</Badge>
+</section>
+
+<Stack gap="md">
+    <ComponentExample title="Basic alerts" description="Use semantic variants for common status messages.">
+        <Stack gap="sm">
+            <Alert variant="neutral">Neutral alert</Alert>
+            <Alert variant="info">Info alert</Alert>
+            <Alert variant="success">Success alert</Alert>
+            <Alert variant="warning">Warning alert</Alert>
+            <Alert variant="danger">Danger alert</Alert>
+        </Stack>
+    </ComponentExample>
+
+    <ComponentExample title="Title and description" description="Title and description give the alert a richer information shape.">
+        <Alert title="You have 10 messages" description="Open your inbox when you have a moment." variant="info" />
+    </ComponentExample>
+
+    <ComponentExample title="Actions" description="Actions are passed as a named fragment.">
+        <Alert title="Review changes" description="This article has unpublished edits." variant="warning" appearance="outline">
+            <Alert.Actions>
+                <Button size="sm" appearance="soft">Review</Button>
+                <Button size="sm" variant="ghost">Dismiss</Button>
+            </Alert.Actions>
+        </Alert>
+    </ComponentExample>
+
+    <ComponentExample title="Sizes" description="Alerts support sm, default, and lg sizes.">
+        <Stack gap="sm">
+            <Alert size="sm" variant="info">Small alert</Alert>
+            <Alert variant="info">Default alert</Alert>
+            <Alert size="lg" variant="info">Large alert</Alert>
+        </Stack>
+    </ComponentExample>
+</Stack>

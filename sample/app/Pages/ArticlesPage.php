@@ -5,11 +5,10 @@ declare(strict_types=1);
 namespace App\Pages;
 
 use App\Models\Article;
-use Atom\Hydrator\Attributes\FromBody;
+use Atom\Page\FormModel;
 use Atom\Page\PageAction;
 use Atom\Page\PageRoute;
 use Atom\Page\State;
-use Atom\Validation\Schema;
 
 #[PageRoute("/articles", name: "articles.index")]
 final class ArticlesPage extends AppPage
@@ -25,15 +24,14 @@ final class ArticlesPage extends AppPage
     #[State]
     public ?int $deleteId = null;
 
-    /**
-     * @var array{id: int, title: string, summary: string}
-     */
     #[State]
-    public array $edit = [
-        "id" => 0,
-        "title" => "",
-        "summary" => "",
-    ];
+    #[FormModel]
+    public ArticleEditForm $edit;
+
+    public function __construct()
+    {
+        $this->edit = new ArticleEditForm();
+    }
 
     public function get(): void
     {
@@ -52,11 +50,8 @@ final class ArticlesPage extends AppPage
 
         $this->editingId = $article->id;
         $this->deleteId = null;
-        $this->edit = [
-            "id" => $article->id,
-            "title" => $article->title,
-            "summary" => $article->summary,
-        ];
+        $this->edit->title = $article->title;
+        $this->edit->summary = $article->summary;
         $this->loadArticles();
     }
 
@@ -64,11 +59,7 @@ final class ArticlesPage extends AppPage
     public function cancel(): void
     {
         $this->editingId = null;
-        $this->edit = [
-            "id" => 0,
-            "title" => "",
-            "summary" => "",
-        ];
+        $this->edit = new ArticleEditForm();
         $this->loadArticles();
     }
 
@@ -100,17 +91,9 @@ final class ArticlesPage extends AppPage
     }
 
     #[PageAction("save")]
-    public function save(
-        #[FromBody]
-        string $title = "",
-        #[FromBody]
-        string $summary = ""
-    ): void
+    public function save(): void
     {
-        $this->edit["title"] = $title;
-        $this->edit["summary"] = $summary;
-
-        if (!$this->validateEdit()) {
+        if (!$this->validateModel($this->edit)) {
             $this->loadArticles();
             return;
         }
@@ -126,8 +109,8 @@ final class ArticlesPage extends AppPage
             return;
         }
 
-        $article->title = $this->edit["title"];
-        $article->summary = $this->edit["summary"];
+        $article->title = $this->edit->title;
+        $article->summary = $this->edit->summary;
         $article->save();
 
         $this->cancel();
@@ -160,22 +143,5 @@ final class ArticlesPage extends AppPage
             ->orderByDesc("created_at")
             ->with("category")
             ->all();
-    }
-
-    private function validateEdit(): bool
-    {
-        $validation = Schema::make(static function (Schema $schema): void {
-            $schema->field("title")
-                ->required("Give this article a title.")
-                ->maxLength(120);
-
-            $schema->field("summary")
-                ->required("Add a short summary.")
-                ->maxLength(220);
-        })->validate($this->edit);
-
-        $this->setValidation($validation);
-
-        return $validation->passed();
     }
 }

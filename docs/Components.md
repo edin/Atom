@@ -7,8 +7,8 @@ Components are the reusable building blocks of `.atom.html` views.
 They are intentionally simple PHP objects:
 
 - attributes hydrate public properties
-- default child content hydrates `public ?Fragment $content`
-- named fragments hydrate matching `Fragment` properties
+- default child content hydrates `public ?Fragment $content` or `public ?TemplateFragment $content`
+- named fragments hydrate matching `Fragment` or `TemplateFragment` properties
 - unknown attributes can be captured with `AttributeBag`
 - declared child tags can be collected into typed arrays with `#[Children]`
 - child fragments are lazy, so the parent decides if and when they render
@@ -53,13 +53,19 @@ The framework module registers default UI and form components:
 <TextField label="Title" name="title" maxlength="120" />
 <TextAreaField label="Body" name="body" />
 <SelectField label="Category" name="category_id" bind="categoryId" :options="$this->categories" />
+<CheckField label="Published" name="isPublished" />
+<HiddenField name="id" />
 <FieldError name="title" />
 <ValidationSummary />
 ```
 
-`TextInput` and `TextArea` read values from the current page property matching `name`, unless a `value` attribute is provided. When validation errors exist, they render `aria-invalid`, `aria-describedby`, and the `is-invalid` class.
+`TextInput` and `TextArea` read values from the current page property matching `name`, unless a `value` attribute is provided. They render framework control classes such as `atom-input` and `atom-textarea`. When validation errors exist, they render `aria-invalid`, `aria-describedby`, and the `is-invalid` class.
 
-`TextField`, `TextAreaField`, and `SelectField` are composite field entries. They render the field wrapper, control, validation state, and field error.
+`TextField`, `TextAreaField`, `SelectField`, and `CheckField` are composite field entries. They render the field wrapper, control, validation state, and field error.
+
+`CheckField` renders a hidden unchecked fallback value before the checkbox, so boolean form models receive `"0"` when the box is unchecked and `"1"` when checked.
+
+`HiddenField` binds from the current page or form model like the other field components, but renders only a hidden input without visible field chrome.
 
 ## Properties
 
@@ -206,6 +212,41 @@ $this->content?->renderOr("<p>Empty</p>");
 
 Whitespace-only output counts as empty.
 
+Use `TemplateFragment` when a parent component needs to inspect the child template as well as render it.
+This is useful for showcase/documentation components that render a live preview and source code:
+
+```php
+use Atom\View\Component\ComponentInterface;
+use Atom\View\Component\TemplateFragment;
+use Atom\View\Html;
+
+final class ComponentExample implements ComponentInterface
+{
+    public string $title = "";
+    public ?TemplateFragment $content = null;
+
+    public function render(): string
+    {
+        return Html::tag("section", ["class" => "component-example"],
+            Html::tag("h2", content: Html::escape($this->title)) .
+            Html::tag("div", ["class" => "component-example-preview"], $this->content?->render() ?? "") .
+            Html::tag("pre", content: Html::escape($this->content?->source() ?? ""))
+        );
+    }
+}
+```
+
+Template fragments expose:
+
+```php
+$this->content?->render($variables)
+$this->content?->source()
+$this->content?->nodes()
+$this->content?->fragment()
+```
+
+The first version of `source()` serializes the parsed AST. It is intended for readable examples, not exact whitespace preservation.
+
 ## Context Injection
 
 Use `#[FromContext]` when a child component should receive a value provided by a parent fragment render.
@@ -273,7 +314,7 @@ final class Panel implements ComponentInterface
 </Panel>
 ```
 
-`<Panel.Header>` hydrates `public ?Fragment $header`.
+`<Panel.Header>` hydrates `public ?Fragment $header` or `public ?TemplateFragment $header`.
 
 ## Typed Children
 
@@ -466,7 +507,7 @@ Component authoring errors are intended to point at the fix.
 Examples:
 
 - unknown attributes suggest adding a public property or `AttributeBag`
-- unknown named fragments suggest adding the matching `Fragment` property
-- body content without `public ?Fragment $content` fails clearly
+- unknown named fragments suggest adding the matching `Fragment` or `TemplateFragment` property
+- body content without `public ?Fragment $content` or `public ?TemplateFragment $content` fails clearly
 - invalid `#[Children]` mappings name the mapped property
 - invalid render results include the returned type

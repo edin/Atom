@@ -1,4 +1,8 @@
 .atom-alert {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--atom-space-4);
     padding: 12px 14px;
     border: 1px solid var(--atom-color-line);
     border-radius: var(--atom-radius);
@@ -6,8 +10,150 @@
     color: var(--atom-color-text);
 }
 
+.atom-alert__content {
+    display: grid;
+    gap: var(--atom-space-1);
+}
+
+.atom-alert__title {
+    display: block;
+    font-weight: 700;
+}
+
+.atom-alert__description,
+.atom-alert__body {
+    margin: 0;
+}
+
+.atom-alert__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--atom-space-2);
+    flex: 0 0 auto;
+}
+
+.atom-alert[data-size="sm"] {
+    padding: 9px 11px;
+    font-size: 0.9rem;
+}
+
+.atom-alert[data-size="lg"] {
+    padding: 16px 18px;
+}
+
+.atom-alert[data-variant="primary"] {
+    border-color: var(--atom-color-primary);
+    background: var(--atom-color-primary);
+    color: #ffffff;
+}
+
+.atom-alert[data-variant="secondary"] {
+    border-color: var(--atom-color-secondary);
+    background: var(--atom-color-secondary);
+    color: #ffffff;
+}
+
+.atom-alert[data-variant="success"] {
+    border-color: var(--atom-color-success);
+    background: var(--atom-color-success);
+    color: #ffffff;
+}
+
+.atom-alert[data-variant="info"] {
+    border-color: var(--atom-color-info);
+    background: var(--atom-color-info);
+    color: #ffffff;
+}
+
+.atom-alert[data-variant="warning"] {
+    border-color: var(--atom-color-warning);
+    background: var(--atom-color-warning);
+    color: #ffffff;
+}
+
 .atom-alert[data-variant="danger"] {
+    border-color: var(--atom-color-danger);
+    background: var(--atom-color-danger);
+    color: #ffffff;
+}
+
+.atom-alert[data-appearance="soft"] {
+    border-color: var(--atom-color-line);
+    background: var(--atom-color-soft);
+    color: var(--atom-color-text);
+}
+
+.atom-alert[data-variant="primary"][data-appearance="soft"] {
+    border-color: var(--atom-color-primary-line);
+    background: var(--atom-color-primary-soft);
+    color: var(--atom-color-primary-text);
+}
+
+.atom-alert[data-variant="secondary"][data-appearance="soft"] {
+    border-color: var(--atom-color-secondary-line);
+    background: var(--atom-color-secondary-soft);
+    color: var(--atom-color-secondary-text);
+}
+
+.atom-alert[data-variant="success"][data-appearance="soft"] {
+    border-color: var(--atom-color-success-line);
+    background: var(--atom-color-success-soft);
+    color: var(--atom-color-success-text);
+}
+
+.atom-alert[data-variant="info"][data-appearance="soft"] {
+    border-color: var(--atom-color-info-line);
+    background: var(--atom-color-info-soft);
+    color: var(--atom-color-info-text);
+}
+
+.atom-alert[data-variant="warning"][data-appearance="soft"] {
+    border-color: var(--atom-color-warning-line);
+    background: var(--atom-color-warning-soft);
+    color: var(--atom-color-warning-text);
+}
+
+.atom-alert[data-variant="danger"][data-appearance="soft"] {
     border-color: var(--atom-color-danger-line);
     background: var(--atom-color-danger-soft);
+    color: var(--atom-color-danger-text);
+}
+
+.atom-alert[data-appearance="outline"] {
+    background: transparent;
+}
+
+.atom-alert[data-appearance="ghost"] {
+    border-color: transparent;
+    background: transparent;
+}
+
+.atom-alert[data-variant="primary"][data-appearance="outline"],
+.atom-alert[data-variant="primary"][data-appearance="ghost"] {
+    color: var(--atom-color-primary-text);
+}
+
+.atom-alert[data-variant="secondary"][data-appearance="outline"],
+.atom-alert[data-variant="secondary"][data-appearance="ghost"] {
+    color: var(--atom-color-secondary-text);
+}
+
+.atom-alert[data-variant="success"][data-appearance="outline"],
+.atom-alert[data-variant="success"][data-appearance="ghost"] {
+    color: var(--atom-color-success-text);
+}
+
+.atom-alert[data-variant="info"][data-appearance="outline"],
+.atom-alert[data-variant="info"][data-appearance="ghost"] {
+    color: var(--atom-color-info-text);
+}
+
+.atom-alert[data-variant="warning"][data-appearance="outline"],
+.atom-alert[data-variant="warning"][data-appearance="ghost"] {
+    color: var(--atom-color-warning-text);
+}
+
+.atom-alert[data-variant="danger"][data-appearance="outline"],
+.atom-alert[data-variant="danger"][data-appearance="ghost"] {
     color: var(--atom-color-danger-text);
 }

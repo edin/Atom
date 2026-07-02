@@ -52,6 +52,7 @@ final class Dispatcher implements RequestHandlerInterface
 
     public function handle(Request $request): Response
     {
+        $request = $this->effectiveRequest($request);
         $method = $request->getMethod();
         $uriPath = $this->getUriPath($request);
 
@@ -80,6 +81,23 @@ final class Dispatcher implements RequestHandlerInterface
             $middlewares,
             new MatchedRouteHandler($matchedRoute, $this->routeInvoker, $this->resultConverter, $context)
         ))->handle($request);
+    }
+
+    private function effectiveRequest(Request $request): Request
+    {
+        if ($request->getMethod() !== "POST") {
+            return $request;
+        }
+
+        if (strcasecmp($request->headers()->get("X-Atom-Intent", "") ?? "", "navigate") !== 0) {
+            return $request;
+        }
+
+        if (strcasecmp($request->headers()->get("X-Atom-Method", "") ?? "", "GET") !== 0) {
+            return $request;
+        }
+
+        return $request->withMethod("GET");
     }
 
     private function resolveMiddlewares(MatchedRoute $route, InjectionContext $context): array

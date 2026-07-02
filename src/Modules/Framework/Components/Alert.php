@@ -12,9 +12,14 @@ use Atom\View\Html;
 final class Alert implements ComponentInterface
 {
     public ?Fragment $content = null;
+    public ?Fragment $actions = null;
     public AttributeBag $attributes;
+    public string $title = "";
+    public string $description = "";
     public string $text = "";
-    public string $variant = "";
+    public string $variant = "neutral";
+    public string $appearance = "soft";
+    public string $size = "";
     public string $role = "status";
     public string $class = "";
 
@@ -23,8 +28,44 @@ final class Alert implements ComponentInterface
         return Html::tag("div", Html::mergeAttributes([
             "class" => Html::classes("atom-alert", $this->class),
             "data-variant" => $this->variant,
+            "data-appearance" => $this->appearance,
+            "data-size" => $this->size,
             "role" => $this->role,
-        ], $this->attributes->all()), $this->content());
+        ], $this->attributes->all()), $this->body());
+    }
+
+    private function body(): string
+    {
+        if ($this->title === "" && $this->description === "" && $this->actions === null) {
+            return $this->content();
+        }
+
+        $content = Html::tag("div", ["class" => "atom-alert__content"], $this->structuredContent());
+
+        if ($this->actions !== null) {
+            $content .= Html::tag("div", ["class" => "atom-alert__actions"], $this->actions->render());
+        }
+
+        return $content;
+    }
+
+    private function structuredContent(): string
+    {
+        $content = "";
+
+        if ($this->title !== "") {
+            $content .= Html::tag("strong", ["class" => "atom-alert__title"], Html::escape($this->title));
+        }
+
+        if ($this->description !== "") {
+            $content .= Html::tag("p", ["class" => "atom-alert__description"], Html::escape($this->description));
+        }
+
+        if ($this->content !== null || $this->text !== "") {
+            $content .= Html::tag("div", ["class" => "atom-alert__body"], $this->content());
+        }
+
+        return $content;
     }
 
     private function content(): string

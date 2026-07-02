@@ -1,0 +1,89 @@
+<section class="showcase-header">
+    <div>
+        <h1>Component showcase</h1>
+        <p>Framework components rendered by the sample app, with the same atom.html syntax used everywhere else.</p>
+    </div>
+    <Inline gap="sm" align="center">
+        <Badge>Core</Badge>
+        <Badge variant="danger">Validation</Badge>
+        <Badge variant="secondary">SIPA ready</Badge>
+    </Inline>
+</section>
+
+<section class="showcase-grid">
+    <Panel title="Buttons">
+        <Stack gap="sm">
+            <Inline gap="sm">
+                <Button>Default</Button>
+                <Button variant="secondary">Secondary</Button>
+                <Button variant="ghost">Ghost</Button>
+                <Button variant="danger">Danger</Button>
+            </Inline>
+            <Inline gap="sm">
+                <Button variant="link">Link button</Button>
+                <Button variant="link-danger">Danger link</Button>
+                <Button href="/articles" atom:navigate>Anchor button</Button>
+            </Inline>
+        </Stack>
+    </Panel>
+
+    <Panel title="Alerts">
+        <Stack gap="sm">
+            <Alert>Default alert with fragment content.</Alert>
+            <Alert variant="danger">Danger alert for validation or destructive state.</Alert>
+        </Stack>
+    </Panel>
+
+    <Panel title="Badges">
+        <Inline gap="sm">
+            <Badge>Published</Badge>
+            <Badge variant="secondary">Draft</Badge>
+            <Badge variant="danger">Archived</Badge>
+        </Inline>
+    </Panel>
+
+    <Panel title="Layout helpers">
+        <Stack gap="sm">
+            <Inline class="showcase-inline-demo" gap="sm" align="center" justify="between">
+                <span>Left</span>
+                <span>Center aligned</span>
+                <Button variant="ghost">Action</Button>
+            </Inline>
+            <Stack class="showcase-stack-demo" gap="sm">
+                <span>Stack item one</span>
+                <span>Stack item two</span>
+                <span>Stack item three</span>
+            </Stack>
+        </Stack>
+    </Panel>
+</section>
+
+<Panel title="Form components">
+    <Form submit="preview" class="showcase-form">
+        <Inline gap="md">
+            <SelectField
+                label="Category"
+                name="category_id"
+                bind="categoryId"
+                optionValue="id"
+                optionText="name"
+                :options="$this->categories"
+            />
+
+            <TextField label="Title" name="titleInput" maxlength="120" />
+        </Inline>
+
+        <TextField label="Summary" name="summary" maxlength="220" />
+
+        <TextAreaField label="Body" name="body" rows="4" />
+
+        <CheckField label="Published" name="is_published" bind="isPublished" />
+
+        <HiddenField name="componentId" />
+
+        <FormActions>
+            <Button type="submit">Preview submit</Button>
+            <Button type="button" variant="ghost">Cancel</Button>
+        </FormActions>
+    </Form>
+</Panel>

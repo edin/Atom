@@ -1,0 +1,39 @@
+<section class="story-header">
+    <div>
+        <h1>Pagination</h1>
+        <p>Pagination renders a small window of page links and keeps the current page in the URL.</p>
+    </div>
+    <Badge>Primitive</Badge>
+</section>
+
+<Stack gap="md">
+    <ComponentExample title="URL backed pagination" description="The page reads ?page= and passes the current value to Pagination.">
+        <Stack gap="sm">
+            <Panel title="Current page">
+                <Inline gap="sm" align="center">
+                    <Badge variant="info">Page {{ $this->page }}</Badge>
+                    <span>Showing results for page {{ $this->page }} of {{ $this->total }}.</span>
+                </Inline>
+            </Panel>
+
+            <Pagination :page="$this->page" :total="$this->total" href="/components/pagination?page={page}" navigate preserve-state />
+        </Stack>
+    </ComponentExample>
+
+    <ComponentExample title="Action backed pagination" description="Pagination can render buttons that update page state with atom:action.">
+        <Stack gap="sm">
+            <Panel title="Local page">
+                <Inline gap="sm" align="center">
+                    <Badge variant="success">Page {{ $this->localPage }}</Badge>
+                    <span>This page value lives in #[State] and does not change the URL.</span>
+                </Inline>
+            </Panel>
+
+            <Pagination :page="$this->localPage" :total="$this->total" action="setLocalPage({page})" />
+        </Stack>
+    </ComponentExample>
+
+    <ComponentExample title="Compact window" description="The window property controls how many numeric links are shown.">
+        <Pagination page="6" total="12" window="3" href="/components/pagination?page={page}" />
+    </ComponentExample>
+</Stack>

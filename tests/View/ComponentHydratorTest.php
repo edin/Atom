@@ -12,6 +12,7 @@ use Atom\View\Component\ComponentHydrator;
 use Atom\View\Component\ComponentInterface;
 use Atom\View\Component\Fragment;
 use Atom\View\Component\FromContext;
+use Atom\View\Component\TemplateFragment;
 use Atom\View\Parser\ViewParser;
 use Atom\View\Render\PhpExpressionEvaluator;
 use Atom\View\Render\ViewContext;
@@ -95,6 +96,39 @@ final class ComponentHydratorTest extends TestCase
 
         $this->assertSame("one", $component->body?->render());
         $this->assertSame("one", $component->content?->render());
+    }
+
+    public function testHydratesTemplateFragmentContentWithNodesAndSource(): void
+    {
+        $component = new TemplateFragmentContentComponent();
+        $node = $this->element('<Card><Button variant="danger">Delete</Button></Card>');
+
+        $this->hydrator()->hydrate(
+            $component,
+            $node,
+            new ViewContext(),
+            static fn(array $nodes, ViewContext $context): string => "preview"
+        );
+
+        $this->assertSame("preview", $component->content?->render());
+        $this->assertCount(1, $component->content?->nodes());
+        $this->assertSame('<Button variant="danger">Delete</Button>', $component->content?->source());
+    }
+
+    public function testHydratesNamedTemplateFragments(): void
+    {
+        $component = new TemplateFragmentContentComponent();
+        $node = $this->element('<Card><Card.Body><strong>Body</strong></Card.Body></Card>');
+
+        $this->hydrator()->hydrate(
+            $component,
+            $node,
+            new ViewContext(),
+            static fn(array $nodes, ViewContext $context): string => "body"
+        );
+
+        $this->assertSame("body", $component->body?->render());
+        $this->assertSame("<strong>Body</strong>", $component->body?->source());
     }
 
     public function testCollectsDeclaredChildComponentsAndRemovesThemFromContent(): void
@@ -345,6 +379,17 @@ final class HydratedTableComponent implements ComponentInterface
     #[Children("Column", HydratedColumnComponent::class)]
     public array $columns = [];
     public ?Fragment $content = null;
+
+    public function render(): string
+    {
+        return "";
+    }
+}
+
+final class TemplateFragmentContentComponent implements ComponentInterface
+{
+    public ?TemplateFragment $body = null;
+    public ?TemplateFragment $content = null;
 
     public function render(): string
     {

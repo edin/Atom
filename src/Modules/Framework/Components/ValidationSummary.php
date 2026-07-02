@@ -11,7 +11,7 @@ use Atom\View\Component\ComponentInterface;
 final class ValidationSummary implements ComponentInterface
 {
     public Page $page;
-    public string $class = "validation-summary";
+    public string $class = "atom-validation-summary";
 
     public function render(): string
     {

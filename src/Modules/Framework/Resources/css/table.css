@@ -1,0 +1,39 @@
+.atom-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--atom-color-line);
+    border-radius: var(--atom-radius);
+    background: var(--atom-color-surface);
+}
+
+.atom-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+}
+
+.atom-table__heading {
+    padding: 11px 14px;
+    text-align: left;
+    font-weight: 650;
+    color: var(--atom-color-muted);
+    background: var(--atom-color-soft);
+    border-bottom: 1px solid var(--atom-color-line);
+}
+
+.atom-table__cell {
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--atom-color-line);
+    vertical-align: middle;
+}
+
+.atom-table tbody tr:last-child .atom-table__cell,
+.atom-table tbody tr:last-child .atom-table__empty {
+    border-bottom: 0;
+}
+
+.atom-table__empty {
+    padding: 18px 14px;
+    color: var(--atom-color-muted);
+    text-align: center;
+}

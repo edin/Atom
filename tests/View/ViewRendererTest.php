@@ -14,6 +14,7 @@ use Atom\View\Component\Children;
 use Atom\View\Component\ComponentInterface;
 use Atom\View\Component\ComponentRegistry;
 use Atom\View\Component\Fragment;
+use Atom\View\Component\TemplateFragment;
 use Atom\View\Parser\ViewParser;
 use Atom\View\Render\ViewRenderException;
 use Atom\View\Render\ViewRenderer;
@@ -136,6 +137,19 @@ final class ViewRendererTest extends TestCase
         ], $registry);
 
         $this->assertSame('<div>Hello Edin</div>', $html);
+    }
+
+    public function testComponentCanRenderTemplateFragmentPreviewAndSource(): void
+    {
+        $registry = new ComponentRegistry();
+        $registry->register("Example", TestExampleComponent::class);
+
+        $html = $this->render('<Example><button class="danger">Delete</button></Example>', [], $registry);
+
+        $this->assertSame(
+            '<section><div><button class="danger">Delete</button></div><pre>&lt;button class=&quot;danger&quot;&gt;Delete&lt;/button&gt;</pre></section>',
+            $html
+        );
     }
 
     public function testParentComponentCanCollectDeclaredChildComponents(): void
@@ -269,6 +283,18 @@ final class TestFrameComponent implements ComponentInterface
     public function render(): string
     {
         return "<div>" . $this->content?->render() . "</div>";
+    }
+}
+
+final class TestExampleComponent implements ComponentInterface
+{
+    public ?TemplateFragment $content = null;
+
+    public function render(): string
+    {
+        return "<section><div>" . $this->content?->render() . "</div><pre>" .
+            htmlspecialchars($this->content?->source() ?? "", ENT_QUOTES | ENT_SUBSTITUTE, "UTF-8") .
+            "</pre></section>";
     }
 }
 

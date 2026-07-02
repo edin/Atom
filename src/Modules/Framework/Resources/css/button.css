@@ -14,6 +14,17 @@
     cursor: pointer;
 }
 
+.atom-button[data-size="sm"] {
+    min-height: 32px;
+    padding: 0 11px;
+    font-size: 0.9rem;
+}
+
+.atom-button[data-size="lg"] {
+    min-height: 44px;
+    padding: 0 18px;
+}
+
 .atom-button:hover {
     background: var(--atom-color-primary-hover);
     text-decoration: none;
@@ -45,6 +56,44 @@
 
 .atom-button[data-variant="danger"]:hover {
     background: var(--atom-color-danger-hover);
+}
+
+.atom-button[data-variant="success"] {
+    border-color: var(--atom-color-success);
+    background: var(--atom-color-success);
+}
+
+.atom-button[data-variant="success"]:hover {
+    background: var(--atom-color-success-hover);
+}
+
+.atom-button[data-variant="warning"] {
+    border-color: var(--atom-color-warning);
+    background: var(--atom-color-warning);
+}
+
+.atom-button[data-variant="warning"]:hover {
+    background: var(--atom-color-warning-hover);
+}
+
+.atom-button[data-variant="info"] {
+    border-color: var(--atom-color-info);
+    background: var(--atom-color-info);
+}
+
+.atom-button[data-variant="info"]:hover {
+    background: var(--atom-color-info-hover);
+}
+
+.atom-button[data-appearance="outline"] {
+    background: transparent;
+    color: var(--atom-color-primary);
+}
+
+.atom-button[data-appearance="soft"] {
+    border-color: transparent;
+    background: var(--atom-color-primary-soft);
+    color: var(--atom-color-primary-text);
 }
 
 .atom-button[data-variant="link"],

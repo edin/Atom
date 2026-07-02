@@ -1,0 +1,24 @@
+<section class="story-header">
+    <div>
+        <h1>Feedback</h1>
+        <p>Feedback groups components that communicate state, validation, empty states, and user-facing messages.</p>
+    </div>
+    <Badge>Category</Badge>
+</section>
+
+<ComponentExample title="Feedback family" description="Primitive pages document each component in detail; category pages can later show real workflows.">
+    <Inline gap="sm">
+        <Button href="/components/alerts" atom:navigate>Alerts</Button>
+        <Button href="/components/badges" variant="ghost" atom:navigate>Badges</Button>
+    </Inline>
+</ComponentExample>
+
+<ComponentExample title="Workflow sketch" description="This page can become a combined feedback pattern page.">
+    <Stack gap="sm">
+        <Alert title="Article saved" description="The article was saved as draft." variant="success" />
+        <Inline gap="sm">
+            <Badge variant="success">Saved</Badge>
+            <Badge variant="neutral">Draft</Badge>
+        </Inline>
+    </Stack>
+</ComponentExample>

@@ -13,7 +13,7 @@ final class FieldError implements ComponentInterface
     public Page $page;
     public string $name;
     public ?string $id = null;
-    public string $class = "field-error";
+    public string $class = "atom-field-error";
 
     public function render(): string
     {

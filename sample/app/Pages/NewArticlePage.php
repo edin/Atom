@@ -38,6 +38,9 @@ final class NewArticlePage extends AppPage
     #[Required("Write the article body.")]
     public string $body = "";
 
+    #[FromBody("is_published")]
+    public bool $isPublished = true;
+
     public function get(): void
     {
         $this->loadCategories();
@@ -56,7 +59,7 @@ final class NewArticlePage extends AppPage
         $article->title = $this->titleInput;
         $article->summary = $this->summary;
         $article->body = $this->body;
-        $article->isPublished = true;
+        $article->isPublished = $this->isPublished;
         $article->save();
 
         return $response->redirect("/articles");

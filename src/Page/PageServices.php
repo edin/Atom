@@ -9,7 +9,7 @@ use Atom\Di\ServiceProviderInterface;
 use Atom\View\Component\ComponentFactoryInterface;
 use Atom\View\Component\ComponentHydrator;
 use Atom\View\Component\ComponentRegistry;
-use Atom\View\Component\NewComponentFactory;
+use Atom\View\Component\InjectorComponentFactory;
 use Atom\View\TemplateCache;
 use Atom\View\Parser\ViewParser;
 use Atom\View\Render\ExpressionEvaluatorInterface;
@@ -29,7 +29,7 @@ final readonly class PageServices implements ServiceProviderInterface
             ->singleton();
 
         $bindings->bind(ComponentFactoryInterface::class)
-            ->to(NewComponentFactory::class)
+            ->toFactory(fn($injector, $context) => new InjectorComponentFactory($injector))
             ->singleton();
 
         $bindings->bind(ComponentHydrator::class)

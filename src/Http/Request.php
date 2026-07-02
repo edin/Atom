@@ -56,6 +56,20 @@ final readonly class Request
         return strtoupper($this->method);
     }
 
+    public function withMethod(string $method): self
+    {
+        return new self(
+            $method,
+            $this->path,
+            $this->query->toArray(),
+            $this->post->toArray(),
+            $this->body,
+            $this->server->toArray(),
+            $this->files->toArray(),
+            $this->headers->toArray()
+        );
+    }
+
     public function getPath(): string
     {
         return $this->path === "" ? "/" : $this->path;

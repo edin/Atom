@@ -22,6 +22,7 @@ use ReflectionProperty;
 use ReflectionNamedType;
 use ReflectionObject;
 use ReflectionType;
+use ReflectionUnionType;
 use Throwable;
 
 final readonly class ComponentHydrator
@@ -263,11 +264,11 @@ final readonly class ComponentHydrator
                 if (!$this->assignProperty(
                     $component,
                     $propertyName,
-                    new Fragment(fn(array $variables = []): string => $renderNodes($child->children, $context->with($variables)))
+                    new TemplateFragment($child->children, fn(array $variables = []): string => $renderNodes($child->children, $context->with($variables)))
                 )) {
                     throw new ViewRenderException(
                         "Unknown fragment <{$child->owner}.{$child->name}> on component {$componentClass}. "
-                        . "Add public ?Fragment \${$propertyName} to receive it."
+                        . "Add public ?Fragment or ?TemplateFragment \${$propertyName} to receive it."
                     );
                 }
 
@@ -277,19 +278,33 @@ final readonly class ComponentHydrator
             $content[] = $child;
         }
 
-        if ($content !== []) {
+        if ($this->hasMeaningfulContent($content)) {
             if (!$this->assignProperty(
                 $component,
                 "content",
-                new Fragment(fn(array $variables = []): string => $renderNodes($content, $context->with($variables)))
+                new TemplateFragment($content, fn(array $variables = []): string => $renderNodes($content, $context->with($variables)))
             )) {
                 $preview = $this->firstContentNode($content);
                 throw new ViewRenderException(
                     "Component {$componentClass} rendered from <{$node->name}> received child content{$preview}, "
-                    . "but it does not declare public ?Fragment \$content."
+                    . "but it does not declare public ?Fragment or ?TemplateFragment \$content."
                 );
             }
         }
+    }
+
+    /**
+     * @param ViewNode[] $content
+     */
+    private function hasMeaningfulContent(array $content): bool
+    {
+        foreach ($content as $node) {
+            if (!$node instanceof TextNode || trim($node->text) !== "") {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function assignProperty(ComponentInterface $component, string $name, mixed $value): bool
@@ -304,9 +319,17 @@ final readonly class ComponentHydrator
             return false;
         }
 
-        if ($this->acceptsFragment($property->getType())) {
-            $value = $value instanceof Fragment ? $value : $this->fragmentFromValue($value);
-        } elseif ($value instanceof Fragment) {
+        $type = $property->getType();
+
+        if ($this->acceptsTemplateFragment($type)) {
+            $value = $value instanceof TemplateFragment ? $value : $this->templateFragmentFromValue($value);
+        } elseif ($this->acceptsFragment($type)) {
+            if ($value instanceof TemplateFragment) {
+                $value = $value->fragment();
+            } elseif (!$value instanceof Fragment && !$this->acceptsNativeValue($type, $value)) {
+                $value = $this->fragmentFromValue($value);
+            }
+        } elseif ($value instanceof Fragment || $value instanceof TemplateFragment) {
             return false;
         }
 
@@ -420,11 +443,24 @@ final readonly class ComponentHydrator
 
     private function acceptsFragment(?ReflectionType $type): bool
     {
-        if (!$type instanceof ReflectionNamedType) {
-            return false;
+        foreach ($this->namedTypes($type) as $namedType) {
+            if ($namedType->getName() === Fragment::class) {
+                return true;
+            }
         }
 
-        return $type->getName() === Fragment::class;
+        return false;
+    }
+
+    private function acceptsTemplateFragment(?ReflectionType $type): bool
+    {
+        foreach ($this->namedTypes($type) as $namedType) {
+            if ($namedType->getName() === TemplateFragment::class) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function acceptsAttributeBag(?ReflectionType $type): bool
@@ -445,9 +481,54 @@ final readonly class ComponentHydrator
         return is_a($type->getName(), Page::class, true);
     }
 
+    private function acceptsNativeValue(?ReflectionType $type, mixed $value): bool
+    {
+        foreach ($this->namedTypes($type) as $namedType) {
+            if ($namedType->isBuiltin() && get_debug_type($value) === $namedType->getName()) {
+                return true;
+            }
+
+            if (!$namedType->isBuiltin() && is_object($value) && is_a($value, $namedType->getName())) {
+                return true;
+            }
+        }
+
+        return $value === null && $type?->allowsNull() === true;
+    }
+
+    /**
+     * @return ReflectionNamedType[]
+     */
+    private function namedTypes(?ReflectionType $type): array
+    {
+        if ($type instanceof ReflectionNamedType) {
+            return [$type];
+        }
+
+        if ($type instanceof ReflectionUnionType) {
+            return array_values(array_filter(
+                $type->getTypes(),
+                static fn(ReflectionType $type): bool => $type instanceof ReflectionNamedType
+            ));
+        }
+
+        return [];
+    }
+
     private function fragmentFromValue(mixed $value): Fragment
     {
         return new Fragment(static fn(): string => Html::escape($value));
+    }
+
+    private function templateFragmentFromValue(mixed $value): TemplateFragment
+    {
+        $source = (string) $value;
+
+        return new TemplateFragment(
+            [new TextNode($source)],
+            static fn(): string => Html::escape($source),
+            $source
+        );
     }
 
     /**

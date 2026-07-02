@@ -20,7 +20,7 @@ final class TextInput implements ComponentInterface
             "id" => $this->fieldId(),
             "name" => $this->name,
             "value" => $this->fieldValue(),
-            "class" => $this->fieldClass(),
+            "class" => Html::classes("atom-input", $this->fieldClass()),
             "aria-invalid" => $this->hasError() ? "true" : null,
             "aria-describedby" => $this->hasError() ? $this->fieldId() . "-error" : null,
         ], $this->extraAttributes()));

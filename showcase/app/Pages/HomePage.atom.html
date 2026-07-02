@@ -1,0 +1,24 @@
+<section class="showcase-hero">
+    <div>
+        <h1>Atom components, rendered by Atom.</h1>
+        <p>
+            A small app dedicated to exploring framework components, templates,
+            fragments, props, and page-driven interactions.
+        </p>
+        <Inline gap="sm">
+            <Button href="/components/buttons" atom:navigate>Explore buttons</Button>
+            <Button href="/components/alerts" variant="ghost" atom:navigate>Explore alerts</Button>
+        </Inline>
+    </div>
+
+    <Panel title="Current slice">
+        <Stack gap="sm">
+            <Alert>Showcase is a separate Atom app beside the sample blog.</Alert>
+            <Inline gap="sm">
+                <Badge>Buttons</Badge>
+                <Badge variant="info">Alerts</Badge>
+                <Badge variant="success">Badges</Badge>
+            </Inline>
+        </Stack>
+    </Panel>
+</section>

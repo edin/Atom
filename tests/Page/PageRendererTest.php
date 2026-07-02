@@ -13,6 +13,7 @@ use Atom\Hydrator\Attributes\FromBody;
 use Atom\Hydrator\Attributes\FromQuery;
 use Atom\Hydrator\Attributes\FromRoute;
 use Atom\Http\Response;
+use Atom\Page\FormModel;
 use Atom\Page\Page;
 use Atom\Page\PageAction;
 use Atom\Page\PageActionException;
@@ -216,6 +217,34 @@ final class PageRendererTest extends TestCase
         $this->assertStringContainsString('name="atom-state"', $html);
     }
 
+    public function testPageActionInvokesGetBeforeActionSoQueryStateIsPreserved(): void
+    {
+        $serializer = new \Atom\Page\JsonPageStateSerializer();
+        $page = new QueryAndStateRenderedTestPage();
+        $page->localTab = "source";
+        $state = $serializer->serialize($page);
+
+        $router = new Router();
+        (new PageRouteRegistrar())->register($router, [
+            new \Atom\Page\PageDescriptor("/tabs", QueryAndStateRenderedTestPage::class),
+        ]);
+        $match = (new RouteMatcher($router))->match("POST", "/tabs", ["tab" => "drafts"]);
+
+        $context = new InjectionContext();
+        $context->set(Request::class, new Request("POST", "/tabs", ["tab" => "drafts"], [
+            "_action" => "setLocalTab('history')",
+            "_state" => $state,
+        ]));
+        $context->set(\Atom\Router\MatchedRoute::class, $match->matchedRoute);
+        $injector = new Injector();
+        $handler = new PageActionHandler($injector, $context);
+        $renderer = new PageRenderer($injector, $context);
+
+        $html = $handler->handle($renderer, $match->matchedRoute, $context->get(Request::class));
+
+        $this->assertStringContainsString("<h1>drafts|history</h1>", $html);
+    }
+
     public function testPageActionHandlerHydratesPageInputBeforeAction(): void
     {
         $html = $this->handlePageAction(BoundInputRenderedTestPage::class, "/bound-page/{id}", "save", [
@@ -226,6 +255,30 @@ final class PageRendererTest extends TestCase
         ]);
 
         $this->assertSame("<h1>7 Atom draft yes</h1>\n", $html);
+    }
+
+    public function testPageActionHandlerHydratesFormModelBeforeAction(): void
+    {
+        $html = $this->handlePageAction(FormModelRenderedTestPage::class, "/form-model-page", "save", [
+            "title" => "  Atom Forms  ",
+            "summary" => "Tiny but useful",
+        ]);
+
+        $this->assertStringContainsString("<h1>Atom Forms|Tiny but useful</h1>", $html);
+    }
+
+    public function testPageStateRestoresTypedFormModel(): void
+    {
+        $serializer = new \Atom\Page\JsonPageStateSerializer();
+        $page = new FormModelRenderedTestPage();
+        $page->edit->title = "Draft";
+        $state = $serializer->serialize($page);
+
+        $restored = new FormModelRenderedTestPage();
+        $serializer->deserialize($restored, $state);
+
+        $this->assertSame("Draft", $restored->edit->title);
+        $this->assertInstanceOf(PageEditForm::class, $restored->edit);
     }
 
     public function testPageActionHandlerReportsInvalidPageInput(): void
@@ -276,6 +329,16 @@ final class PageRendererTest extends TestCase
 
         $this->assertTrue($page->errors()->has("title"));
         $this->assertSame("Nope.", $page->errors()->first("title"));
+    }
+
+    public function testPageCanValidateModelWithAttributeRules(): void
+    {
+        $page = new ModelValidatedRenderedTestPage();
+        $page->form->title = "";
+
+        $this->assertFalse($page->validateForm());
+        $this->assertTrue($page->errors()->has("title"));
+        $this->assertSame("required", $page->errors()->errorsFor("title")[0]->code);
     }
 
     public function testPageActionCanValidateHydratedInput(): void
@@ -647,6 +710,38 @@ final class InvalidBoundInputRenderedTestPage extends Page
     }
 }
 
+final class FormModelRenderedTestPage extends Page
+{
+    public string $title = "";
+
+    #[State]
+    #[FormModel]
+    public PageEditForm $edit;
+
+    public function __construct()
+    {
+        $this->edit = new PageEditForm();
+    }
+
+    public function template(): ?string
+    {
+        return "GetRenderedTestPage.atom.html";
+    }
+
+    #[PageAction("save")]
+    public function save(): void
+    {
+        $this->title = $this->edit->title . "|" . $this->edit->summary;
+    }
+}
+
+final class PageEditForm
+{
+    public string $title = "";
+
+    public string $summary = "";
+}
+
 final class ValidatedRenderedTestPage extends Page
 {
     #[FromBody]
@@ -678,6 +773,27 @@ final class CustomValidatedRenderedTestPage extends Page
     }
 }
 
+final class ModelValidatedRenderedTestPage extends Page
+{
+    public ModelValidatedForm $form;
+
+    public function __construct()
+    {
+        $this->form = new ModelValidatedForm();
+    }
+
+    public function validateForm(): bool
+    {
+        return $this->validateModel($this->form);
+    }
+}
+
+final class ModelValidatedForm
+{
+    #[Required]
+    public string $title = "";
+}
+
 final class CounterRenderedTestPage extends Page
 {
     #[State]
@@ -695,6 +811,34 @@ final class CounterRenderedTestPage extends Page
     {
         $this->count++;
         $this->title = (string) $this->count;
+    }
+}
+
+final class QueryAndStateRenderedTestPage extends Page
+{
+    #[State]
+    public string $localTab = "preview";
+
+    public string $tab = "overview";
+
+    public string $title = "";
+
+    public function template(): ?string
+    {
+        return "GetRenderedTestPage.atom.html";
+    }
+
+    public function get(Request $request): void
+    {
+        $this->tab = $request->query()->string("tab", "overview");
+        $this->title = $this->tab . "|" . $this->localTab;
+    }
+
+    #[PageAction("setLocalTab")]
+    public function setLocalTab(string $tab): void
+    {
+        $this->localTab = $tab;
+        $this->title = $this->tab . "|" . $this->localTab;
     }
 }
 

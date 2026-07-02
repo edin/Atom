@@ -16,7 +16,7 @@ final class TextArea implements ComponentInterface
         return Html::tag("textarea", Html::mergeAttributes([
             "id" => $this->fieldId(),
             "name" => $this->name,
-            "class" => $this->fieldClass(),
+            "class" => Html::classes("atom-textarea", $this->fieldClass()),
             "aria-invalid" => $this->hasError() ? "true" : null,
             "aria-describedby" => $this->hasError() ? $this->fieldId() . "-error" : null,
         ], $this->extraAttributes()), Html::escape($this->fieldValue()));

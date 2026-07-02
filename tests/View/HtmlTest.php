@@ -11,7 +11,7 @@ final class HtmlTest extends TestCase
 {
     public function testEscapesHtmlSpecialCharacters(): void
     {
-        $this->assertSame("&lt;Atom &amp; &#039;PHP&#039;&gt;", Html::escape("<Atom & 'PHP'>"));
+        $this->assertSame("&lt;Atom &amp; 'PHP'&gt;", Html::escape("<Atom & 'PHP'>"));
     }
 
     public function testRendersHtmlAttributes(): void

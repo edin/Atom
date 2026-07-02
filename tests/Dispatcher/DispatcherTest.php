@@ -106,6 +106,37 @@ final class DispatcherTest extends TestCase
         $this->assertSame("Method Not Allowed", $response->getContent());
     }
 
+    public function testDispatcherTreatsAtomNavigationPostAsEffectiveGet(): void
+    {
+        $router = new Router();
+        $router->add(RouteEntry::get("/articles", fn(Request $request): string => $request->getMethod() . ":" . $request->post()->string("_state")));
+        $dispatcher = $this->dispatcher($router);
+
+        $response = $dispatcher->handle(new Request(
+            "POST",
+            "/articles",
+            parsedBody: ["_state" => "abc"],
+            headers: [
+                "X-Atom-Intent" => "navigate",
+                "X-Atom-Method" => "GET",
+            ]
+        ));
+
+        $this->assertSame(200, $response->getStatus());
+        $this->assertSame("GET:abc", $response->getContent());
+    }
+
+    public function testDispatcherDoesNotTreatOrdinaryPostAsEffectiveGet(): void
+    {
+        $router = new Router();
+        $router->add(RouteEntry::get("/articles", fn(): string => "index"));
+        $dispatcher = $this->dispatcher($router);
+
+        $response = $dispatcher->handle(new Request("POST", "/articles"));
+
+        $this->assertSame(405, $response->getStatus());
+    }
+
     private function converter(Response $response): ResultConverter
     {
         $bindings = Bindings::create();

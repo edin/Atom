@@ -81,6 +81,26 @@ final class HttpCollectionTest extends TestCase
         $this->assertSame(["name" => "Atom"], $request->getParsedBody());
     }
 
+    public function testRequestCanCreateCopyWithDifferentMethod(): void
+    {
+        $request = new Request(
+            "POST",
+            "/articles",
+            ["page" => "2"],
+            ["_state" => "abc"],
+            serverParams: ["HTTP_X_ATOM_INTENT" => "navigate"]
+        );
+
+        $copy = $request->withMethod("GET");
+
+        $this->assertSame("POST", $request->getMethod());
+        $this->assertSame("GET", $copy->getMethod());
+        $this->assertSame("/articles", $copy->getPath());
+        $this->assertSame("2", $copy->query()->string("page"));
+        $this->assertSame("abc", $copy->post()->string("_state"));
+        $this->assertSame("navigate", $copy->headers()->get("X-Atom-Intent"));
+    }
+
     public function testFileCollectionSupportsMultipleUploads(): void
     {
         $request = new Request(

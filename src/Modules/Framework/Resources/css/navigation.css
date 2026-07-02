@@ -1,0 +1,118 @@
+.atom-breadcrumbs__list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--atom-space-2);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.atom-breadcrumbs__item {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--atom-space-2);
+    color: var(--atom-color-muted);
+}
+
+.atom-breadcrumbs__item + .atom-breadcrumbs__item::before {
+    content: "/";
+    color: var(--atom-color-muted);
+}
+
+.atom-breadcrumb {
+    color: inherit;
+    text-decoration: none;
+}
+
+a.atom-breadcrumb:hover {
+    color: var(--atom-color-primary-text);
+    text-decoration: underline;
+}
+
+.atom-tabs-frame {
+    display: grid;
+    gap: var(--atom-space-4);
+}
+
+.atom-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--atom-space-1);
+    border-bottom: 1px solid var(--atom-color-line);
+}
+
+.atom-tab {
+    display: inline-flex;
+    align-items: center;
+    min-height: 38px;
+    padding: 0 12px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--atom-color-muted);
+    font: inherit;
+    font-weight: 650;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.atom-tab:hover {
+    color: var(--atom-color-primary-text);
+    text-decoration: none;
+}
+
+a.atom-tab,
+a.atom-tab:hover,
+a.atom-tab:focus,
+a.atom-tab:active {
+    text-decoration: none;
+}
+
+.atom-tab.is-active {
+    border-bottom-color: var(--atom-color-primary);
+    color: var(--atom-color-primary-text);
+}
+
+.atom-tabs__panel {
+    min-width: 0;
+}
+
+.atom-pagination {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--atom-space-1);
+    align-items: center;
+}
+
+.atom-pagination__item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    min-height: 34px;
+    padding: 0 10px;
+    border: 1px solid var(--atom-color-line);
+    border-radius: var(--atom-radius);
+    background: var(--atom-color-surface);
+    color: var(--atom-color-text);
+    text-decoration: none;
+}
+
+.atom-pagination__item:hover {
+    border-color: var(--atom-color-primary-line);
+    background: var(--atom-color-primary-soft);
+    color: var(--atom-color-primary-text);
+}
+
+.atom-pagination__item.is-active {
+    border-color: var(--atom-color-primary);
+    background: var(--atom-color-primary);
+    color: #ffffff;
+}
+
+.atom-pagination__item.is-disabled {
+    cursor: not-allowed;
+    color: var(--atom-color-muted);
+    background: var(--atom-color-soft);
+}

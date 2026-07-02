@@ -1,0 +1,94 @@
+<section class="story-header">
+    <div>
+        <h1>Dialogs</h1>
+        <p>Dialogs are rendered by the server and controlled with page state and actions.</p>
+    </div>
+    <Badge>Primitive</Badge>
+</section>
+
+<Stack gap="md">
+    <ComponentExample title="Basic dialog" description="Title, description, body, and actions form the common dialog shape.">
+        <Stack gap="sm">
+            <Inline gap="sm">
+                <Button atom:action="openDialog('basic')">Open dialog</Button>
+            </Inline>
+
+            <Dialog :show="$this->openDialog === 'basic'" title="Invite teammate" description="Send an invitation to collaborate on this workspace.">
+                <p>The teammate will receive an email with a secure invitation link.</p>
+
+                <Dialog.Actions>
+                    <Button variant="ghost" atom:action="closeDialog">Cancel</Button>
+                    <Button atom:action="closeDialog">Send invite</Button>
+                </Dialog.Actions>
+            </Dialog>
+        </Stack>
+    </ComponentExample>
+
+    <ComponentExample title="Confirm dialog" description="A dialog can be opened, cancelled, and confirmed with page actions.">
+        <Stack gap="sm">
+            <Alert variant="info">{{ $this->lastAction }}</Alert>
+
+            <Inline gap="sm">
+                <Button variant="danger" atom:action="openDialog('delete')">Delete article</Button>
+            </Inline>
+
+            <Dialog :show="$this->openDialog === 'delete'" title="Delete article?" description="This action cannot be undone.">
+                <p>The article will be removed from the current list.</p>
+
+                <Dialog.Actions>
+                    <Button variant="ghost" atom:action="closeDialog">Cancel</Button>
+                    <Button variant="danger" atom:action="confirmDelete">Delete</Button>
+                </Dialog.Actions>
+            </Dialog>
+        </Stack>
+    </ComponentExample>
+
+    <ComponentExample title="Large content" description="Size can be expanded when the dialog needs a denser review flow.">
+        <Stack gap="sm">
+            <Inline gap="sm">
+                <Button appearance="outline" atom:action="openDialog('large')">Review details</Button>
+            </Inline>
+
+            <Dialog :show="$this->openDialog === 'large'" size="lg" title="Review publishing checklist" description="Use larger dialogs for content that needs room to breathe.">
+                <Stack gap="sm">
+                    <Alert variant="warning" title="Draft is not published" description="Make sure all required checks are complete before continuing." />
+                    <p>The article summary, search preview, category assignment, and publication schedule can all be reviewed here without leaving the current page.</p>
+                    <p>When this content grows past the viewport, the dialog keeps the backdrop fixed and scrolls the dialog panel.</p>
+                </Stack>
+
+                <Dialog.Actions>
+                    <Button variant="ghost" atom:action="closeDialog">Close</Button>
+                    <Button atom:action="closeDialog">Looks good</Button>
+                </Dialog.Actions>
+            </Dialog>
+        </Stack>
+    </ComponentExample>
+
+    <ComponentExample title="Minimal dialog" description="Dialogs can omit description and actions for simple one-off messages.">
+        <Stack gap="sm">
+            <Inline gap="sm">
+                <Button variant="secondary" atom:action="openDialog('minimal')">Show message</Button>
+            </Inline>
+
+            <Dialog :show="$this->openDialog === 'minimal'" size="sm" title="Saved" closable closeAction="closeDialog">
+                <p>Your changes are stored.</p>
+            </Dialog>
+        </Stack>
+    </ComponentExample>
+
+    <ComponentExample title="Body only" description="When there is no title, provide an accessible label.">
+        <Stack gap="sm">
+            <Inline gap="sm">
+                <Button variant="ghost" atom:action="openDialog('body')">Show body only</Button>
+            </Inline>
+
+            <Dialog :show="$this->openDialog === 'body'" label="Body only dialog">
+                <p>This keeps the visual surface minimal while still exposing a useful label to assistive technology.</p>
+
+                <Dialog.Actions>
+                    <Button atom:action="closeDialog">Done</Button>
+                </Dialog.Actions>
+            </Dialog>
+        </Stack>
+    </ComponentExample>
+</Stack>

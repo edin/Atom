@@ -162,6 +162,79 @@ Components are documented separately:
 
 - [Components](Components.md)
 
+## Page Forms
+
+Small forms can bind directly to page properties:
+
+```php
+use Atom\Hydrator\Attributes\FromBody;
+use Atom\Page\PageAction;
+use Atom\Validation\Rules\Required;
+
+#[FromBody]
+#[Required]
+public string $titleInput = "";
+
+#[PageAction("create")]
+public function create(): void
+{
+    if (!$this->validate()) {
+        return;
+    }
+}
+```
+
+For larger forms, keep the fields in a dedicated model and mark it with `#[FormModel]`.
+Combine it with `#[State]` when the model should survive SIPA actions:
+
+```php
+use Atom\Page\FormModel;
+use Atom\Page\State;
+
+#[State]
+#[FormModel]
+public ArticleEditForm $edit;
+```
+
+`#[FormModel]` hydrates matching posted fields into the model before the page action runs. This works well with:
+
+```html
+<Form submit="save" :model="$this->edit">
+    <TextField name="title" label="Title" />
+    <TextAreaField name="summary" label="Summary" />
+</Form>
+```
+
+Page actions can validate the model and expose its errors to field components:
+
+```php
+#[PageAction("save")]
+public function save(): void
+{
+    if (!$this->validateModel($this->edit)) {
+        return;
+    }
+}
+```
+
+Model properties can use validation attributes:
+
+```php
+use Atom\Validation\Rules\MaxLength;
+use Atom\Validation\Rules\Required;
+
+final class ArticleEditForm
+{
+    #[Required("Give this article a title.")]
+    #[MaxLength(120)]
+    public string $title = "";
+
+    #[Required("Add a short summary.")]
+    #[MaxLength(220)]
+    public string $summary = "";
+}
+```
+
 ## Native Component Templates
 
 For components that should render with plain PHP, use `ComponentView`.

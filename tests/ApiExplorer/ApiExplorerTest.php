@@ -102,7 +102,7 @@ final class ApiExplorerTest extends TestCase
         $this->assertSame(TryRequestPanel::class, $app->getInjector()->get(ComponentRegistry::class)->get("ApiExplorer.TryRequest"));
         $this->assertStringContainsString("<!doctype html>", $html);
         $this->assertStringContainsString('/dev/api/resources/api-explorer.css', $html);
-        $this->assertStringContainsString('/atom/framework/resources/atom.js?v=2', $html);
+        $this->assertStringContainsString('/atom/framework/resources/atom.js?v=7', $html);
         $this->assertStringContainsString('<header class="topbar">', $html);
         $this->assertStringContainsString("/api/articles/{id}", $html);
         $this->assertStringContainsString('class="request-url-field"', $html);

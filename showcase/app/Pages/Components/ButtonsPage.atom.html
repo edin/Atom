@@ -1,0 +1,36 @@
+<section class="story-header">
+    <div>
+        <h1>Buttons</h1>
+        <p>Buttons can render as native buttons or anchors, with variants kept as styling data.</p>
+    </div>
+    <Badge>Framework component</Badge>
+</section>
+
+<Stack gap="md">
+    <ComponentExample title="Variants" description="Button variants are exposed as data attributes so styling can stay in CSS.">
+        <Inline gap="sm">
+            <Button>Default</Button>
+            <Button variant="secondary">Secondary</Button>
+            <Button variant="ghost">Ghost</Button>
+            <Button variant="danger">Danger</Button>
+        </Inline>
+    </ComponentExample>
+
+    <ComponentExample title="Links" description="When href is provided, Button renders an anchor and still receives arbitrary atom attributes.">
+        <Inline gap="sm">
+            <Button href="/" atom:navigate>Anchor button</Button>
+            <Button variant="link">Link variant</Button>
+            <Button variant="link-danger">Danger link</Button>
+        </Inline>
+    </ComponentExample>
+
+    <ComponentExample title="Inside forms" description="Buttons can submit forms or render non-submit actions by changing the type.">
+        <Form submit="noop">
+            <TextField label="Example title" name="title" value="A form field next to buttons" />
+            <FormActions>
+                <Button type="submit">Save</Button>
+                <Button type="button" variant="ghost">Cancel</Button>
+            </FormActions>
+        </Form>
+    </ComponentExample>
+</Stack>

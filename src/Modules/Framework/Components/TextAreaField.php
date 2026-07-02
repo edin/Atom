@@ -15,7 +15,7 @@ final class TextAreaField extends FieldEntry
         return Html::tag("textarea", Html::mergeAttributes([
             "id" => $this->fieldId(),
             "name" => $this->name,
-            "class" => $this->fieldClass(),
+            "class" => Html::classes("atom-textarea", $this->fieldClass()),
             "aria-invalid" => $this->hasError() ? "true" : null,
             "aria-describedby" => $this->hasError() ? $this->fieldId() . "-error" : null,
         ], $this->attributes->all()), Html::escape($this->fieldValue()));

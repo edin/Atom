@@ -1,0 +1,50 @@
+<section class="story-header">
+    <div>
+        <h1>Forms</h1>
+        <p>Form components can bind directly to page state or receive a model from the parent form.</p>
+    </div>
+    <Badge>Model binding</Badge>
+</section>
+
+<Stack gap="md">
+    <ComponentExample
+        title="Form model"
+        description="The form passes its model into child fields, so each field can read values without prop drilling."
+    >
+        <Form submit="submit" :model="$this->form">
+            <ValidationSummary />
+
+            <HiddenField name="categoryId" />
+
+            <TextField label="Title" name="title" maxlength="80" />
+
+            <TextField label="Summary" name="summary" maxlength="160" />
+
+            <SelectField
+                label="Category"
+                name="categoryId"
+                optionValue="id"
+                optionText="name"
+                :options="$this->categories"
+            />
+
+            <CheckField label="Published" name="published" />
+
+            <FormActions>
+                <Button type="submit">Submit</Button>
+                <Button type="button" variant="ghost">Cancel</Button>
+            </FormActions>
+        </Form>
+    </ComponentExample>
+
+    <ComponentExample
+        title="Standalone fields"
+        description="Fields can also bind to ordinary page properties when a separate model would be unnecessary."
+    >
+        <Stack gap="sm">
+            <TextField label="Page title" name="pageTitle" />
+            <TextAreaField label="Notes" name="summary" />
+            <CheckField label="Enabled" name="published" />
+        </Stack>
+    </ComponentExample>
+</Stack>

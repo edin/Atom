@@ -6,9 +6,11 @@ namespace Atom\Tests\View;
 
 use Atom\Application;
 use Atom\Profiler\Profile;
+use Atom\View\Ast\TextNode;
 use Atom\View\Component\TemplateComponent;
 use Atom\View\Component\Fragment;
 use Atom\View\Component\ComponentTemplateContext;
+use Atom\View\Component\TemplateFragment;
 use Atom\View\Templates;
 use Atom\View\Render\ViewRenderer;
 use PHPUnit\Framework\TestCase;
@@ -39,6 +41,22 @@ final class TemplateComponentTest extends TestCase
     {
         $component = new TestShellTemplateComponent();
         $component->content = new Fragment(static fn(): string => "<strong>Body</strong>");
+
+        $html = (new ViewRenderer())->render($component->render(), [
+            "this" => $component,
+            "context" => new ComponentTemplateContext(),
+        ]);
+
+        $this->assertSame("<main><strong>Body</strong></main>\n", $html);
+    }
+
+    public function testTemplateComponentCanRenderTemplateFragmentAsHtml(): void
+    {
+        $component = new TestShellTemplateComponent();
+        $component->content = new TemplateFragment(
+            [new TextNode("<strong>Body</strong>")],
+            static fn(): string => "<strong>Body</strong>"
+        );
 
         $html = (new ViewRenderer())->render($component->render(), [
             "this" => $component,
@@ -80,5 +98,5 @@ final class TestTemplateComponent extends TemplateComponent
 
 final class TestShellTemplateComponent extends TemplateComponent
 {
-    public ?Fragment $content = null;
+    public Fragment|TemplateFragment|null $content = null;
 }

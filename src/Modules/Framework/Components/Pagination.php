@@ -1,0 +1,78 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Atom\Modules\Framework\Components;
+
+use Atom\View\Component\AttributeBag;
+use Atom\View\Component\ComponentInterface;
+use Atom\View\Html;
+
+final class Pagination implements ComponentInterface
+{
+    public AttributeBag $attributes;
+    public int $page = 1;
+    public int $total = 1;
+    public int $window = 5;
+    public string $href = "?page={page}";
+    public string $action = "";
+    public bool $navigate = false;
+    public bool $preserveState = false;
+    public string $label = "Pagination";
+    public string $class = "";
+
+    public function render(): string
+    {
+        $total = max(1, $this->total);
+        $page = min(max(1, $this->page), $total);
+        $items = $this->pageItem("Previous", $page - 1, $page === 1);
+
+        foreach ($this->pageRange($page, $total) as $number) {
+            $items .= $this->pageItem((string) $number, $number, false, $number === $page);
+        }
+
+        $items .= $this->pageItem("Next", $page + 1, $page === $total);
+
+        return Html::tag("nav", Html::mergeAttributes([
+            "class" => Html::classes("atom-pagination", $this->class),
+            "aria-label" => $this->label,
+        ], $this->attributes->all()), $items);
+    }
+
+    /**
+     * @return int[]
+     */
+    private function pageRange(int $page, int $total): array
+    {
+        $window = max(1, $this->window);
+        $half = intdiv($window, 2);
+        $start = max(1, $page - $half);
+        $end = min($total, $start + $window - 1);
+        $start = max(1, $end - $window + 1);
+
+        return range($start, $end);
+    }
+
+    private function pageItem(string $label, int $page, bool $disabled = false, bool $active = false): string
+    {
+        $attributes = [
+            "class" => Html::classes("atom-pagination__item", ["is-active" => $active, "is-disabled" => $disabled]),
+            "aria-current" => $active ? "page" : null,
+            "aria-disabled" => $disabled ? "true" : null,
+        ];
+
+        $tag = "span";
+        if (!$disabled && $this->action !== "") {
+            $tag = "button";
+            $attributes["type"] = "button";
+            $attributes["atom:action"] = str_replace("{page}", (string) $page, $this->action);
+        } elseif (!$disabled) {
+            $tag = "a";
+            $attributes["href"] = str_replace("{page}", (string) $page, $this->href);
+            $attributes["atom:navigate"] = $this->navigate;
+            $attributes["atom:preserve-state"] = $this->preserveState;
+        }
+
+        return Html::tag($tag, $attributes, Html::escape($label));
+    }
+}

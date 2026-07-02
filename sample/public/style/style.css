@@ -348,10 +348,39 @@ p {
     gap: 10px;
 }
 
+.showcase-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 18px;
+    align-items: start;
+    margin: 10px 0 18px;
+}
+
+.showcase-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.showcase-inline-demo,
+.showcase-stack-demo {
+    padding: 12px;
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    background: #fafbfc;
+}
+
+.showcase-form .atom-inline {
+    align-items: start;
+}
+
 @media (max-width: 760px) {
     .topbar,
     .toolbar,
-    .hero {
+    .hero,
+    .showcase-header,
+    .showcase-grid {
         grid-template-columns: 1fr;
         align-items: stretch;
     }

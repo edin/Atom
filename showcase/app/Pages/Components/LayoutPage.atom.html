@@ -1,0 +1,76 @@
+<section class="story-header">
+    <div>
+        <h1>Layout</h1>
+        <p>Layout helpers provide predictable spacing and alignment without custom wrappers.</p>
+    </div>
+    <Badge>Primitive</Badge>
+</section>
+
+<Stack gap="md">
+    <ComponentExample title="App shell" description="AppShell composes a sidebar, header, and main content area for admin-style pages.">
+        <AppShell title="Dashboard">
+            <AppShell.Sidebar>
+                <Sidebar brand="Atom Admin" href="/">
+                    <SidebarGroup label="Content">
+                        <SidebarItem href="/components/surfaces" icon="@app/Resources/icons/article.svg" active>Articles</SidebarItem>
+                        <SidebarItem href="/components/data" icon="@app/Resources/icons/comment.svg">Comments</SidebarItem>
+                    </SidebarGroup>
+
+                    <SidebarGroup label="Insights">
+                        <SidebarItem href="/components/icons" icon="@app/Resources/icons/chart.svg">Analytics</SidebarItem>
+                        <SidebarItem href="/components/dialogs" icon="@app/Resources/icons/warning.svg">Alerts</SidebarItem>
+                    </SidebarGroup>
+
+                    <Sidebar.Footer>
+                        <Badge variant="success">Online</Badge>
+                    </Sidebar.Footer>
+                </Sidebar>
+            </AppShell.Sidebar>
+
+            <Stack gap="md">
+                <PageHeader title="Articles" description="Manage publishing workflow and recent activity.">
+                    <PageHeader.Actions>
+                        <Button>New article</Button>
+                    </PageHeader.Actions>
+                </PageHeader>
+
+                <div class="component-grid">
+                    <Stats label="Published" value="48" icon="@app/Resources/icons/article.svg" />
+                    <Stats label="Views" value="12.4k" trend="+8%" icon="@app/Resources/icons/chart.svg" />
+                </div>
+            </Stack>
+        </AppShell>
+    </ComponentExample>
+
+    <ComponentExample title="Page header" description="PageHeader gives list and editor pages a consistent title, description, and action area.">
+        <PageHeader title="Articles" description="Manage blog content and publishing state.">
+            <PageHeader.Actions>
+                <Button>New article</Button>
+            </PageHeader.Actions>
+        </PageHeader>
+    </ComponentExample>
+
+    <ComponentExample title="Toolbar" description="Toolbar groups filters, search inputs, and page-level commands.">
+        <Toolbar gap="sm">
+            <TextInput name="search" placeholder="Search articles..." />
+            <Button appearance="soft">Search</Button>
+        </Toolbar>
+    </ComponentExample>
+
+    <ComponentExample title="Empty state" description="EmptyState gives blank lists a useful action instead of a dead end.">
+        <EmptyState title="No articles yet" description="Create the first article to start building the blog.">
+            <EmptyState.Actions>
+                <Button>New article</Button>
+            </EmptyState.Actions>
+        </EmptyState>
+    </ComponentExample>
+
+    <ComponentExample title="Stack and Inline" description="Stack and Inline stay as low-level composition helpers.">
+        <Panel title="Panel">
+            <Inline gap="sm" align="center" justify="between">
+                <span>Left content</span>
+                <Button variant="ghost">Action</Button>
+            </Inline>
+        </Panel>
+    </ComponentExample>
+</Stack>

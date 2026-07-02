@@ -4,48 +4,278 @@
 }
 
 .atom-inline,
-.atom-form-actions {
+.atom-form-actions,
+.atom-toolbar {
     display: flex;
     flex-wrap: wrap;
     gap: var(--atom-space-3);
 }
 
 .atom-inline[data-gap="xs"],
-.atom-stack[data-gap="xs"] {
+.atom-stack[data-gap="xs"],
+.atom-toolbar[data-gap="xs"] {
     gap: var(--atom-space-1);
 }
 
 .atom-inline[data-gap="sm"],
-.atom-stack[data-gap="sm"] {
+.atom-stack[data-gap="sm"],
+.atom-toolbar[data-gap="sm"] {
     gap: var(--atom-space-2);
 }
 
 .atom-inline[data-gap="lg"],
-.atom-stack[data-gap="lg"] {
+.atom-stack[data-gap="lg"],
+.atom-toolbar[data-gap="lg"] {
     gap: var(--atom-space-5);
 }
 
-.atom-inline[data-align="start"] {
+.atom-inline[data-align="start"],
+.atom-toolbar[data-align="start"] {
     align-items: flex-start;
 }
 
-.atom-inline[data-align="center"] {
+.atom-inline[data-align="center"],
+.atom-toolbar[data-align="center"] {
     align-items: center;
 }
 
-.atom-inline[data-align="end"] {
+.atom-inline[data-align="end"],
+.atom-toolbar[data-align="end"] {
     align-items: flex-end;
 }
 
-.atom-inline[data-justify="between"] {
+.atom-inline[data-justify="between"],
+.atom-toolbar[data-justify="between"] {
     justify-content: space-between;
 }
 
 .atom-inline[data-justify="end"],
+.atom-toolbar[data-justify="end"],
 .atom-form-actions[data-align="end"] {
     justify-content: flex-end;
 }
 
 .atom-form-actions {
     align-items: center;
+}
+
+.atom-page-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--atom-space-4);
+}
+
+.atom-page-header__main {
+    display: grid;
+    gap: var(--atom-space-2);
+}
+
+.atom-page-header__title {
+    margin: 0;
+    font-size: 1.65rem;
+    line-height: 1.2;
+}
+
+.atom-page-header__description {
+    margin: 0;
+    color: var(--atom-color-muted);
+}
+
+.atom-page-header__actions {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--atom-space-2);
+}
+
+.atom-toolbar {
+    padding: var(--atom-space-3);
+    border: 1px solid var(--atom-color-line);
+    border-radius: var(--atom-radius);
+    background: var(--atom-color-soft);
+}
+
+.atom-toolbar > .atom-input,
+.atom-toolbar > .atom-select,
+.atom-toolbar > .atom-textarea {
+    flex: 1 1 220px;
+    width: auto;
+    min-width: 0;
+}
+
+.atom-toolbar > .atom-button {
+    flex: 0 0 auto;
+}
+
+.atom-empty-state {
+    display: grid;
+    justify-items: center;
+    gap: var(--atom-space-3);
+    padding: 36px 24px;
+    border: 1px dashed var(--atom-color-line);
+    border-radius: var(--atom-radius);
+    background: var(--atom-color-soft);
+    text-align: center;
+}
+
+.atom-empty-state__title {
+    margin: 0;
+    font-size: 1.15rem;
+}
+
+.atom-empty-state__description {
+    max-width: 48ch;
+    margin: 0;
+    color: var(--atom-color-muted);
+}
+
+.atom-empty-state__actions {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--atom-space-2);
+}
+
+.atom-app-shell {
+    display: grid;
+    grid-template-columns: minmax(180px, 240px) minmax(0, 1fr);
+    min-height: 520px;
+    overflow: hidden;
+    border: 1px solid var(--atom-color-line);
+    border-radius: var(--atom-radius);
+    background: var(--atom-color-surface);
+}
+
+.atom-app-shell__sidebar {
+    min-width: 0;
+    border-right: 1px solid var(--atom-color-line);
+    background: var(--atom-color-soft);
+}
+
+.atom-app-shell__content {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    min-width: 0;
+}
+
+.atom-app-shell__header {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--atom-color-line);
+}
+
+.atom-app-shell__title {
+    margin: 0;
+    font-size: 1.35rem;
+    line-height: 1.25;
+}
+
+.atom-app-shell__main {
+    min-width: 0;
+    padding: 22px;
+    overflow: auto;
+}
+
+.atom-sidebar {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    min-height: 100%;
+}
+
+.atom-sidebar__brand {
+    padding: 18px 18px 12px;
+    font-weight: 800;
+}
+
+.atom-sidebar__brand-link {
+    color: var(--atom-color-text);
+    text-decoration: none;
+}
+
+.atom-sidebar__brand-link:hover {
+    color: var(--atom-color-primary);
+    text-decoration: none;
+}
+
+.atom-sidebar__nav {
+    display: grid;
+    align-content: start;
+    gap: var(--atom-space-4);
+    min-height: 0;
+    padding: 8px 12px 16px;
+    overflow: auto;
+}
+
+.atom-sidebar__footer {
+    padding: 12px;
+    border-top: 1px solid var(--atom-color-line);
+}
+
+.atom-sidebar-group {
+    display: grid;
+    gap: var(--atom-space-1);
+}
+
+.atom-sidebar-group__label {
+    padding: 0 8px;
+    color: var(--atom-color-muted);
+    font-size: 0.78rem;
+    font-weight: 760;
+    text-transform: uppercase;
+}
+
+.atom-sidebar-group__items {
+    display: grid;
+    gap: 2px;
+}
+
+.atom-sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: var(--atom-space-2);
+    min-height: 36px;
+    padding: 7px 8px;
+    border-radius: var(--atom-radius);
+    color: var(--atom-color-text);
+    text-decoration: none;
+}
+
+.atom-sidebar-item:hover {
+    background: var(--atom-color-primary-soft);
+    color: var(--atom-color-primary-text);
+    text-decoration: none;
+}
+
+.atom-sidebar-item.is-active {
+    background: var(--atom-color-primary);
+    color: #ffffff;
+}
+
+.atom-sidebar-item__icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+}
+
+.atom-sidebar-item__icon .atom-icon {
+    width: 28px;
+    height: 28px;
+}
+
+.atom-sidebar-item__label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+    .atom-app-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .atom-app-shell__sidebar {
+        border-right: 0;
+        border-bottom: 1px solid var(--atom-color-line);
+    }
 }

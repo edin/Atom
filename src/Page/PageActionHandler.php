@@ -35,6 +35,7 @@ final readonly class PageActionHandler
         $page = $this->injector->instantiate($metadata->pageClass, context: $this->context);
         $this->state->deserialize($page, $request->post()->string("_state"));
         $this->input->hydrate($page, $request, $route);
+        $this->invokeGet($page, $route);
         $call = $this->parseAction($request->post()->string("_action", "default"));
         $action = $this->resolveAction($page, $request, $call);
         $parameters = $this->parameters->bind($page, $request, $route, $call, $action);
@@ -54,6 +55,16 @@ final readonly class PageActionHandler
         }
 
         return $result ?? $pages->renderPage($page, false);
+    }
+
+    private function invokeGet(Page $page, MatchedRoute $route): void
+    {
+        $reflection = new ReflectionClass($page);
+        if (!$reflection->hasMethod("get")) {
+            return;
+        }
+
+        $this->injector->invoke([$page, "get"], $route->getRouteParams(), $this->context);
     }
 
     private function resolveAction(Page $page, Request $request, PageActionCall $call): ReflectionMethod

@@ -1,0 +1,29 @@
+{
+    "name": "atom/showcase",
+    "type": "project",
+    "description": "Atom component showcase",
+    "license": "MIT",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "repositories": [
+        {
+            "type": "path",
+            "url": "..",
+            "options": {
+                "symlink": true,
+                "versions": {
+                    "atom/framework": "dev-master"
+                }
+            }
+        }
+    ],
+    "require": {
+        "php": "^8.4",
+        "atom/framework": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "Showcase\\": "app/"
+        }
+    }
+}

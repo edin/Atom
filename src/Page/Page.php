@@ -53,6 +53,13 @@ abstract class Page
         return $this->validation->passed();
     }
 
+    protected function validateModel(array|object $model, string|null $className = null): bool
+    {
+        $this->validation = Validator::for($className ?? (is_object($model) ? $model::class : null))->validate($model);
+
+        return $this->validation->passed();
+    }
+
     public function errors(): ValidationResult
     {
         return $this->validation ??= ValidationResult::valid();

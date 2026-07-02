@@ -5,17 +5,53 @@
     padding: 0 9px;
     border-radius: 999px;
     background: var(--atom-color-primary-soft);
-    color: #1e40af;
+    color: var(--atom-color-primary-text);
     font-size: 0.9rem;
     line-height: 1;
 }
 
-.atom-badge[data-variant="soft"] {
+.atom-badge[data-size="sm"] {
+    min-height: 20px;
+    padding: 0 7px;
+    font-size: 0.8rem;
+}
+
+.atom-badge[data-size="lg"] {
+    min-height: 28px;
+    padding: 0 11px;
+}
+
+.atom-badge[data-variant="neutral"] {
     background: var(--atom-color-soft);
     color: var(--atom-color-muted);
+}
+
+.atom-badge[data-variant="secondary"] {
+    background: var(--atom-color-secondary-soft);
+    color: var(--atom-color-secondary-text);
+}
+
+.atom-badge[data-variant="success"] {
+    background: var(--atom-color-success-soft);
+    color: var(--atom-color-success-text);
+}
+
+.atom-badge[data-variant="info"] {
+    background: var(--atom-color-info-soft);
+    color: var(--atom-color-info-text);
+}
+
+.atom-badge[data-variant="warning"] {
+    background: var(--atom-color-warning-soft);
+    color: var(--atom-color-warning-text);
 }
 
 .atom-badge[data-variant="danger"] {
     background: var(--atom-color-danger-soft);
     color: var(--atom-color-danger-text);
+}
+
+.atom-badge[data-appearance="outline"] {
+    border: 1px solid currentColor;
+    background: transparent;
 }
