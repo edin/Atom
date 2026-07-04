@@ -104,6 +104,10 @@ final readonly class PageRouteRegistrar
         $reflection = new ReflectionClass($pageClass);
 
         foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
+            if ($method->getDeclaringClass()->getName() === Page::class) {
+                continue;
+            }
+
             foreach ($method->getAttributes(PageAction::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
                 $action = $attribute->newInstance();
                 $methods[strtoupper($action->method)] = strtoupper($action->method);

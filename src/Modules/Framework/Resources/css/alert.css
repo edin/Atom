@@ -157,3 +157,105 @@
 .atom-alert[data-variant="danger"][data-appearance="ghost"] {
     color: var(--atom-color-danger-text);
 }
+
+.atom-toast-region {
+    position: fixed;
+    z-index: 60;
+    display: grid;
+    gap: var(--atom-space-2);
+    width: min(360px, calc(100vw - 32px));
+    pointer-events: none;
+}
+
+.atom-toast-region[data-position="top-end"] {
+    top: 16px;
+    right: 16px;
+}
+
+.atom-toast-region[data-position="top-start"] {
+    top: 16px;
+    left: 16px;
+}
+
+.atom-toast-region[data-position="bottom-end"] {
+    right: 16px;
+    bottom: 16px;
+}
+
+.atom-toast-region[data-position="bottom-start"] {
+    bottom: 16px;
+    left: 16px;
+}
+
+.atom-toast {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--atom-space-3);
+    padding: 13px 14px;
+    border: 1px solid var(--atom-color-line);
+    border-radius: var(--atom-radius);
+    background: var(--atom-color-surface);
+    color: var(--atom-color-text);
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.16);
+    pointer-events: auto;
+}
+
+.atom-toast__content {
+    display: grid;
+    gap: var(--atom-space-1);
+    min-width: 0;
+}
+
+.atom-toast__title {
+    display: block;
+    font-weight: 750;
+}
+
+.atom-toast__description,
+.atom-toast__body {
+    margin: 0;
+    color: var(--atom-color-muted);
+}
+
+.atom-toast__actions {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: var(--atom-space-2);
+}
+
+.atom-toast[data-variant="success"] {
+    border-color: var(--atom-color-success-line);
+    background: var(--atom-color-success-soft);
+    color: var(--atom-color-success-text);
+}
+
+.atom-toast[data-variant="info"] {
+    border-color: var(--atom-color-info-line);
+    background: var(--atom-color-info-soft);
+    color: var(--atom-color-info-text);
+}
+
+.atom-toast[data-variant="warning"] {
+    border-color: var(--atom-color-warning-line);
+    background: var(--atom-color-warning-soft);
+    color: var(--atom-color-warning-text);
+}
+
+.atom-toast[data-variant="danger"] {
+    border-color: var(--atom-color-danger-line);
+    background: var(--atom-color-danger-soft);
+    color: var(--atom-color-danger-text);
+}
+
+.atom-toast[data-variant="success"] .atom-toast__description,
+.atom-toast[data-variant="success"] .atom-toast__body,
+.atom-toast[data-variant="info"] .atom-toast__description,
+.atom-toast[data-variant="info"] .atom-toast__body,
+.atom-toast[data-variant="warning"] .atom-toast__description,
+.atom-toast[data-variant="warning"] .atom-toast__body,
+.atom-toast[data-variant="danger"] .atom-toast__description,
+.atom-toast[data-variant="danger"] .atom-toast__body {
+    color: inherit;
+}

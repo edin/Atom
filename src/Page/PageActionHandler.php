@@ -232,6 +232,10 @@ final readonly class PageActionHandler
         $names = [];
 
         foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $candidate) {
+            if ($candidate->getDeclaringClass()->getName() === Page::class) {
+                continue;
+            }
+
             foreach ($candidate->getAttributes(PageAction::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
                 $action = $attribute->newInstance();
                 $names[] = $action->name ?? $candidate->getName();
@@ -252,6 +256,10 @@ final readonly class PageActionHandler
         $methods = [];
 
         foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $candidate) {
+            if ($candidate->getDeclaringClass()->getName() === Page::class) {
+                continue;
+            }
+
             foreach ($candidate->getAttributes(PageAction::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
                 $action = $attribute->newInstance();
                 if (($action->name ?? $candidate->getName()) === $actionName) {

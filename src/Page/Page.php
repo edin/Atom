@@ -14,6 +14,9 @@ abstract class Page
 {
     public ?string $layout = null;
     private ?ValidationResult $validation = null;
+    private string $flashMessage = "";
+    private string $flashTitle = "";
+    private string $flashVariant = "success";
 
     /**
      * @return RouteEntry[]
@@ -63,6 +66,41 @@ abstract class Page
     public function errors(): ValidationResult
     {
         return $this->validation ??= ValidationResult::valid();
+    }
+
+    public function flash(string $message, string $variant = "success", string $title = ""): void
+    {
+        $this->flashMessage = $message;
+        $this->flashVariant = $variant;
+        $this->flashTitle = $title;
+    }
+
+    #[PageAction("clearFlash")]
+    public function clearFlash(): void
+    {
+        $this->flashMessage = "";
+        $this->flashTitle = "";
+        $this->flashVariant = "success";
+    }
+
+    public function hasFlash(): bool
+    {
+        return $this->flashMessage !== "" || $this->flashTitle !== "";
+    }
+
+    public function flashMessage(): string
+    {
+        return $this->flashMessage;
+    }
+
+    public function flashTitle(): string
+    {
+        return $this->flashTitle;
+    }
+
+    public function flashVariant(): string
+    {
+        return $this->flashVariant;
     }
 
     protected function setValidation(ValidationResult $validation): void

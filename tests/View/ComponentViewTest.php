@@ -42,6 +42,7 @@ use Atom\Modules\Framework\Components\TextArea;
 use Atom\Modules\Framework\Components\TextAreaField;
 use Atom\Modules\Framework\Components\TextField;
 use Atom\Modules\Framework\Components\TextInput;
+use Atom\Modules\Framework\Components\Toast;
 use Atom\Modules\Framework\Components\Toolbar;
 use Atom\Modules\Framework\Components\ValidationSummary;
 use Atom\Page\Page;
@@ -326,9 +327,10 @@ final class ComponentViewTest extends TestCase
             (new ViewParser())->parse(
                 '<AppShell title="Dashboard">' .
                 '<AppShell.Sidebar>' .
-                '<Sidebar brand="Atom Admin" href="/">' .
+                '<Sidebar brand="Atom Admin" href="/" current="/articles">' .
                 '<SidebarGroup label="Content">' .
-                '<SidebarItem href="/articles" icon="fa-solid fa-file" active>Articles</SidebarItem>' .
+                '<SidebarItem href="/articles" icon="fa-solid fa-file">Articles</SidebarItem>' .
+                '<SidebarItem href="/comments">Comments</SidebarItem>' .
                 '</SidebarGroup>' .
                 '<Sidebar.Footer><Badge variant="success">Online</Badge></Sidebar.Footer>' .
                 '</Sidebar>' .
@@ -343,10 +345,52 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<a href="/" class="atom-sidebar__brand-link">Atom Admin</a>', $html);
         $this->assertStringContainsString('<div class="atom-sidebar-group__label">Content</div>', $html);
         $this->assertStringContainsString('<a href="/articles" class="atom-sidebar-item is-active" aria-current="page">', $html);
+        $this->assertStringContainsString('<a href="/comments" class="atom-sidebar-item"><span class="atom-sidebar-item__label">Comments</span></a>', $html);
         $this->assertStringContainsString('<span class="atom-sidebar-item__icon"><span class="atom-icon"><i class="fa-solid fa-file" aria-hidden="true"></i></span></span>', $html);
         $this->assertStringContainsString('<footer class="atom-sidebar__footer"><span class="atom-badge" data-variant="success" data-appearance="soft">Online</span></footer>', $html);
         $this->assertStringContainsString('<header class="atom-app-shell__header"><h1 class="atom-app-shell__title">Dashboard</h1></header>', $html);
         $this->assertStringContainsString('<main class="atom-app-shell__main"><p>Main</p></main>', $html);
+    }
+
+    public function testFrameworkSidebarCanUseAutoCurrentPathFromContext(): void
+    {
+        $registry = new ComponentRegistry();
+        $registry->register("Sidebar", Sidebar::class);
+        $registry->register("SidebarGroup", SidebarGroup::class);
+        $registry->register("SidebarItem", SidebarItem::class);
+
+        $html = (new ViewRenderer(components: $registry))->render(
+            (new ViewParser())->parse(
+                '<Sidebar current="auto">' .
+                '<SidebarGroup><SidebarItem href="/articles">Articles</SidebarItem><SidebarItem href="/comments">Comments</SidebarItem></SidebarGroup>' .
+                '</Sidebar>'
+            ),
+            ["currentPath" => "/comments"]
+        );
+
+        $this->assertStringContainsString('<a href="/articles" class="atom-sidebar-item"><span class="atom-sidebar-item__label">Articles</span></a>', $html);
+        $this->assertStringContainsString('<a href="/comments" class="atom-sidebar-item is-active" aria-current="page"><span class="atom-sidebar-item__label">Comments</span></a>', $html);
+    }
+
+    public function testFrameworkSidebarItemCanUsePrefixMatch(): void
+    {
+        $registry = new ComponentRegistry();
+        $registry->register("Sidebar", Sidebar::class);
+        $registry->register("SidebarItem", SidebarItem::class);
+
+        $html = (new ViewRenderer(components: $registry))->render(
+            (new ViewParser())->parse(
+                '<Sidebar current="/articles/12/edit">' .
+                '<SidebarItem href="/articles" match="prefix">Articles</SidebarItem>' .
+                '<SidebarItem href="/articles-old" match="prefix">Old articles</SidebarItem>' .
+                '<SidebarItem href="/articles/12">Article detail</SidebarItem>' .
+                '</Sidebar>'
+            )
+        );
+
+        $this->assertStringContainsString('<a href="/articles" class="atom-sidebar-item is-active" aria-current="page"><span class="atom-sidebar-item__label">Articles</span></a>', $html);
+        $this->assertStringContainsString('<a href="/articles-old" class="atom-sidebar-item"><span class="atom-sidebar-item__label">Old articles</span></a>', $html);
+        $this->assertStringContainsString('<a href="/articles/12" class="atom-sidebar-item"><span class="atom-sidebar-item__label">Article detail</span></a>', $html);
     }
 
     public function testFrameworkPageHeaderAndEmptyStateRenderNamedActions(): void
@@ -446,6 +490,35 @@ final class ComponentViewTest extends TestCase
             '<div class="atom-stats__icon"><span class="atom-icon"><i class="fa-solid fa-chart-line" aria-hidden="true"></i></span></div>',
             $html
         );
+    }
+
+    public function testFrameworkToastRendersWhenShownWithActions(): void
+    {
+        $registry = new ComponentRegistry();
+        $registry->register("Toast", Toast::class);
+        $registry->register("Button", Button::class);
+
+        $html = (new ViewRenderer(components: $registry))->render(
+            (new ViewParser())->parse(
+                '<Toast :show="$show" variant="success" position="bottom-end" title="Saved" description="Article updated.">' .
+                '<Toast.Actions><Button size="sm" variant="ghost">Dismiss</Button></Toast.Actions>' .
+                '</Toast>'
+            ),
+            ["show" => true]
+        );
+
+        $this->assertStringContainsString('<div class="atom-toast-region" data-position="bottom-end">', $html);
+        $this->assertStringContainsString('<div class="atom-toast" data-variant="success" role="status">', $html);
+        $this->assertStringContainsString('<strong class="atom-toast__title">Saved</strong>', $html);
+        $this->assertStringContainsString('<p class="atom-toast__description">Article updated.</p>', $html);
+        $this->assertStringContainsString('<div class="atom-toast__actions"><button type="button" class="atom-button" data-variant="ghost" data-size="sm">Dismiss</button></div>', $html);
+
+        $closed = (new ViewRenderer(components: $registry))->render(
+            (new ViewParser())->parse('<Toast :show="$show" title="Closed" />'),
+            ["show" => false]
+        );
+
+        $this->assertSame("", $closed);
     }
 
     public function testFrameworkListRendersItemsIconsAndActions(): void

@@ -10,7 +10,24 @@
     <Inline gap="sm">
         <Button href="/components/alerts" atom:navigate>Alerts</Button>
         <Button href="/components/badges" variant="ghost" atom:navigate>Badges</Button>
+        <Button href="/components/feedback" variant="ghost" atom:navigate>Toasts</Button>
     </Inline>
+</ComponentExample>
+
+<ComponentExample title="Toast" description="Toast renders fixed-position feedback and can be controlled by page actions.">
+    <Stack gap="sm">
+        <Inline gap="sm">
+            <Button atom:action="showToast('success')">Success toast</Button>
+            <Button variant="warning" atom:action="showToast('warning')">Warning toast</Button>
+            <Button variant="danger" atom:action="showToast('danger')">Danger toast</Button>
+        </Inline>
+
+        <Toast :show="$this->hasFlash()" :variant="$this->flashVariant()" :title="$this->flashTitle()" :description="$this->flashMessage()">
+            <Toast.Actions>
+                <Button size="sm" variant="ghost" atom:action="clearFlash">Dismiss</Button>
+            </Toast.Actions>
+        </Toast>
+    </Stack>
 </ComponentExample>
 
 <ComponentExample title="Workflow sketch" description="This page can become a combined feedback pattern page.">

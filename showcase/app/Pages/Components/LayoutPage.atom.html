@@ -10,9 +10,9 @@
     <ComponentExample title="App shell" description="AppShell composes a sidebar, header, and main content area for admin-style pages.">
         <AppShell title="Dashboard">
             <AppShell.Sidebar>
-                <Sidebar brand="Atom Admin" href="/">
+                <Sidebar brand="Atom Admin" href="/" current="auto">
                     <SidebarGroup label="Content">
-                        <SidebarItem href="/components/surfaces" icon="@app/Resources/icons/article.svg" active>Articles</SidebarItem>
+                        <SidebarItem href="/components" match="prefix" icon="@app/Resources/icons/article.svg">Components</SidebarItem>
                         <SidebarItem href="/components/data" icon="@app/Resources/icons/comment.svg">Comments</SidebarItem>
                     </SidebarGroup>
 

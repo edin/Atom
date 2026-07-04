@@ -59,6 +59,7 @@ final readonly class PageRenderer
         $variables = [
             "this" => $page,
             "page" => $page,
+            "currentPath" => $this->currentPath(),
         ];
 
         $templatePath = $this->viewLocator->locate($page::class);
@@ -123,6 +124,13 @@ final readonly class PageRenderer
         $route = $this->context->get(MatchedRoute::class);
 
         return $route instanceof MatchedRoute ? $route->getRouteParams() : [];
+    }
+
+    private function currentPath(): string
+    {
+        $request = $this->context->get(Request::class);
+
+        return $request instanceof Request ? $request->getPath() : "";
     }
 
     private function restoreState(Page $page): void

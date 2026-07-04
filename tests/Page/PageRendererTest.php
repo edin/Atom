@@ -77,6 +77,17 @@ final class PageRendererTest extends TestCase
         $this->assertSame("<h1>Loaded</h1>\n", $html);
     }
 
+    public function testPageRendererExposesCurrentRequestPathToTemplate(): void
+    {
+        $context = new InjectionContext();
+        $context->set(Request::class, new Request("GET", "/admin/articles"));
+        $renderer = new PageRenderer(new Injector(), $context);
+
+        $html = $renderer->render(CurrentPathRenderedTestPage::class);
+
+        $this->assertSame("<span>/admin/articles</span>\n", $html);
+    }
+
     public function testPageRendererCachesParsedTemplates(): void
     {
         $renderer = new PageRenderer(new Injector(), new InjectionContext());
@@ -329,6 +340,25 @@ final class PageRendererTest extends TestCase
 
         $this->assertTrue($page->errors()->has("title"));
         $this->assertSame("Nope.", $page->errors()->first("title"));
+    }
+
+    public function testPageCanStoreTransientFlashMessage(): void
+    {
+        $page = new CustomValidatedRenderedTestPage();
+
+        $page->flash("Saved.", "success", "Article saved");
+
+        $this->assertTrue($page->hasFlash());
+        $this->assertSame("Saved.", $page->flashMessage());
+        $this->assertSame("Article saved", $page->flashTitle());
+        $this->assertSame("success", $page->flashVariant());
+
+        $page->clearFlash();
+
+        $this->assertFalse($page->hasFlash());
+        $this->assertSame("", $page->flashMessage());
+        $this->assertSame("", $page->flashTitle());
+        $this->assertSame("success", $page->flashVariant());
     }
 
     public function testPageCanValidateModelWithAttributeRules(): void
@@ -839,6 +869,14 @@ final class QueryAndStateRenderedTestPage extends Page
     {
         $this->localTab = $tab;
         $this->title = $this->tab . "|" . $this->localTab;
+    }
+}
+
+final class CurrentPathRenderedTestPage extends Page
+{
+    public function template(): ?string
+    {
+        return "CurrentPathRenderedTestPage.atom.html";
     }
 }
 

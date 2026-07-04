@@ -23,6 +23,7 @@
                 <a href="/components/buttons" atom:navigate>Buttons</a>
                 <a href="/components/alerts" atom:navigate>Alerts</a>
                 <a href="/components/badges" atom:navigate>Badges</a>
+                <a href="/components/feedback" atom:navigate>Feedback</a>
                 <a href="/components/icons" atom:navigate>Icons</a>
                 <a href="/components/forms" atom:navigate>Forms</a>
                 <a href="/components/surfaces" atom:navigate>Surfaces</a>

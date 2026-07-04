@@ -41,6 +41,7 @@ use Atom\Modules\Framework\Components\TextArea;
 use Atom\Modules\Framework\Components\TextAreaField;
 use Atom\Modules\Framework\Components\TextField;
 use Atom\Modules\Framework\Components\TextInput;
+use Atom\Modules\Framework\Components\Toast;
 use Atom\Modules\Framework\Components\Toolbar;
 use Atom\Modules\Framework\Components\ValidationSummary;
 use Atom\Router\RouteEntry;
@@ -92,6 +93,7 @@ final readonly class Framework
         $context->component("TextAreaField", TextAreaField::class);
         $context->component("TextField", TextField::class);
         $context->component("TextInput", TextInput::class);
+        $context->component("Toast", Toast::class);
         $context->component("Toolbar", Toolbar::class);
         $context->component("ValidationSummary", ValidationSummary::class);
     }

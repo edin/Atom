@@ -8,6 +8,7 @@ use Atom\Support\Paths;
 use Atom\View\Component\AttributeBag;
 use Atom\View\Component\ComponentInterface;
 use Atom\View\Component\Fragment;
+use Atom\View\Component\FromContext;
 use Atom\View\Html;
 
 final class SidebarItem implements ComponentInterface
@@ -17,7 +18,10 @@ final class SidebarItem implements ComponentInterface
     public AttributeBag $attributes;
     public string $href = "";
     public string $label = "";
+    public string $match = "exact";
     public bool $active = false;
+    #[FromContext("currentPath")]
+    public string $currentPath = "";
     public string $class = "";
 
     public function __construct(private ?Paths $paths = null)
@@ -33,9 +37,40 @@ final class SidebarItem implements ComponentInterface
 
         return Html::tag($tag, Html::mergeAttributes([
             "href" => $tag === "a" ? $this->href : null,
-            "class" => Html::classes("atom-sidebar-item", ["is-active" => $this->active], $this->class),
-            "aria-current" => $this->active && $tag === "a" ? "page" : null,
+            "class" => Html::classes("atom-sidebar-item", ["is-active" => $this->isActive()], $this->class),
+            "aria-current" => $this->isActive() && $tag === "a" ? "page" : null,
         ], $this->attributes->all()), $content);
+    }
+
+    private function isActive(): bool
+    {
+        if ($this->active) {
+            return true;
+        }
+
+        if ($this->currentPath === "" || $this->href === "") {
+            return false;
+        }
+
+        return $this->match === "prefix"
+            ? $this->isPrefixMatch()
+            : $this->normalizePath($this->href) === $this->normalizePath($this->currentPath);
+    }
+
+    private function isPrefixMatch(): bool
+    {
+        $href = $this->normalizePath($this->href);
+        $current = $this->normalizePath($this->currentPath);
+
+        return $current === $href || str_starts_with($current, $href . "/");
+    }
+
+    private function normalizePath(string $path): string
+    {
+        $path = parse_url($path, PHP_URL_PATH) ?: "/";
+        $path = "/" . trim($path, "/");
+
+        return $path === "/" ? "/" : rtrim($path, "/");
     }
 
     private function label(): string
