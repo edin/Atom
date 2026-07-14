@@ -20,4 +20,8 @@ final class FormsDemoModel
     public int $categoryId = 2;
 
     public bool $published = true;
+
+    public string $visibility = "team";
+
+    public bool $featured = false;
 }

@@ -11,10 +11,16 @@ use Atom\Module\ModuleRegistry;
 use Atom\Modules\Framework\Components\FieldError;
 use Atom\Modules\Framework\Components\TextArea;
 use Atom\Modules\Framework\Components\TextInput;
+use Atom\Modules\Framework\Components\Progress;
+use Atom\Modules\Framework\Components\RadioField;
+use Atom\Modules\Framework\Components\Skeleton;
+use Atom\Modules\Framework\Components\Spinner;
+use Atom\Modules\Framework\Components\SwitchField;
 use Atom\Modules\Framework\Components\ValidationSummary;
 use Atom\Modules\DevReload\DevReloadModule;
 use Atom\Modules\DevReload\DevReloadWatcher;
 use Atom\Modules\Framework\Framework;
+use Atom\Modules\ErrorPages\ErrorPagesModule;
 use Atom\Module\ModuleContext;
 use Atom\Module\ModuleInterface;
 use Atom\Http\StaticFileHandler;
@@ -115,6 +121,11 @@ final class ModuleTest extends TestCase
         $this->assertSame(TextArea::class, $components->get("TextArea"));
         $this->assertSame(TextInput::class, $components->get("TextInput"));
         $this->assertSame(ValidationSummary::class, $components->get("ValidationSummary"));
+        $this->assertSame(RadioField::class, $components->get("RadioField"));
+        $this->assertSame(SwitchField::class, $components->get("SwitchField"));
+        $this->assertSame(Progress::class, $components->get("Progress"));
+        $this->assertSame(Spinner::class, $components->get("Spinner"));
+        $this->assertSame(Skeleton::class, $components->get("Skeleton"));
     }
 
     public function testDevReloadModuleRegistersVersionEndpointAndResources(): void
@@ -183,7 +194,8 @@ final class ModuleTest extends TestCase
 
         $this->assertSame("module-service", $app->moduleServiceName);
         $this->assertSame("/hook/module", $app->getRouter()->getRoutes()[0]->getFullPath());
-        $this->assertCount(1, $app->getModules()->all());
+        $this->assertCount(2, $app->getModules()->all());
+        $this->assertInstanceOf(ErrorPagesModule::class, $app->getModules()->all()[0]->module);
     }
 
     private function tempDirectory(): string

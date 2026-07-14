@@ -13,6 +13,7 @@ use Atom\Http\Request;
 use Atom\Http\Response;
 use Atom\Http\MiddlewareInterface;
 use Atom\Http\RequestHandlerInterface;
+use Atom\Modules\ErrorPages\ErrorPageHandlerInterface;
 
 final class Dispatcher implements RequestHandlerInterface
 {
@@ -21,7 +22,8 @@ final class Dispatcher implements RequestHandlerInterface
         private Injector $injector,
         private RouteInvoker $routeInvoker,
         private ResultConverter $resultConverter,
-        private InjectionContext $context
+        private InjectionContext $context,
+        private ErrorPageHandlerInterface $errors
     ) {
     }
 
@@ -59,16 +61,13 @@ final class Dispatcher implements RequestHandlerInterface
         $match = (new RouteMatcher($this->router))->match($method, $uriPath, $request->query()->toArray());
 
         if ($match->isMethodNotAllowed()) {
-            return (new Response())
-                ->status(405)
-                ->header("Allow", implode(", ", $match->allowedMethods))
-                ->content("Method Not Allowed");
+            return $this->errors->forStatus(405, $request, [
+                "Allow" => implode(", ", $match->allowedMethods),
+            ]);
         }
 
         if (!$match->isFound()) {
-            return (new Response())
-                ->status(404)
-                ->content("Not Found");
+            return $this->errors->forStatus(404, $request);
         }
 
         $matchedRoute = $match->matchedRoute;

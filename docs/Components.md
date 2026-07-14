@@ -42,6 +42,12 @@ The framework module registers default UI and form components:
 <Button variant="link" atom:action="edit(1)">Edit</Button>
 <Alert variant="danger">Could not save.</Alert>
 <Badge>Published</Badge>
+<Avatar name="Ada Lovelace" />
+<Tag variant="success">Stable</Tag>
+<StatusDot variant="success" label="Online" />
+<Kbd>Ctrl</Kbd>
+<Divider>or</Divider>
+<Details summary="Advanced options">...</Details>
 <Panel title="Articles">...</Panel>
 <Stack gap="sm">...</Stack>
 <Inline align="center" justify="between">...</Inline>
@@ -58,6 +64,10 @@ The framework module registers default UI and form components:
 <FieldError name="title" />
 <ValidationSummary />
 ```
+
+`Avatar` renders an image when `src` is provided and otherwise derives up to two initials from `name`. `StatusDot` requires a `label` when its meaning is not also written next to it. `Details` uses native `<details>` disclosure behavior and does not require JavaScript.
+
+Use `Badge` for compact status or metadata, and `Tag` for pill-shaped classification labels. `Divider` supports `horizontal` and `vertical` orientations.
 
 `TextInput` and `TextArea` read values from the current page property matching `name`, unless a `value` attribute is provided. They render framework control classes such as `atom-input` and `atom-textarea`. When validation errors exist, they render `aria-invalid`, `aria-describedby`, and the `is-invalid` class.
 

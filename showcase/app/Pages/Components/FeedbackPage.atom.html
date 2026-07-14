@@ -15,6 +15,30 @@
     </Inline>
 </ComponentExample>
 
+<ComponentExample title="Progress" description="Progress supports determinate work, indeterminate work, sizes, and semantic variants.">
+    <Stack gap="md">
+        <Progress label="Uploading assets" value="68" showValue />
+        <Progress label="Publishing" value="42" variant="success" size="sm" />
+        <Progress label="Waiting for worker" variant="neutral" />
+    </Stack>
+</ComponentExample>
+
+<ComponentExample title="Loading indicators" description="Spinner communicates active work while Skeleton reserves space for content that has not arrived yet.">
+    <Stack gap="md">
+        <Inline gap="md">
+            <Spinner size="sm" label="Loading compact result" />
+            <Spinner label="Loading result" />
+            <Spinner size="lg" variant="success" label="Finishing" />
+        </Inline>
+
+        <Stack gap="sm">
+            <Skeleton width="42%" />
+            <Skeleton />
+            <Skeleton width="78%" />
+        </Stack>
+    </Stack>
+</ComponentExample>
+
 <ComponentExample title="Toast" description="Toast renders fixed-position feedback and can be controlled by page actions.">
     <Stack gap="sm">
         <Inline gap="sm">

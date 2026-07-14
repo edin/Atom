@@ -10,6 +10,7 @@ use Atom\Collections\PagedCollection;
 use Atom\Modules\Framework\Components\FieldError;
 use Atom\Modules\Framework\Components\Alert;
 use Atom\Modules\Framework\Components\AppShell;
+use Atom\Modules\Framework\Components\Avatar;
 use Atom\Modules\Framework\Components\Badge;
 use Atom\Modules\Framework\Components\Breadcrumb;
 use Atom\Modules\Framework\Components\Breadcrumbs;
@@ -20,6 +21,8 @@ use Atom\Modules\Framework\Components\CheckField;
 use Atom\Modules\Framework\Components\Column;
 use Atom\Modules\Framework\Components\ControlGroup;
 use Atom\Modules\Framework\Components\Dialog;
+use Atom\Modules\Framework\Components\Details;
+use Atom\Modules\Framework\Components\Divider;
 use Atom\Modules\Framework\Components\DialogModel;
 use Atom\Modules\Framework\Components\EmptyState;
 use Atom\Modules\Framework\Components\Field;
@@ -30,7 +33,11 @@ use Atom\Modules\Framework\Components\FormSection;
 use Atom\Modules\Framework\Components\Panel;
 use Atom\Modules\Framework\Components\PageHeader;
 use Atom\Modules\Framework\Components\Pagination;
+use Atom\Modules\Framework\Components\Progress;
+use Atom\Modules\Framework\Components\RadioField;
 use Atom\Modules\Framework\Components\SelectField;
+use Atom\Modules\Framework\Components\Skeleton;
+use Atom\Modules\Framework\Components\Spinner;
 use Atom\Modules\Framework\Components\Sidebar;
 use Atom\Modules\Framework\Components\SidebarGroup;
 use Atom\Modules\Framework\Components\SidebarItem;
@@ -40,14 +47,18 @@ use Atom\Modules\Framework\Components\SplitView;
 use Atom\Modules\Framework\Components\FormActions;
 use Atom\Modules\Framework\Components\Inline;
 use Atom\Modules\Framework\Components\Icon;
+use Atom\Modules\Framework\Components\Kbd;
 use Atom\Modules\Framework\Components\ListComponent;
 use Atom\Modules\Framework\Components\ListItem;
 use Atom\Modules\Framework\Components\Stack;
 use Atom\Modules\Framework\Components\Stats;
+use Atom\Modules\Framework\Components\StatusDot;
+use Atom\Modules\Framework\Components\SwitchField;
 use Atom\Modules\Framework\Components\Tab;
 use Atom\Modules\Framework\Components\Tabs;
 use Atom\Modules\Framework\Components\TabsModel;
 use Atom\Modules\Framework\Components\Table;
+use Atom\Modules\Framework\Components\Tag;
 use Atom\Modules\Framework\Components\TextArea;
 use Atom\Modules\Framework\Components\TextAreaField;
 use Atom\Modules\Framework\Components\TextField;
@@ -349,6 +360,55 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('.atom-badge[data-size="xl"]', $css);
         $this->assertStringContainsString('.atom-badge[data-appearance="soft"]', $css);
         $this->assertStringContainsString('.atom-badge[data-appearance="solid"]', $css);
+    }
+
+    public function testFrameworkPrimitiveComponentsRenderContentAndAccessibleDefaults(): void
+    {
+        $registry = new ComponentRegistry();
+        $registry->register("Avatar", Avatar::class);
+        $registry->register("Details", Details::class);
+        $registry->register("Divider", Divider::class);
+        $registry->register("Kbd", Kbd::class);
+        $registry->register("StatusDot", StatusDot::class);
+        $registry->register("Tag", Tag::class);
+
+        $html = (new ViewRenderer(components: $registry))->render(
+            (new ViewParser())->parse(
+                '<Avatar name="Ada Lovelace" size="lg" />' .
+                '<Avatar src="/ada.jpg" name="Ada Lovelace" shape="square" />' .
+                '<StatusDot variant="success" label="Online" />' .
+                '<StatusDot />' .
+                '<Tag variant="primary">Framework</Tag>' .
+                '<Kbd size="sm">Ctrl</Kbd>' .
+                '<Divider>or</Divider>' .
+                '<Details summary="Advanced options" open><p>Optional settings.</p></Details>'
+            )
+        );
+
+        $this->assertStringContainsString('<span class="atom-avatar" data-size="lg" data-shape="circle" role="img" aria-label="Ada Lovelace"><span class="atom-avatar__initials">AL</span></span>', $html);
+        $this->assertStringContainsString('<span class="atom-avatar" data-size="md" data-shape="square"><img class="atom-avatar__image" src="/ada.jpg" alt="Ada Lovelace"></span>', $html);
+        $this->assertStringContainsString('<span class="atom-status-dot" data-variant="success" data-size="md" role="img" aria-label="Online"></span>', $html);
+        $this->assertStringContainsString('<span class="atom-status-dot" data-variant="neutral" data-size="md" aria-hidden="true"></span>', $html);
+        $this->assertStringContainsString('<span class="atom-tag" data-variant="primary" data-size="md">Framework</span>', $html);
+        $this->assertStringContainsString('<kbd class="atom-kbd" data-size="sm">Ctrl</kbd>', $html);
+        $this->assertStringContainsString('<div class="atom-divider" data-orientation="horizontal" role="separator" aria-orientation="horizontal">or</div>', $html);
+        $this->assertStringContainsString('<details class="atom-details" open><summary class="atom-details__summary">Advanced options</summary><div class="atom-details__content"><p>Optional settings.</p></div></details>', $html);
+    }
+
+    public function testFrameworkPrimitiveCssDefinesVariantsSizesAndFocusState(): void
+    {
+        $css = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Framework/Resources/css/primitives.css");
+        $entry = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Framework/Resources/atom.css");
+
+        $this->assertIsString($css);
+        $this->assertIsString($entry);
+        $this->assertStringContainsString('.atom-divider[data-orientation="vertical"]', $css);
+        $this->assertStringContainsString('.atom-avatar[data-size="xl"]', $css);
+        $this->assertStringContainsString('.atom-status-dot[data-variant="success"]', $css);
+        $this->assertStringContainsString('.atom-tag[data-variant="danger"]', $css);
+        $this->assertStringContainsString('.atom-kbd[data-size="lg"]', $css);
+        $this->assertStringContainsString('.atom-details__summary:focus-visible', $css);
+        $this->assertStringContainsString('@import url("./css/primitives.css");', $entry);
     }
 
     public function testFrameworkPanelComponentRendersTitleAndBody(): void
@@ -1377,12 +1437,28 @@ final class ComponentViewTest extends TestCase
         );
 
         $this->assertSame(
-            '<label class="atom-field atom-check-field" for="published">' .
+            '<div class="atom-field"><label class="atom-check-field" for="published">' .
             '<input type="hidden" name="published" value="0">' .
             '<input type="checkbox" id="published" name="published" value="1" checked class="atom-checkbox">' .
-            '<span class="atom-field-label">Published</span></label>',
+            '<span class="atom-field-label">Published</span></label></div>',
             $html
         );
+    }
+
+    public function testFrameworkCheckFieldRendersHelpText(): void
+    {
+        $page = new ValidationComponentPage();
+
+        $registry = new ComponentRegistry();
+        $registry->register("CheckField", CheckField::class);
+
+        $html = (new ViewRenderer(components: $registry))->render(
+            (new ViewParser())->parse('<CheckField label="Published" name="published" help="Visible to readers." />'),
+            ["page" => $page]
+        );
+
+        $this->assertStringContainsString('<div class="atom-field"><label class="atom-check-field" for="published">', $html);
+        $this->assertStringContainsString('<p id="published-help" class="atom-field-help">Visible to readers.</p>', $html);
     }
 
     public function testFrameworkCheckFieldReadsModelContextAndRendersErrors(): void
@@ -1402,6 +1478,97 @@ final class ComponentViewTest extends TestCase
 
         $this->assertStringContainsString('<input type="checkbox" id="published" name="published" value="1" class="atom-checkbox is-invalid" aria-invalid="true" aria-describedby="published-error">', $html);
         $this->assertStringContainsString('<p id="published-error" class="atom-field-error">The field is required.</p>', $html);
+    }
+
+    public function testFrameworkRadioFieldRendersOptionsAndSelectedModelValue(): void
+    {
+        $page = new ValidationComponentPage();
+        $page->edit = (object) ["visibility" => "team"];
+        $page->visibilityOptions = [
+            ["value" => "private", "text" => "Private"],
+            ["value" => "team", "text" => "Team"],
+            ["value" => "public", "text" => "Public"],
+        ];
+
+        $registry = new ComponentRegistry();
+        $registry->register("Form", Form::class);
+        $registry->register("RadioField", RadioField::class);
+
+        $html = (new ViewRenderer(components: $registry))->render(
+            (new ViewParser())->parse(
+                '<Form :model="$page->edit"><RadioField label="Visibility" name="visibility" orientation="horizontal" help="Choose an audience." :options="$page->visibilityOptions" /></Form>'
+            ),
+            ["page" => $page]
+        );
+
+        $this->assertStringContainsString('<fieldset class="atom-field atom-radio-field" aria-describedby="visibility-help">', $html);
+        $this->assertStringContainsString('<legend class="atom-field-label">Visibility</legend>', $html);
+        $this->assertStringContainsString('class="atom-radio-field__options" data-orientation="horizontal"', $html);
+        $this->assertStringContainsString('id="visibility-1" name="visibility" value="team" checked class="atom-radio"', $html);
+        $this->assertStringContainsString('<span>Team</span>', $html);
+        $this->assertStringContainsString('<p id="visibility-help" class="atom-field-help">Choose an audience.</p>', $html);
+    }
+
+    public function testFrameworkSwitchFieldRendersBooleanStateHelpAndHiddenFallback(): void
+    {
+        $page = new ValidationComponentPage();
+        $page->published = true;
+
+        $registry = new ComponentRegistry();
+        $registry->register("SwitchField", SwitchField::class);
+
+        $html = (new ViewRenderer(components: $registry))->render(
+            (new ViewParser())->parse('<SwitchField label="Published" name="published" help="Visible to readers." />'),
+            ["page" => $page]
+        );
+
+        $this->assertStringContainsString('<input type="hidden" name="published" value="0">', $html);
+        $this->assertStringContainsString('type="checkbox" role="switch" id="published" name="published" value="1" checked class="atom-switch"', $html);
+        $this->assertStringContainsString('<span class="atom-field-label">Published</span>', $html);
+        $this->assertStringContainsString('<p id="published-help" class="atom-field-help">Visible to readers.</p>', $html);
+    }
+
+    public function testFrameworkLoadingComponentsRenderAccessibleStates(): void
+    {
+        $registry = new ComponentRegistry();
+        $registry->register("Progress", Progress::class);
+        $registry->register("Spinner", Spinner::class);
+        $registry->register("Skeleton", Skeleton::class);
+
+        $html = (new ViewRenderer(components: $registry))->render(
+            (new ViewParser())->parse(
+                '<Progress label="Uploading" value="68" showValue variant="success" size="sm" />' .
+                '<Progress label="Waiting" />' .
+                '<Spinner label="Loading results" size="lg" />' .
+                '<Skeleton width="75%" height="2rem" shape="circle" style="margin: 1rem;" />'
+            )
+        );
+
+        $this->assertStringContainsString('<span class="atom-progress__label">Uploading</span>', $html);
+        $this->assertStringContainsString('<span class="atom-progress__value">68%</span>', $html);
+        $this->assertStringContainsString('<progress class="atom-progress" value="68" max="100" data-variant="success" data-size="sm" aria-label="Uploading"></progress>', $html);
+        $this->assertStringContainsString('<progress class="atom-progress" max="100" data-variant="primary" data-size="md" aria-label="Waiting"></progress>', $html);
+        $this->assertStringContainsString('<span class="atom-spinner" data-variant="primary" data-size="lg" role="status"><span class="atom-visually-hidden">Loading results</span></span>', $html);
+        $this->assertStringContainsString('class="atom-skeleton" data-shape="circle" style="--atom-skeleton-width: 75%; --atom-skeleton-height: 2rem; margin: 1rem;" aria-hidden="true"', $html);
+    }
+
+    public function testFrameworkLoadingAndChoiceCssDefinesStatesAndReducedMotion(): void
+    {
+        $form = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Framework/Resources/css/form.css");
+        $loading = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Framework/Resources/css/loading.css");
+
+        $this->assertIsString($form);
+        $this->assertIsString($loading);
+        $this->assertStringContainsString(".atom-radio-field", $form);
+        $this->assertStringContainsString(".atom-radio::before", $form);
+        $this->assertStringContainsString(".atom-radio:checked", $form);
+        $this->assertStringContainsString(".atom-checkbox::before", $form);
+        $this->assertStringContainsString(".atom-checkbox:checked", $form);
+        $this->assertStringContainsString(".atom-switch:checked", $form);
+        $this->assertStringContainsString(".atom-progress:not([value])", $loading);
+        $this->assertStringContainsString(".atom-spinner", $loading);
+        $this->assertStringContainsString(".atom-skeleton", $loading);
+        $this->assertStringContainsString("prefers-reduced-motion: reduce", $loading);
     }
 
     public function testFrameworkHiddenFieldBindsPageAndModelValues(): void
@@ -1471,6 +1638,9 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString(".atom-form-section", $css);
         $this->assertStringContainsString(".atom-form-row", $css);
         $this->assertStringContainsString(".atom-input:focus", $css);
+        $this->assertStringContainsString("outline: 1px solid var(--atom-color-primary);", $css);
+        $this->assertStringContainsString("outline-offset: 0;", $css);
+        $this->assertStringNotContainsString("padding: 9px 11px;", $css);
         $this->assertStringContainsString(".atom-select {\n    appearance: none;", $css);
         $this->assertStringContainsString("background-size: 16px 16px;", $css);
         $this->assertStringContainsString(".atom-select:focus", $css);
@@ -1628,6 +1798,9 @@ final class ValidationComponentPage extends Page
     public string $status = "";
 
     public array $statuses = [];
+
+    /** @var list<array{value: string, text: string}> */
+    public array $visibilityOptions = [];
 
     public int $id = 0;
 

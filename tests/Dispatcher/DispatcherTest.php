@@ -17,6 +17,9 @@ use Atom\Http\MiddlewareInterface;
 use Atom\Http\Request;
 use Atom\Http\RequestHandlerInterface;
 use Atom\Http\Response;
+use Atom\Modules\ErrorPages\DefaultErrorPageHandler;
+use Atom\Modules\ErrorPages\ErrorPageHandlerInterface;
+use Atom\Modules\ErrorPages\ErrorPagesOptions;
 use Atom\Router\RouteEntry;
 use Atom\Router\Router;
 use PHPUnit\Framework\TestCase;
@@ -90,7 +93,8 @@ final class DispatcherTest extends TestCase
         $response = $dispatcher->handle(new Request("GET", "/favicon.ico"));
 
         $this->assertSame(404, $response->getStatus());
-        $this->assertSame("Not Found", $response->getContent());
+        $this->assertStringContainsString("Page not found", $response->getContent());
+        $this->assertSame("text/html; charset=utf-8", $response->headers()->get("Content-Type"));
     }
 
     public function testDispatcherReturnsMethodNotAllowedResponse(): void
@@ -103,7 +107,7 @@ final class DispatcherTest extends TestCase
 
         $this->assertSame(405, $response->getStatus());
         $this->assertSame("POST", $response->headers()->get("Allow"));
-        $this->assertSame("Method Not Allowed", $response->getContent());
+        $this->assertStringContainsString("Method not allowed", $response->getContent());
     }
 
     public function testDispatcherTreatsAtomNavigationPostAsEffectiveGet(): void
@@ -151,6 +155,10 @@ final class DispatcherTest extends TestCase
         $bindings = Bindings::create();
         (new DispatcherServices())->register($bindings);
         $bindings->value(Router::class, $router);
+        $bindings->value(
+            ErrorPageHandlerInterface::class,
+            new DefaultErrorPageHandler(new ErrorPagesOptions())
+        );
 
         return Injector::create($bindings)->get(Dispatcher::class);
     }

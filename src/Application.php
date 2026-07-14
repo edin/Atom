@@ -15,6 +15,7 @@ use Atom\Di\TypeFactory;
 use Atom\Di\TypeInfo;
 use Atom\Dispatcher\Dispatcher;
 use Atom\Dispatcher\DispatcherServices;
+use Atom\Dispatcher\ResponseEmitter;
 use Atom\Dispatcher\ResponseEmitterInterface;
 use Atom\Console\ConsoleApplication;
 use Atom\Console\ConsoleServices;
@@ -24,6 +25,8 @@ use Atom\Http\RequestHandlerInterface;
 use Atom\Module\ModuleContext;
 use Atom\Module\ModuleInterface;
 use Atom\Module\ModuleRegistry;
+use Atom\Modules\ErrorPages\ErrorPageHandlerInterface;
+use Atom\Modules\ErrorPages\ErrorPages;
 use Atom\Page\PageRegistry;
 use Atom\Page\PageRouteRegistrar;
 use Atom\Page\PageServices;
@@ -34,6 +37,7 @@ use Atom\Router\Router;
 use Atom\Support\Paths;
 use Atom\View\Component\ComponentRegistry;
 use RuntimeException;
+use Throwable;
 
 abstract class Application
 {
@@ -265,6 +269,7 @@ abstract class Application
             $this->bindings = $bindings;
             $this->injector = new Injector($bindings);
             $this->modules = new ModuleRegistry();
+            $this->modules->add(ErrorPages::module());
             $this->pages = new PageRegistry();
             $this->bootstrappers = new Bootstrappers();
 
@@ -307,26 +312,32 @@ abstract class Application
 
     final public function handle(?Request $request = null): Response
     {
-        $this->initialize();
+        try {
+            $this->initialize();
 
-        $this->currentContext = new InjectionContext();
-        if ($request !== null) {
-            $this->currentContext->set(Request::class, $request);
+            $this->currentContext = new InjectionContext();
+            if ($request !== null) {
+                $this->currentContext->set(Request::class, $request);
+            }
+
+            $activeRequest = $this->getRequest();
+            $response = $this->getProfiler()->measure(
+                "request.dispatch",
+                fn(): Response => $this->getDispatcher()->handle($activeRequest)
+            );
+            $this->addProfilerHeaders($response);
+
+            return $response;
+        } catch (Throwable $exception) {
+            return $this->renderException($exception, $request ?? Request::fromGlobals());
         }
-
-        $response = $this->getProfiler()->measure(
-            "request.dispatch",
-            fn(): Response => $this->getDispatcher()->handle($this->getRequest())
-        );
-        $this->addProfilerHeaders($response);
-
-        return $response;
     }
 
     final public function run(?Request $request = null): Response
     {
         $response = $this->handle($request);
-        $this->getResponseEmitter()->emit($response);
+        $emitter = $this->injector === null ? new ResponseEmitter() : $this->getResponseEmitter();
+        $emitter->emit($response);
 
         return $response;
     }
@@ -345,5 +356,32 @@ abstract class Application
 
             $response->header($header, $value);
         }
+    }
+
+    private function renderException(Throwable $exception, Request $request): Response
+    {
+        try {
+            if ($this->injector === null) {
+                return $this->fallbackErrorResponse();
+            }
+
+            $handler = $this->injector->get(ErrorPageHandlerInterface::class, $this->currentContext);
+            if (!$handler instanceof ErrorPageHandlerInterface) {
+                return $this->fallbackErrorResponse();
+            }
+
+            return $handler->forException($exception, $request);
+        } catch (Throwable) {
+            return $this->fallbackErrorResponse();
+        }
+    }
+
+    private function fallbackErrorResponse(): Response
+    {
+        return (new Response())
+            ->status(500)
+            ->header("Content-Type", "text/plain; charset=utf-8")
+            ->header("Cache-Control", "no-store")
+            ->content("Internal Server Error");
     }
 }

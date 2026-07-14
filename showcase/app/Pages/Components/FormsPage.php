@@ -24,6 +24,13 @@ final class FormsPage extends AppPage
     /** @var list<object{id: int, name: string}> */
     public array $categories = [];
 
+    /** @var list<array{value: string, text: string}> */
+    public array $visibilityOptions = [
+        ["value" => "private", "text" => "Private"],
+        ["value" => "team", "text" => "Team"],
+        ["value" => "public", "text" => "Public"],
+    ];
+
     #[State]
     #[FormModel]
     public FormsDemoModel $form;

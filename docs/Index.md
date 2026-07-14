@@ -12,6 +12,7 @@ The main concepts are:
 - [Modules](Modules.md)
 - [Paths](Paths.md)
 - [Logging](Logging.md)
+- [Error Pages](ErrorPages.md)
 - [API Explorer](ApiExplorer.md)
 - [Database](Database.md)
 - [PostgreSQL Support Plan](PostgreSQLSupport.md)

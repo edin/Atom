@@ -1,13 +1,55 @@
 <section class="story-header">
     <div>
         <h1>Composition</h1>
-        <p>Composition examples show fragments, template fragments, and parent-managed child content.</p>
+        <p>Small primitives and composition patterns for building application interfaces.</p>
     </div>
-    <Badge>Placeholder</Badge>
+    <Badge>Primitives</Badge>
 </section>
 
 <ComponentExample title="TemplateFragment" description="ComponentExample renders its child content as a live preview and as source code.">
     <Panel title="Preview">
         <p>This panel is rendered live and also displayed as source below.</p>
     </Panel>
+</ComponentExample>
+
+<ComponentExample title="Avatars" description="Avatar derives initials from a name when no image source is provided.">
+    <Inline gap="sm" align="center">
+        <Avatar name="Ada Lovelace" size="sm" />
+        <Avatar name="Grace Hopper" />
+        <Avatar name="Linus Torvalds" size="lg" shape="square" />
+        <Avatar initials="AT" size="xl" />
+    </Inline>
+</ComponentExample>
+
+<ComponentExample title="Tags and status" description="Tags classify content while StatusDot communicates a compact state.">
+    <Inline gap="sm" align="center" wrap>
+        <Tag variant="primary">Framework</Tag>
+        <Tag variant="success">Stable</Tag>
+        <Tag variant="warning">Experimental</Tag>
+        <Inline gap="xs" align="center"><StatusDot variant="success" label="Online" /> Online</Inline>
+        <Inline gap="xs" align="center"><StatusDot variant="danger" label="Offline" /> Offline</Inline>
+    </Inline>
+</ComponentExample>
+
+<ComponentExample title="Divider and keyboard keys" description="Divider separates nearby content and Kbd presents keyboard input.">
+    <Stack gap="md">
+        <p>Open command palette with <Kbd>Ctrl</Kbd> + <Kbd>K</Kbd>.</p>
+        <Divider>or continue with</Divider>
+        <Inline gap="sm" align="center">
+            <span>Previous</span>
+            <Divider orientation="vertical" />
+            <span>Next</span>
+        </Inline>
+    </Stack>
+</ComponentExample>
+
+<ComponentExample title="Details" description="Details uses native disclosure behavior and works without JavaScript.">
+    <Stack gap="sm">
+        <Details summary="What does Atom render?" open>
+            <p>Atom renders server-side HTML and hydrates only the interactions an application needs.</p>
+        </Details>
+        <Details summary="Can I customize this component?">
+            <p>Yes. Pass classes or attributes, or replace the framework component registration.</p>
+        </Details>
+    </Stack>
 </ComponentExample>
