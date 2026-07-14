@@ -7,13 +7,48 @@
 </section>
 
 <ComponentExample title="Table columns" description="Table maps plain Column tags into column objects before rendering rows.">
-    <Table :items="$this->users" as="user">
-        <Column label="Name" field="name" />
-        <Column label="Role">
+    <Toast>
+        <Toast.Actions>
+            <Button size="sm" variant="ghost" atom:action="clearFlash">Dismiss</Button>
+        </Toast.Actions>
+    </Toast>
+
+    <Table :items="$this->users" as="user" :sort="$this->sort" :direction="$this->direction" sortAction="setSort('{sort}', '{direction}')">
+        <Table.Toolbar>
+            <Form submit="filter">
+                <Toolbar gap="sm" align="end">
+                    <TextField label="Search" name="query" placeholder="Name or role" />
+                    <SelectField label="Status" name="status" :options="$this->statuses" />
+                    <Button type="submit">Filter</Button>
+                    <Button variant="ghost" atom:action="clearFilters">Clear</Button>
+                </Toolbar>
+            </Form>
+        </Table.Toolbar>
+
+        <Column label="Name" field="name" sort />
+        <Column label="Role" field="role" sort>
             <Badge>{{ $user["role"] }}</Badge>
         </Column>
-        <Column label="Status">
+        <Column label="Status" field="status" sort>
             <Badge :variant="$user['status'] === 'Draft' ? 'secondary' : ''">{{ $user["status"] }}</Badge>
         </Column>
+        <Column label="Actions">
+            <Column.Actions>
+                <Button size="sm" variant="ghost" atom:action="edit({{ $row['id'] }})">Edit</Button>
+                <Button size="sm" variant="danger" appearance="soft" atom:action="delete({{ $row['id'] }})">Delete</Button>
+            </Column.Actions>
+        </Column>
+
+        <Table.Empty>
+            <EmptyState title="No users" description="Try changing filters or clearing search." />
+        </Table.Empty>
+
+        <Table.Summary>
+            Showing {{ $from }}-{{ $to }} of {{ $total }} users.
+        </Table.Summary>
+
+        <Table.Pagination>
+            <Pagination action="setPage({page})" />
+        </Table.Pagination>
     </Table>
 </ComponentExample>

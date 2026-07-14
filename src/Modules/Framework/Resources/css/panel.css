@@ -19,7 +19,7 @@
 .atom-panel__main,
 .atom-card__header {
     display: grid;
-    gap: var(--atom-space-1);
+    gap: 2px;
     min-width: 0;
 }
 
@@ -32,6 +32,7 @@
 .atom-panel__description {
     margin: 0;
     color: var(--atom-color-muted);
+    line-height: 1.4;
 }
 
 .atom-panel__actions {
@@ -166,44 +167,99 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    width: 1.1em;
+    height: 1.1em;
+    border-radius: 0;
+    background: transparent;
+    color: currentColor;
+    font-weight: 750;
+    line-height: 1;
+    vertical-align: -0.125em;
+}
+
+.atom-icon[data-appearance="soft"] {
     width: 44px;
     height: 44px;
     border-radius: var(--atom-radius);
-    background: var(--atom-color-primary-soft);
-    color: var(--atom-color-primary-text);
-    font-weight: 750;
+    background: var(--atom-color-soft);
+    color: var(--atom-color-text);
+    vertical-align: middle;
 }
 
 .atom-icon[data-size="sm"] {
-    width: 32px;
-    height: 32px;
     font-size: 0.9rem;
 }
 
 .atom-icon[data-size="lg"] {
-    width: 52px;
-    height: 52px;
     font-size: 1.15rem;
 }
 
+.atom-icon[data-size="sm"] {
+    width: 1.1em;
+    height: 1.1em;
+}
+
+.atom-icon[data-size="lg"] {
+    width: 1.1em;
+    height: 1.1em;
+}
+
+.atom-icon[data-appearance="soft"][data-size="sm"] {
+    width: 32px;
+    height: 32px;
+}
+
+.atom-icon[data-appearance="soft"][data-size="lg"] {
+    width: 52px;
+    height: 52px;
+}
+
+.atom-icon[data-variant="primary"] {
+    color: var(--atom-color-primary-text);
+}
+
 .atom-icon[data-variant="secondary"] {
-    background: var(--atom-color-secondary-soft);
     color: var(--atom-color-secondary-text);
 }
 
 .atom-icon[data-variant="success"] {
-    background: var(--atom-color-success-soft);
     color: var(--atom-color-success-text);
 }
 
 .atom-icon[data-variant="warning"] {
-    background: var(--atom-color-warning-soft);
     color: var(--atom-color-warning-text);
 }
 
 .atom-icon[data-variant="danger"] {
-    background: var(--atom-color-danger-soft);
     color: var(--atom-color-danger-text);
+}
+
+.atom-icon[data-variant="info"] {
+    color: var(--atom-color-info-text);
+}
+
+.atom-icon[data-appearance="soft"][data-variant="primary"] {
+    background: var(--atom-color-primary-soft);
+}
+
+.atom-icon[data-appearance="soft"][data-variant="secondary"] {
+    background: var(--atom-color-secondary-soft);
+}
+
+.atom-icon[data-appearance="soft"][data-variant="success"] {
+    background: var(--atom-color-success-soft);
+}
+
+.atom-icon[data-appearance="soft"][data-variant="warning"] {
+    background: var(--atom-color-warning-soft);
+}
+
+.atom-icon[data-appearance="soft"][data-variant="danger"] {
+    background: var(--atom-color-danger-soft);
+}
+
+.atom-icon[data-appearance="soft"][data-variant="info"] {
+    background: var(--atom-color-info-soft);
 }
 
 .atom-icon > svg,
@@ -221,7 +277,7 @@
     line-height: 1;
 }
 
-.atom-icon > svg {
+.atom-icon > svg:not([fill]) {
     fill: currentColor;
 }
 

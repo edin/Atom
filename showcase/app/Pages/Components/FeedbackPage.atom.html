@@ -11,6 +11,7 @@
         <Button href="/components/alerts" atom:navigate>Alerts</Button>
         <Button href="/components/badges" variant="ghost" atom:navigate>Badges</Button>
         <Button href="/components/feedback" variant="ghost" atom:navigate>Toasts</Button>
+        <Button href="/components/feedback" variant="ghost" atom:navigate>Snack bars</Button>
     </Inline>
 </ComponentExample>
 
@@ -22,11 +23,27 @@
             <Button variant="danger" atom:action="showToast('danger')">Danger toast</Button>
         </Inline>
 
-        <Toast :show="$this->hasFlash()" :variant="$this->flashVariant()" :title="$this->flashTitle()" :description="$this->flashMessage()">
+        <Toast :model="$this->toast">
             <Toast.Actions>
-                <Button size="sm" variant="ghost" atom:action="clearFlash">Dismiss</Button>
+                <Button size="sm" variant="ghost" atom:action="toast.close()">Dismiss</Button>
             </Toast.Actions>
         </Toast>
+    </Stack>
+</ComponentExample>
+
+<ComponentExample title="Snack bar" description="SnackBar is compact feedback for short-lived actions, usually with one optional action.">
+    <Stack gap="sm">
+        <Inline gap="sm">
+            <Button atom:action="showSnackBar('success')">Saved snack bar</Button>
+            <Button variant="warning" atom:action="showSnackBar('warning')">Warning snack bar</Button>
+            <Button variant="danger" atom:action="showSnackBar('danger')">Deleted snack bar</Button>
+        </Inline>
+
+        <SnackBar>
+            <SnackBar.Actions>
+                <Button size="sm" variant="ghost" atom:action="clearFlash">Undo</Button>
+            </SnackBar.Actions>
+        </SnackBar>
     </Stack>
 </ComponentExample>
 

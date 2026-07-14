@@ -1,12 +1,22 @@
 <section class="story-header">
     <div>
         <h1>Icons</h1>
-        <p>Icon is a visual wrapper that can render text, inline SVG, public images, or font icon classes.</p>
+        <p>Icon renders a plain glyph by default and can opt into a soft frame.</p>
     </div>
     <Badge>Primitive</Badge>
 </section>
 
 <Stack gap="md">
+    <ComponentExample title="Lucide" description="Lucide icons are bundled with Atom and render from the lucide:name syntax.">
+        <Inline gap="sm">
+            <Icon icon="lucide:file-text" />
+            <Icon icon="lucide:square-pen" variant="secondary" />
+            <Icon icon="lucide:chart-line" variant="success" />
+            <Icon icon="lucide:triangle-alert" variant="warning" />
+            <Icon icon="lucide:trash" variant="danger" />
+        </Inline>
+    </ComponentExample>
+
     <ComponentExample title="Font Awesome" description="Use icon classes when the app has loaded a font icon stylesheet.">
         <Inline gap="sm">
             <Icon icon="fa-solid fa-file-lines" />
@@ -33,20 +43,29 @@
         </Inline>
     </ComponentExample>
 
-    <ComponentExample title="Inline SVG source" description="Aliased SVG files are read by Icon and embedded directly into the output.">
-        <Inline gap="sm">
-            <Icon src="@app/Resources/icons/article.svg" />
-            <Icon src="@app/Resources/icons/chart.svg" variant="success" />
-            <Icon src="@app/Resources/icons/comment.svg" variant="secondary" />
-            <Icon src="@app/Resources/icons/warning.svg" variant="warning" />
-            <Icon src="@app/Resources/icons/atom.svg" size="lg" />
+    <ComponentExample title="Soft frame" description="Use appearance=soft when an icon needs its own surface.">
+        <Inline gap="sm" align="center">
+            <Icon icon="lucide:file-text" appearance="soft" />
+            <Icon icon="lucide:chart-line" variant="success" appearance="soft" />
+            <Icon icon="lucide:triangle-alert" variant="warning" appearance="soft" />
+            <Icon icon="lucide:trash" variant="danger" appearance="soft" />
         </Inline>
     </ComponentExample>
 
-    <ComponentExample title="Public image source" description="Public paths render as image tags and keep the same icon frame.">
+    <ComponentExample title="Aliased SVG icon" description="Aliased SVG files use the same icon property and are embedded directly into the output.">
         <Inline gap="sm">
-            <Icon src="/icons/orbit.svg" />
-            <Icon src="/icons/orbit.svg" variant="secondary" />
+            <Icon icon="@app/Resources/icons/article.svg" />
+            <Icon icon="@app/Resources/icons/chart.svg" variant="success" />
+            <Icon icon="@app/Resources/icons/comment.svg" variant="secondary" />
+            <Icon icon="@app/Resources/icons/warning.svg" variant="warning" />
+            <Icon icon="@app/Resources/icons/atom.svg" size="lg" />
+        </Inline>
+    </ComponentExample>
+
+    <ComponentExample title="Public image icon" description="Public icon paths render as image tags with the same icon API.">
+        <Inline gap="sm">
+            <Icon icon="/icons/orbit.svg" />
+            <Icon icon="/icons/orbit.svg" variant="secondary" />
         </Inline>
     </ComponentExample>
 
@@ -58,7 +77,7 @@
 
             <Stats label="Warnings" value="3" description="Need attention">
                 <Stats.Icon>
-                    <Icon src="@app/Resources/icons/warning.svg" variant="warning" />
+                    <Icon icon="@app/Resources/icons/warning.svg" variant="warning" appearance="soft" />
                 </Stats.Icon>
             </Stats>
         </div>

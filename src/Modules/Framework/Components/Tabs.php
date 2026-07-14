@@ -16,13 +16,17 @@ final class Tabs implements ComponentInterface
     #[Children("Tab", Tab::class)]
     public array $tabs = [];
     public ?Fragment $content = null;
+    public ?TabsModel $model = null;
     public AttributeBag $attributes;
     public string $active = "";
+    public string $action = "";
     public string $label = "Tabs";
     public string $class = "";
 
     public function render(): string
     {
+        $this->bindModel();
+        $this->bindTabActions();
         $active = $this->activeTab();
         $headers = "";
         foreach ($this->tabs as $tab) {
@@ -41,6 +45,28 @@ final class Tabs implements ComponentInterface
         );
 
         return Html::tag("div", ["class" => "atom-tabs-frame"], $nav . $panel . ($this->content?->render() ?? ""));
+    }
+
+    private function bindModel(): void
+    {
+        if ($this->model !== null && $this->active === "") {
+            $this->active = $this->model->active;
+        }
+    }
+
+    private function bindTabActions(): void
+    {
+        if ($this->action === "") {
+            return;
+        }
+
+        foreach ($this->tabs as $tab) {
+            if ($tab->action !== "" || $tab->href !== "") {
+                continue;
+            }
+
+            $tab->action = str_replace("{name}", $tab->name, $this->action);
+        }
     }
 
     private function activeTab(): ?Tab

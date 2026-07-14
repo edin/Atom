@@ -20,7 +20,7 @@ final class TextField extends FieldEntry
             "value" => $this->fieldValue(),
             "class" => Html::classes("atom-input", $this->fieldClass()),
             "aria-invalid" => $this->hasError() ? "true" : null,
-            "aria-describedby" => $this->hasError() ? $this->fieldId() . "-error" : null,
+            "aria-describedby" => $this->describedBy(),
         ], $this->attributes->all()));
     }
 

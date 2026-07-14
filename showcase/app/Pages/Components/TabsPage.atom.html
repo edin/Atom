@@ -34,19 +34,19 @@
         </Stack>
     </ComponentExample>
 
-    <ComponentExample title="Action backed tabs" description="Without href, Tab renders a button; atom:action can update page state and rerender the active panel.">
-        <Tabs :active="$this->localTab">
-            <Tab name="preview" label="Preview" atom:action="setLocalTab('preview')">
+    <ComponentExample title="Action backed tabs" description="TabsModel stores active tab state and Tabs can generate the action for each tab.">
+        <Tabs :model="$this->localTabs" action="localTabs.select('{name}')">
+            <Tab name="preview" label="Preview">
                 <Alert variant="success">Preview is stored in page state.</Alert>
             </Tab>
 
-            <Tab name="source" label="Source" atom:action="setLocalTab('source')">
+            <Tab name="source" label="Source">
                 <Panel title="Source">
                     This tab changed without changing the URL.
                 </Panel>
             </Tab>
 
-            <Tab name="history" label="History" atom:action="setLocalTab('history')">
+            <Tab name="history" label="History">
                 <Stack gap="sm">
                     <Badge variant="info">Version 3</Badge>
                     <p>History content can be rendered from the same Tabs component.</p>

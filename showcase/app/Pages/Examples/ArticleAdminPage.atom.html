@@ -1,0 +1,98 @@
+<Toast>
+    <Toast.Actions>
+        <Button size="sm" variant="ghost" atom:action="clearFlash">Dismiss</Button>
+    </Toast.Actions>
+</Toast>
+
+<Stack gap="md">
+    <PageHeader title="Articles" description="A composed admin workflow built from Atom components.">
+        <PageHeader.Actions>
+            <Form submit="filter">
+                <Toolbar gap="sm" appearance="plain" class="article-admin-filter">
+                    <Toolbar.Start>
+                        <TextField name="query" placeholder="Title, summary, or author" atom:input="filter" />
+                        <SelectField name="status" :options="$this->statuses" atom:change="filter" />
+                        <Button variant="ghost" atom:action="clearFilters">Clear</Button>
+                    </Toolbar.Start>
+
+                    <Toolbar.End>
+                        <Button variant="primary" icon="fa-solid fa-plus" atom:action="create">New article</Button>
+                    </Toolbar.End>
+                </Toolbar>
+            </Form>
+        </PageHeader.Actions>
+    </PageHeader>
+
+    <SplitView :model="$this->editor" sideWidth="420px">
+        <Panel padding="none">
+            <Table :items="$this->articles" as="article" :sort="$this->sort" :direction="$this->direction" sortAction="setSort('{sort}', '{direction}')">
+                <Column label="Title" field="title" sort>
+                    <Stack class="article-title-cell">
+                        <strong>{{ $article["title"] }}</strong>
+                        <span class="showcase-muted article-title-summary">{{ $article["summary"] }}</span>
+                    </Stack>
+                </Column>
+
+                <Column label="Status" field="status" sort align="center">
+                    <Badge :variant="$article['status'] === 'Published' ? 'success' : ($article['status'] === 'Review' ? 'warning' : 'secondary')">
+                        {{ $article["status"] }}
+                    </Badge>
+                </Column>
+
+                <Column label="Author" field="author" sort />
+                <Column label="Updated" field="updated" sort />
+
+                <Column label="Actions">
+                    <Column.Actions>
+                        <Button size="sm" appearance="soft" atom:action="edit({{ $row['id'] }})">Edit</Button>
+                        <Button size="sm" shape="square" variant="danger" appearance="soft" icon="fa-solid fa-trash" aria-label="Delete article" atom:action="askDelete({{ $row['id'] }})" />
+                    </Column.Actions>
+                </Column>
+
+                <Table.Empty>
+                    <EmptyState title="No articles found" description="Try clearing filters or creating a new article.">
+                        <EmptyState.Actions>
+                            <Button variant="primary" icon="fa-solid fa-plus" atom:action="create">New article</Button>
+                        </EmptyState.Actions>
+                    </EmptyState>
+                </Table.Empty>
+
+                <Table.Summary>
+                    Showing {{ $from }}-{{ $to }} of {{ $total }} articles.
+                </Table.Summary>
+
+                <Table.Pagination>
+                    <Pagination action="setPage({page})" />
+                </Table.Pagination>
+            </Table>
+        </Panel>
+
+        <SplitView.Side>
+            <Panel :title="$this->editId === 0 ? 'New article' : 'Edit article'" description="This side pane is just page state and a form.">
+                <Form submit="save">
+                    <HiddenField name="editId" />
+
+                    <Stack gap="sm">
+                        <TextField label="Title" name="editTitle" placeholder="Article title" />
+                        <TextAreaField label="Summary" name="editSummary" placeholder="Short internal summary" />
+                        <SelectField label="Status" name="editStatus" :options="$this->statuses" />
+                    </Stack>
+
+                    <FormActions align="end">
+                        <Button type="button" variant="ghost" atom:action="editor.close()">Cancel</Button>
+                        <Button type="submit" variant="primary" icon="fa-solid fa-check">Save</Button>
+                    </FormActions>
+                </Form>
+            </Panel>
+        </SplitView.Side>
+    </SplitView>
+</Stack>
+
+<Dialog :model="$this->deleteDialog" title="Delete article?" description="This example keeps data mocked, but the flow is wired like a real page." closable closeAction="deleteDialog.close()">
+    <p>Article #{{ $this->deleteDialog->value }} will be removed from the list.</p>
+
+    <Dialog.Actions>
+        <Button variant="ghost" atom:action="deleteDialog.close()">Cancel</Button>
+        <Button variant="danger" icon="fa-solid fa-trash" atom:action="confirmDelete">Delete</Button>
+    </Dialog.Actions>
+</Dialog>

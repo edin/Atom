@@ -1,5 +1,7 @@
 (function () {
     var actionAttribute = "atom:action";
+    var changeAttribute = "atom:change";
+    var inputAttribute = "atom:input";
     var submitAttribute = "atom:submit";
     var navigateAttribute = "atom:navigate";
     var preserveStateAttribute = "atom:preserve-state";
@@ -12,6 +14,7 @@
             restoreUpdateState(current, state);
         }
     };
+    var inputDebounceMs = 300;
 
     function captureUpdateState(root) {
         return {
@@ -311,6 +314,89 @@
         );
     }
 
+    function fieldValue(field) {
+        if (field.type === "checkbox") {
+            return field.checked ? (field.value || "1") : "";
+        }
+
+        if (field.type === "radio") {
+            return field.checked ? field.value : "";
+        }
+
+        if (field.multiple && field.options) {
+            var values = [];
+
+            for (var index = 0; index < field.options.length; index++) {
+                if (field.options[index].selected) {
+                    values.push(field.options[index].value);
+                }
+            }
+
+            return values.join(",");
+        }
+
+        return field.value === undefined ? "" : field.value;
+    }
+
+    function eventFormData(field) {
+        var form = field.form || (field.closest ? field.closest("form") : null);
+        var body = form === null ? new FormData() : new FormData(form);
+        var name = field.getAttribute("name") || "";
+
+        if (form === null && name !== "") {
+            body.append(name, fieldValue(field));
+        }
+
+        return body;
+    }
+
+    function invokeEventAction(action, field, eventName) {
+        var body = eventFormData(field);
+        var name = field.getAttribute("name") || "";
+        var value = fieldValue(field);
+
+        if (!body.has("_action")) {
+            body.append("_action", action);
+        }
+
+        if (!body.has("_state")) {
+            body.append("_state", currentState());
+        }
+
+        setBusy(true);
+
+        request(
+            "POST",
+            window.location.href,
+            body,
+            function (html, responseUrl) {
+                updatePage(html, responseUrl);
+                setBusy(false);
+            },
+            function () {
+                setBusy(false);
+                showError("Action failed before a response was received.");
+            },
+            {
+                "X-Atom-Intent": "action",
+                "X-Atom-Event": eventName,
+                "X-Atom-Field": name,
+                "X-Atom-Value": value
+            }
+        );
+    }
+
+    function debounceInputAction(action, field) {
+        if (field.__atomInputTimer) {
+            window.clearTimeout(field.__atomInputTimer);
+        }
+
+        field.__atomInputTimer = window.setTimeout(function () {
+            field.__atomInputTimer = null;
+            invokeEventAction(action, field, "input");
+        }, inputDebounceMs);
+    }
+
     function followLink(anchor) {
         var body = null;
         var method = "GET";
@@ -390,7 +476,11 @@
             return;
         }
 
-        if (element.form !== undefined && element.form !== null) {
+        if (
+            element.form !== undefined &&
+            element.form !== null &&
+            element.matches("button[type=\"submit\"], input[type=\"submit\"]")
+        ) {
             return;
         }
 
@@ -405,6 +495,44 @@
 
         event.preventDefault();
         invokeAction(action, element);
+    }, true);
+
+    document.addEventListener("change", function (event) {
+        var element = event.target.closest ? event.target.closest("[" + changeAttribute.replace(":", "\\:") + "]") : null;
+
+        if (element === null) {
+            return;
+        }
+
+        if (typeof window.XMLHttpRequest !== "function" || typeof window.FormData !== "function") {
+            return;
+        }
+
+        var action = element.getAttribute(changeAttribute) || "";
+        if (action === "") {
+            return;
+        }
+
+        invokeEventAction(action, element, "change");
+    }, true);
+
+    document.addEventListener("input", function (event) {
+        var element = event.target.closest ? event.target.closest("[" + inputAttribute.replace(":", "\\:") + "]") : null;
+
+        if (element === null) {
+            return;
+        }
+
+        if (typeof window.XMLHttpRequest !== "function" || typeof window.FormData !== "function") {
+            return;
+        }
+
+        var action = element.getAttribute(inputAttribute) || "";
+        if (action === "") {
+            return;
+        }
+
+        debounceInputAction(action, element);
     }, true);
 
     document.addEventListener("click", function (event) {

@@ -9,6 +9,9 @@ use Atom\Di\InjectionContext;
 use Atom\Di\Injector;
 use Atom\Application;
 use Atom\Http\Request;
+use Atom\Modules\Framework\Components\DialogModel;
+use Atom\Modules\Framework\Components\SidePanelModel;
+use Atom\Modules\Framework\Components\TabsModel;
 use Atom\Hydrator\Attributes\FromBody;
 use Atom\Hydrator\Attributes\FromQuery;
 use Atom\Hydrator\Attributes\FromRoute;
@@ -158,6 +161,113 @@ final class PageRendererTest extends TestCase
         $this->assertSame("<h1>hello, world|draft, yes|yes|1.5</h1>\n", $html);
     }
 
+    public function testPageActionHandlerCanInvokeNestedModelAction(): void
+    {
+        $html = $this->handlePageAction(
+            NestedActionRenderedTestPage::class,
+            "/nested-action-page",
+            "toast.close()"
+        );
+
+        $this->assertSame("<h1>closed</h1>\n", $html);
+    }
+
+    public function testPageActionHandlerCanInvokeDialogModelActions(): void
+    {
+        $opened = $this->handlePageAction(
+            DialogModelRenderedTestPage::class,
+            "/dialog-model-page",
+            "dialog.open(12)"
+        );
+
+        $this->assertStringContainsString("<h1>open|12</h1>\n", $opened);
+
+        $page = new DialogModelRenderedTestPage();
+        $page->dialog->open(12);
+        $state = (new \Atom\Page\JsonPageStateSerializer())->serialize($page);
+
+        $closed = $this->handlePageAction(
+            DialogModelRenderedTestPage::class,
+            "/dialog-model-page",
+            "dialog.close()",
+            ["_state" => $state]
+        );
+
+        $this->assertStringContainsString("<h1>closed|12</h1>\n", $closed);
+    }
+
+    public function testPageActionHandlerCanInvokeSidePanelModelActions(): void
+    {
+        $opened = $this->handlePageAction(
+            SidePanelModelRenderedTestPage::class,
+            "/side-panel-model-page",
+            "editor.open(12)"
+        );
+
+        $this->assertStringContainsString("<h1>open|12</h1>\n", $opened);
+
+        $page = new SidePanelModelRenderedTestPage();
+        $page->editor->open(12);
+        $state = (new \Atom\Page\JsonPageStateSerializer())->serialize($page);
+
+        $closed = $this->handlePageAction(
+            SidePanelModelRenderedTestPage::class,
+            "/side-panel-model-page",
+            "editor.close()",
+            ["_state" => $state]
+        );
+
+        $this->assertStringContainsString("<h1>closed|12</h1>\n", $closed);
+    }
+
+    public function testPageActionHandlerCanInvokeTabsModelAction(): void
+    {
+        $html = $this->handlePageAction(
+            TabsModelRenderedTestPage::class,
+            "/tabs-model-page",
+            "tabs.select('source')"
+        );
+
+        $this->assertStringContainsString("<h1>source</h1>\n", $html);
+    }
+
+    public function testPageRouteRegistrarRegistersActionsFromTypedPageModels(): void
+    {
+        $router = new Router();
+        (new PageRouteRegistrar())->register($router, [
+            new \Atom\Page\PageDescriptor("/tabs-model-page", TabsModelRenderedTestPage::class),
+        ]);
+
+        $match = (new RouteMatcher($router))->match("POST", "/tabs-model-page");
+
+        $this->assertTrue($match->isFound());
+        $this->assertSame(PageActionHandler::class, $match->matchedRoute->getRouteAction()->controllerType);
+    }
+
+    public function testPageRouteRegistrarRegistersActionsFromNestedTypedPageModels(): void
+    {
+        $router = new Router();
+        (new PageRouteRegistrar())->register($router, [
+            new \Atom\Page\PageDescriptor("/nested-state-page", NestedStateRenderedTestPage::class),
+        ]);
+
+        $match = (new RouteMatcher($router))->match("POST", "/nested-state-page");
+
+        $this->assertTrue($match->isFound());
+        $this->assertSame(PageActionHandler::class, $match->matchedRoute->getRouteAction()->controllerType);
+    }
+
+    public function testPageActionHandlerCanInvokeNestedTypedModelAction(): void
+    {
+        $html = $this->handlePageAction(
+            NestedStateRenderedTestPage::class,
+            "/nested-state-page",
+            "admin.editor.open(99)"
+        );
+
+        $this->assertStringContainsString("<h1>open|99</h1>\n", $html);
+    }
+
     public function testPageActionHandlerBindsActionParametersFromRequest(): void
     {
         $html = $this->handlePageAction(ActionParameterRenderedTestPage::class, "/action-parameter-page/{id}", "save", [
@@ -266,6 +376,17 @@ final class PageRendererTest extends TestCase
         ]);
 
         $this->assertSame("<h1>7 Atom draft yes</h1>\n", $html);
+    }
+
+    public function testPageActionHandlerHydratesStateBackedPageInputBeforeAction(): void
+    {
+        $html = $this->handlePageAction(FilterRenderedTestPage::class, "/filter-page", "filter", [
+            "query" => "  ada  ",
+            "status" => "Active",
+        ]);
+
+        $this->assertStringContainsString("<h1>ada|Active</h1>", $html);
+        $this->assertStringContainsString('name="atom-state"', $html);
     }
 
     public function testPageActionHandlerHydratesFormModelBeforeAction(): void
@@ -724,6 +845,30 @@ final class BoundInputRenderedTestPage extends Page
     }
 }
 
+final class FilterRenderedTestPage extends Page
+{
+    #[State]
+    #[FromBody]
+    public string $query = "";
+
+    #[State]
+    #[FromBody]
+    public string $status = "";
+
+    public string $title = "";
+
+    public function template(): ?string
+    {
+        return "GetRenderedTestPage.atom.html";
+    }
+
+    #[PageAction("filter")]
+    public function filter(): void
+    {
+        $this->title = $this->query . "|" . $this->status;
+    }
+}
+
 final class InvalidBoundInputRenderedTestPage extends Page
 {
     #[FromBody]
@@ -770,6 +915,106 @@ final class PageEditForm
     public string $title = "";
 
     public string $summary = "";
+}
+
+final class NestedActionRenderedTestPage extends Page
+{
+    public NestedActionToastModel $toast;
+
+    public function __construct()
+    {
+        $this->toast = new NestedActionToastModel();
+    }
+
+    public function template(): ?string
+    {
+        return "NestedActionRenderedTestPage.atom.html";
+    }
+}
+
+final class NestedActionToastModel
+{
+    public bool $open = true;
+
+    #[PageAction]
+    public function close(): void
+    {
+        $this->open = false;
+    }
+}
+
+final class DialogModelRenderedTestPage extends Page
+{
+    #[State]
+    public DialogModel $dialog;
+
+    public function __construct()
+    {
+        $this->dialog = new DialogModel();
+    }
+
+    public function template(): ?string
+    {
+        return "DialogModelRenderedTestPage.atom.html";
+    }
+}
+
+final class SidePanelModelRenderedTestPage extends Page
+{
+    #[State]
+    public SidePanelModel $editor;
+
+    public function __construct()
+    {
+        $this->editor = new SidePanelModel();
+    }
+
+    public function template(): ?string
+    {
+        return "SidePanelModelRenderedTestPage.atom.html";
+    }
+}
+
+final class TabsModelRenderedTestPage extends Page
+{
+    #[State]
+    public TabsModel $tabs;
+
+    public function __construct()
+    {
+        $this->tabs = new TabsModel("preview");
+    }
+
+    public function template(): ?string
+    {
+        return "TabsModelRenderedTestPage.atom.html";
+    }
+}
+
+final class NestedStateRenderedTestPage extends Page
+{
+    #[State]
+    public NestedAdminState $admin;
+
+    public function __construct()
+    {
+        $this->admin = new NestedAdminState();
+    }
+
+    public function template(): ?string
+    {
+        return "NestedStateRenderedTestPage.atom.html";
+    }
+}
+
+final class NestedAdminState
+{
+    public SidePanelModel $editor;
+
+    public function __construct()
+    {
+        $this->editor = new SidePanelModel();
+    }
 }
 
 final class ValidatedRenderedTestPage extends Page

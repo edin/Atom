@@ -12,23 +12,36 @@
         description="The form passes its model into child fields, so each field can read values without prop drilling."
     >
         <Form submit="submit" :model="$this->form">
-            <ValidationSummary />
+            <ValidationSummary title="Please fix these fields" only="title,summary" />
+
+            <Toast>
+                <Toast.Actions>
+                    <Button size="sm" variant="ghost" atom:action="clearFlash">Dismiss</Button>
+                </Toast.Actions>
+            </Toast>
 
             <HiddenField name="categoryId" />
 
-            <TextField label="Title" name="title" maxlength="80" />
+            <FormSection title="Content" description="Fields inside a form can be grouped without custom layout CSS.">
+                <TextField label="Title" name="title" help="Use a concise title that will fit in table rows." maxlength="80" />
 
-            <TextField label="Summary" name="summary" maxlength="160" />
+                <TextField label="Summary" name="summary" help="Shown in cards, previews, and search results." maxlength="160" />
+            </FormSection>
 
-            <SelectField
-                label="Category"
-                name="categoryId"
-                optionValue="id"
-                optionText="name"
-                :options="$this->categories"
-            />
+            <FormSection title="Publishing">
+                <FormRow>
+                    <SelectField
+                        label="Category"
+                        name="categoryId"
+                        help="The selected category is hydrated into the form model."
+                        optionValue="id"
+                        optionText="name"
+                        :options="$this->categories"
+                    />
 
-            <CheckField label="Published" name="published" />
+                    <CheckField label="Published" name="published" help="Unchecked articles stay as drafts." />
+                </FormRow>
+            </FormSection>
 
             <FormActions>
                 <Button type="submit">Submit</Button>
@@ -43,7 +56,7 @@
     >
         <Stack gap="sm">
             <TextField label="Page title" name="pageTitle" />
-            <TextAreaField label="Notes" name="summary" />
+            <TextAreaField label="Notes" name="summary" help="This field reads directly from a page property." />
             <CheckField label="Enabled" name="published" />
         </Stack>
     </ComponentExample>

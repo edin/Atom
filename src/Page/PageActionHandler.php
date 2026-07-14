@@ -12,6 +12,7 @@ use Atom\Router\MatchedRoute;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionMethod;
+use ReflectionObject;
 
 final readonly class PageActionHandler
 {
@@ -37,18 +38,19 @@ final readonly class PageActionHandler
         $this->input->hydrate($page, $request, $route);
         $this->invokeGet($page, $route);
         $call = $this->parseAction($request->post()->string("_action", "default"));
-        $action = $this->resolveAction($page, $request, $call);
+        $target = $this->resolveTarget($page, $call);
+        $action = $this->resolveAction($target, $request, $call);
         $parameters = $this->parameters->bind($page, $request, $route, $call, $action);
 
         try {
             $result = $this->injector->invoke(
-                [$page, $action->getName()],
+                [$target, $action->getName()],
                 $parameters,
                 $this->context
             );
         } catch (DependencyResolutionException $exception) {
             throw new PageActionException(
-                "Unable to invoke page action '{$call->name}' on " . $page::class . "::" . $action->getName() .
+                "Unable to invoke page action '{$call->fullName()}' on " . $target::class . "::" . $action->getName() .
                 "(). " . $exception->getMessage(),
                 previous: $exception
             );
@@ -67,10 +69,45 @@ final readonly class PageActionHandler
         $this->injector->invoke([$page, "get"], $route->getRouteParams(), $this->context);
     }
 
-    private function resolveAction(Page $page, Request $request, PageActionCall $call): ReflectionMethod
+    private function resolveTarget(Page $page, PageActionCall $call): object
+    {
+        $target = $page;
+
+        foreach ($call->targetPath as $propertyName) {
+            $reflection = new ReflectionObject($target);
+            if (!$reflection->hasProperty($propertyName)) {
+                throw new PageActionException(
+                    "Page action target '{$propertyName}' was not found while resolving '{$call->fullName()}' on " .
+                    $reflection->getName() . "."
+                );
+            }
+
+            $property = $reflection->getProperty($propertyName);
+            if (!$property->isPublic() || $property->isStatic() || !$property->isInitialized($target)) {
+                throw new PageActionException(
+                    "Page action target '{$propertyName}' is not available while resolving '{$call->fullName()}' on " .
+                    $reflection->getName() . "."
+                );
+            }
+
+            $value = $property->getValue($target);
+            if (!is_object($value)) {
+                throw new PageActionException(
+                    "Page action target '{$propertyName}' must be an object while resolving '{$call->fullName()}' on " .
+                    $reflection->getName() . "."
+                );
+            }
+
+            $target = $value;
+        }
+
+        return $target;
+    }
+
+    private function resolveAction(object $target, Request $request, PageActionCall $call): ReflectionMethod
     {
         $method = strtolower($request->getMethod());
-        $reflection = new ReflectionClass($page);
+        $reflection = new ReflectionObject($target);
 
         foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $candidate) {
             foreach ($candidate->getAttributes(PageAction::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
@@ -86,7 +123,7 @@ final readonly class PageActionHandler
         $methods = $this->availableHttpMethods($reflection, $call->name);
         if ($methods !== []) {
             throw new PageActionException(
-                "Page action '{$call->name}' on {$reflection->getName()} is not available for " .
+                "Page action '{$call->fullName()}' on {$reflection->getName()} is not available for " .
                 strtoupper($request->getMethod()) . ". Available method" . (count($methods) === 1 ? "" : "s") .
                 ": " . implode(", ", $methods) . "."
             );
@@ -95,7 +132,7 @@ final readonly class PageActionHandler
         $actions = $this->availableActionNames($reflection);
 
         throw new PageActionException(
-            "Page action '{$call->name}' was not found on {$reflection->getName()}." .
+            "Page action '{$call->fullName()}' was not found on {$reflection->getName()}." .
             ($actions === [] ? "" : " Available actions: " . implode(", ", $actions) . ".")
         );
     }
@@ -103,13 +140,16 @@ final readonly class PageActionHandler
     private function parseAction(string $expression): PageActionCall
     {
         $expression = trim($expression);
-        if (!preg_match('/^([a-zA-Z_][a-zA-Z0-9_]*)(?:\((.*)\))?$/', $expression, $matches)) {
+        if (!preg_match('/^([a-zA-Z_][a-zA-Z0-9_]*(?:\.[a-zA-Z_][a-zA-Z0-9_]*)*)(?:\((.*)\))?$/', $expression, $matches)) {
             throw new PageActionException(
-                "Page action expression '{$expression}' is invalid. Expected syntax like 'save' or 'delete(12, \"hard\")'."
+                "Page action expression '{$expression}' is invalid. Expected syntax like 'save', 'delete(12, \"hard\")', or 'toast.close()'."
             );
         }
 
-        return new PageActionCall($matches[1], $this->parseArguments($matches[2] ?? ""));
+        $segments = explode(".", $matches[1]);
+        $name = array_pop($segments) ?? "";
+
+        return new PageActionCall($name, $this->parseArguments($matches[2] ?? ""), $segments);
     }
 
     /**

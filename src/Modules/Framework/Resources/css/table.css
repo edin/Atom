@@ -1,3 +1,30 @@
+.atom-table-stack {
+    display: grid;
+    gap: 0;
+}
+
+.atom-table-wrap + .atom-table__footer {
+    margin-top: var(--atom-space-3);
+}
+
+.atom-table__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    gap: var(--atom-space-2);
+}
+
+.atom-table__toolbar > .atom-form,
+.atom-table__toolbar .atom-toolbar {
+    width: 100%;
+}
+
+.atom-table__toolbar > .atom-form {
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
 .atom-table-wrap {
     width: 100%;
     overflow-x: auto;
@@ -21,10 +48,85 @@
     border-bottom: 1px solid var(--atom-color-line);
 }
 
+.atom-table__sort {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--atom-space-1);
+    border: 0;
+    padding: 0;
+    color: inherit;
+    background: transparent;
+    font: inherit;
+    font-weight: inherit;
+    cursor: pointer;
+}
+
+.atom-table__sort:hover {
+    color: var(--atom-color-text);
+}
+
+.atom-table__sort-indicator::before {
+    content: "";
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+}
+
+.atom-table__sort-indicator[data-direction="asc"]::before {
+    border-bottom: 6px solid currentColor;
+}
+
+.atom-table__sort-indicator[data-direction="desc"]::before {
+    border-top: 6px solid currentColor;
+}
+
+.atom-table__heading[data-align="center"],
+.atom-table__cell[data-align="center"] {
+    text-align: center;
+}
+
+.atom-table__heading[data-align="end"],
+.atom-table__cell[data-align="end"] {
+    text-align: right;
+}
+
 .atom-table__cell {
     padding: 12px 14px;
     border-bottom: 1px solid var(--atom-color-line);
     vertical-align: middle;
+}
+
+.atom-table__heading--actions,
+.atom-table__cell--actions {
+    width: 1%;
+    white-space: nowrap;
+}
+
+.atom-table__actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--atom-space-2);
+}
+
+.atom-table__summary {
+    color: var(--atom-color-muted);
+    font-size: 0.92rem;
+}
+
+.atom-table__footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--atom-space-2);
+    padding: 0 var(--atom-space-4) var(--atom-space-4);
+}
+
+.atom-table__footer > .atom-pagination {
+    margin-left: auto;
 }
 
 .atom-table tbody tr:last-child .atom-table__cell,

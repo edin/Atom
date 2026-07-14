@@ -17,6 +17,7 @@ final class Tab implements ComponentInterface
     public string $label = "";
     public string $text = "";
     public string $href = "";
+    public string $action = "";
     public string $class = "";
 
     public function render(): string
@@ -34,6 +35,7 @@ final class Tab implements ComponentInterface
             "class" => Html::classes("atom-tab", ["is-active" => $active], $this->class),
             "aria-current" => $active ? "page" : null,
             "data-tab" => $this->name,
+            "atom:action" => $this->action,
         ], $this->attributes->all()), Html::escape($this->headerText()));
     }
 

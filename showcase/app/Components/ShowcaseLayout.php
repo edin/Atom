@@ -20,6 +20,11 @@ final class ShowcaseLayout implements ComponentInterface
         return property_exists($this->page, "title") ? (string) $this->page->title : "Atom Showcase";
     }
 
+    public function contentWidth(): string
+    {
+        return property_exists($this->page, "contentWidth") ? (string) $this->page->contentWidth : "";
+    }
+
     public function render(): string
     {
         return ComponentView::render($this);

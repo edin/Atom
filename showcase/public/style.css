@@ -48,28 +48,64 @@ p {
 .showcase-sidebar {
     position: sticky;
     top: 0;
+    display: flex;
+    flex-direction: column;
     height: 100vh;
     padding: 24px;
+    overflow: hidden;
     border-right: 1px solid var(--showcase-line);
     background: var(--showcase-sidebar);
 }
 
 .showcase-brand {
     display: inline-flex;
-    margin-bottom: 24px;
+    margin-bottom: 18px;
     color: var(--showcase-text);
     font-weight: 800;
 }
 
 .showcase-nav {
     display: grid;
-    gap: 6px;
+    gap: 3px;
+    min-height: 0;
+    overflow-y: auto;
+    margin-right: -24px;
+    margin-bottom: -24px;
+    padding-right: 24px;
+    padding-bottom: 24px;
+}
+
+.showcase-nav-label {
+    margin-top: 8px;
+    padding: 6px 10px 1px;
+    color: var(--showcase-muted);
+    font-size: 0.7rem;
+    font-weight: 750;
+    text-transform: uppercase;
 }
 
 .showcase-nav a {
-    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 10px;
     border-radius: var(--atom-radius);
     color: var(--showcase-text);
+    font-size: 0.92rem;
+    line-height: 1.25;
+}
+
+.showcase-nav a .atom-icon {
+    flex: 0 0 auto;
+    width: 16px;
+    height: 16px;
+    border-radius: 0;
+    background: transparent;
+    color: var(--showcase-muted);
+}
+
+.showcase-nav a:hover .atom-icon {
+    color: var(--atom-color-primary-text);
 }
 
 .showcase-nav a:hover {
@@ -80,6 +116,55 @@ p {
 .showcase-main {
     width: min(100%, 1040px);
     padding: 36px;
+}
+
+.showcase-main[data-width="full"] {
+    width: 100%;
+}
+
+.showcase-muted {
+    color: var(--showcase-muted);
+}
+
+.article-title-cell {
+    gap: 2px;
+}
+
+.article-title-summary {
+    line-height: 1.35;
+}
+
+.article-admin-filter,
+.article-admin-filter .atom-toolbar__section {
+    flex-wrap: nowrap;
+}
+
+.article-admin-filter {
+    min-width: min(760px, calc(100vw - 360px));
+}
+
+.article-admin-filter .atom-toolbar__section--start {
+    flex: 1 1 auto;
+}
+
+.article-admin-filter .atom-toolbar__section > .atom-field {
+    flex: 0 1 240px;
+}
+
+.article-admin-filter .atom-toolbar__section > .atom-field:first-child {
+    flex-basis: 300px;
+}
+
+@media (max-width: 980px) {
+    .article-admin-filter,
+    .article-admin-filter .atom-toolbar__section {
+        flex-wrap: wrap;
+    }
+
+    .article-admin-filter {
+        min-width: 0;
+        width: 100%;
+    }
 }
 
 .showcase-hero {
@@ -182,9 +267,16 @@ p {
 
     .showcase-sidebar {
         position: static;
+        display: block;
         height: auto;
+        overflow: visible;
         border-right: 0;
         border-bottom: 1px solid var(--showcase-line);
+    }
+
+    .showcase-nav {
+        overflow: visible;
+        padding-right: 0;
     }
 
     .showcase-main {

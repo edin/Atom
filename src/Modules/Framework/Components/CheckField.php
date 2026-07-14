@@ -35,7 +35,7 @@ final class CheckField extends FieldEntry
             "checked" => $this->isChecked(),
             "class" => Html::classes("atom-checkbox", $this->fieldClass()),
             "aria-invalid" => $this->hasError() ? "true" : null,
-            "aria-describedby" => $this->hasError() ? $this->fieldId() . "-error" : null,
+            "aria-describedby" => $this->describedBy(),
         ], $this->attributes->all()));
     }
 

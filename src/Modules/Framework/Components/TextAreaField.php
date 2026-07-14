@@ -17,7 +17,7 @@ final class TextAreaField extends FieldEntry
             "name" => $this->name,
             "class" => Html::classes("atom-textarea", $this->fieldClass()),
             "aria-invalid" => $this->hasError() ? "true" : null,
-            "aria-describedby" => $this->hasError() ? $this->fieldId() . "-error" : null,
+            "aria-describedby" => $this->describedBy(),
         ], $this->attributes->all()), Html::escape($this->fieldValue()));
     }
 

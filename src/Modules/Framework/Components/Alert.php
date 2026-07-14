@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atom\Modules\Framework\Components;
 
+use Atom\Support\Paths;
 use Atom\View\Component\AttributeBag;
 use Atom\View\Component\ComponentInterface;
 use Atom\View\Component\Fragment;
@@ -20,8 +21,13 @@ final class Alert implements ComponentInterface
     public string $variant = "neutral";
     public string $appearance = "soft";
     public string $size = "";
+    public string $icon = "";
     public string $role = "status";
     public string $class = "";
+
+    public function __construct(private ?Paths $paths = null)
+    {
+    }
 
     public function render(): string
     {
@@ -36,11 +42,12 @@ final class Alert implements ComponentInterface
 
     private function body(): string
     {
-        if ($this->title === "" && $this->description === "" && $this->actions === null) {
+        if ($this->title === "" && $this->description === "" && $this->actions === null && $this->icon === "") {
             return $this->content();
         }
 
-        $content = Html::tag("div", ["class" => "atom-alert__content"], $this->structuredContent());
+        $content = $this->renderIcon();
+        $content .= Html::tag("div", ["class" => "atom-alert__content"], $this->structuredContent());
 
         if ($this->actions !== null) {
             $content .= Html::tag("div", ["class" => "atom-alert__actions"], $this->actions->render());
@@ -75,6 +82,18 @@ final class Alert implements ComponentInterface
         }
 
         return Html::escape($this->text);
+    }
+
+    private function renderIcon(): string
+    {
+        if ($this->icon === "") {
+            return "";
+        }
+
+        $icon = Icon::from($this->icon, $this->paths);
+        $icon->variant = $this->variant === "neutral" ? "" : $this->variant;
+
+        return Html::tag("span", ["class" => "atom-alert__icon"], $icon->render());
     }
 
 }

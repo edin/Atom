@@ -6,11 +6,14 @@ namespace Atom\Modules\Framework\Components;
 
 use Atom\View\Component\AttributeBag;
 use Atom\View\Component\ComponentInterface;
+use Atom\View\Component\FromContext;
 use Atom\View\Html;
 
 final class Pagination implements ComponentInterface
 {
     public AttributeBag $attributes;
+    #[FromContext("source")]
+    public mixed $source = null;
     public int $page = 1;
     public int $total = 1;
     public int $window = 5;
@@ -23,8 +26,8 @@ final class Pagination implements ComponentInterface
 
     public function render(): string
     {
-        $total = max(1, $this->total);
-        $page = min(max(1, $this->page), $total);
+        $page = $this->sourcePage();
+        $total = $this->sourceTotalPages();
         $items = $this->pageItem("Previous", $page - 1, $page === 1);
 
         foreach ($this->pageRange($page, $total) as $number) {
@@ -37,6 +40,36 @@ final class Pagination implements ComponentInterface
             "class" => Html::classes("atom-pagination", $this->class),
             "aria-label" => $this->label,
         ], $this->attributes->all()), $items);
+    }
+
+    private function sourcePage(): int
+    {
+        $page = $this->sourceValue(["page", "getCurrentPage"], $this->page);
+
+        return min(max(1, $page), $this->sourceTotalPages());
+    }
+
+    private function sourceTotalPages(): int
+    {
+        return max(1, $this->sourceValue(["totalPages", "getTotalPages"], $this->total));
+    }
+
+    /**
+     * @param string[] $methods
+     */
+    private function sourceValue(array $methods, int $fallback): int
+    {
+        if (!is_object($this->source)) {
+            return $fallback;
+        }
+
+        foreach ($methods as $method) {
+            if (method_exists($this->source, $method)) {
+                return (int) $this->source->{$method}();
+            }
+        }
+
+        return $fallback;
     }
 
     /**

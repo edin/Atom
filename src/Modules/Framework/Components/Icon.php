@@ -13,12 +13,14 @@ use RuntimeException;
 
 final class Icon implements ComponentInterface
 {
+    private const LUCIDE_PREFIX = "lucide:";
+
     public ?Fragment $content = null;
     public AttributeBag $attributes;
     public string $text = "";
-    public string $src = "";
     public string $icon = "";
     public string $variant = "";
+    public string $appearance = "";
     public string $size = "";
     public string $class = "";
 
@@ -30,12 +32,7 @@ final class Icon implements ComponentInterface
     {
         $component = new self($paths);
         $component->attributes = new AttributeBag();
-
-        if (self::looksLikeSource($value)) {
-            $component->src = $value;
-        } else {
-            $component->icon = $value;
-        }
+        $component->icon = $value;
 
         return $component;
     }
@@ -45,6 +42,7 @@ final class Icon implements ComponentInterface
         return Html::tag("span", Html::mergeAttributes([
             "class" => Html::classes("atom-icon", $this->class),
             "data-variant" => $this->variant,
+            "data-appearance" => $this->appearance,
             "data-size" => $this->size,
         ], $this->attributes->all()), $this->content());
     }
@@ -55,40 +53,64 @@ final class Icon implements ComponentInterface
             return $this->content->renderOr(Html::escape($this->text));
         }
 
-        if ($this->src !== "") {
-            return $this->sourceContent();
-        }
-
         if ($this->icon !== "") {
+            if (str_starts_with($this->icon, self::LUCIDE_PREFIX)) {
+                return $this->lucideContent(substr($this->icon, strlen(self::LUCIDE_PREFIX)));
+            }
+
+            if (self::looksLikeSource($this->icon)) {
+                return $this->sourceContent($this->icon);
+            }
+
             return Html::tag("i", ["class" => $this->icon, "aria-hidden" => "true"]);
         }
 
         return Html::escape($this->text);
     }
 
-    private function sourceContent(): string
+    private function sourceContent(string $source): string
     {
-        if ($this->isPublicSource($this->src)) {
-            return '<img src="' . Html::escape($this->src) . '" alt="">';
+        if ($this->isPublicSource($source)) {
+            return '<img src="' . Html::escape($source) . '" alt="">';
         }
 
-        $path = $this->paths?->resolve($this->src) ?? $this->src;
+        $path = $this->paths?->resolve($source) ?? $source;
         if (!is_file($path)) {
-            throw new RuntimeException("Icon source '{$this->src}' was not found.");
+            throw new RuntimeException("Icon '{$source}' was not found.");
         }
 
         if (strtolower(pathinfo($path, PATHINFO_EXTENSION)) !== "svg") {
-            throw new RuntimeException("Icon source '{$this->src}' must be an SVG file.");
+            throw new RuntimeException("Icon '{$source}' must be an SVG file.");
         }
 
+        return $this->readSvg($path, "Icon '{$source}'");
+    }
+
+    private function lucideContent(string $name): string
+    {
+        if (!preg_match('/^[a-z0-9][a-z0-9-]*$/', $name)) {
+            throw new RuntimeException("Lucide icon name '{$name}' is invalid.");
+        }
+
+        $path = dirname(__DIR__) . "/Resources/icons/lucide/{$name}.svg";
+        if (!is_file($path)) {
+            throw new RuntimeException("Lucide icon '{$name}' was not found.");
+        }
+
+        return $this->readSvg($path, "Lucide icon '{$name}'");
+    }
+
+    private function readSvg(string $path, string $label): string
+    {
         $svg = file_get_contents($path);
         if ($svg === false) {
-            throw new RuntimeException("Icon source '{$this->src}' could not be read.");
+            throw new RuntimeException("{$label} could not be read.");
         }
 
         $svg = trim(preg_replace('/^\s*<\?xml[^>]*>\s*/i', "", $svg) ?? $svg);
+        $svg = trim(preg_replace('/^\s*<!--.*?-->\s*/s', "", $svg) ?? $svg);
         if (!str_starts_with(strtolower($svg), "<svg")) {
-            throw new RuntimeException("Icon source '{$this->src}' does not contain SVG markup.");
+            throw new RuntimeException("{$label} does not contain SVG markup.");
         }
 
         return $svg;

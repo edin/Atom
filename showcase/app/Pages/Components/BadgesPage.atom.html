@@ -19,20 +19,26 @@
         </Inline>
     </ComponentExample>
 
-    <ComponentExample title="Appearance" description="Outline badges keep the same variant color with lighter visual weight.">
+    <ComponentExample title="Appearance" description="Badges are plain by default; use appearance when they need a surface.">
         <Inline gap="sm">
+            <Badge>Plain</Badge>
+            <Badge appearance="soft">Soft</Badge>
             <Badge appearance="outline">Primary</Badge>
+            <Badge appearance="solid">Solid</Badge>
             <Badge variant="success" appearance="outline">Success</Badge>
+            <Badge variant="success" appearance="soft">Success soft</Badge>
             <Badge variant="warning" appearance="outline">Warning</Badge>
             <Badge variant="danger" appearance="outline">Danger</Badge>
         </Inline>
     </ComponentExample>
 
-    <ComponentExample title="Sizes" description="Badges support sm, default, and lg sizes.">
+    <ComponentExample title="Sizes" description="Badges support xs, sm, default, lg, and xl sizes.">
         <Inline gap="sm" align="center">
+            <Badge size="xs">Xsmall</Badge>
             <Badge size="sm">Small</Badge>
             <Badge>Default</Badge>
             <Badge size="lg">Large</Badge>
+            <Badge size="xl">Xlarge</Badge>
         </Inline>
     </ComponentExample>
 </Stack>

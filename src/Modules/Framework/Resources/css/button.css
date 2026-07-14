@@ -1,99 +1,221 @@
 .atom-button {
+    --atom-button-color: var(--atom-color-base-content);
+    --atom-button-bg: var(--atom-color-base-200);
+    --atom-button-fg: var(--atom-color-base-content);
+    --atom-button-border: color-mix(in oklab, var(--atom-button-bg), #000 5%);
+    --atom-button-hover-bg: color-mix(in oklab, var(--atom-button-bg), #000 7%);
+    --atom-button-active-bg: color-mix(in oklab, var(--atom-button-bg), #000 10%);
+    --atom-button-soft-bg: var(--atom-color-base-100);
+    --atom-button-shadow: 0 3px 2px -2px color-mix(in oklab, var(--atom-button-bg) 30%, transparent),
+        0 4px 3px -2px color-mix(in oklab, var(--atom-button-bg) 24%, transparent);
+    --atom-button-inset: 0 0.5px 0 0.5px oklch(100% 0 0 / 0.06);
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    gap: 0.375rem;
+    flex-shrink: 0;
     min-height: var(--atom-control-height);
-    padding: 0 14px;
-    border: 1px solid var(--atom-color-primary);
-    border-radius: var(--atom-radius);
-    background: var(--atom-color-primary);
-    color: #ffffff;
+    padding: 0 1rem;
+    border: 1px solid var(--atom-button-border);
+    border-radius: var(--atom-radius-field);
+    background: var(--atom-button-bg);
+    color: var(--atom-button-fg);
     font: inherit;
-    font-weight: 650;
+    font-size: 0.875rem;
+    font-weight: 600;
     text-decoration: none;
+    text-align: center;
+    vertical-align: middle;
+    user-select: none;
+    touch-action: manipulation;
+    box-shadow: var(--atom-button-inset) inset, var(--atom-button-shadow);
     cursor: pointer;
+    transition: color 0.2s cubic-bezier(0, 0, 0.2, 1),
+        background-color 0.2s cubic-bezier(0, 0, 0.2, 1),
+        border-color 0.2s cubic-bezier(0, 0, 0.2, 1),
+        box-shadow 0.2s cubic-bezier(0, 0, 0.2, 1),
+        translate 0.2s cubic-bezier(0, 0, 0.2, 1);
 }
 
 .atom-button[data-size="sm"] {
     min-height: 32px;
-    padding: 0 11px;
-    font-size: 0.9rem;
+    padding: 0 0.75rem;
+    font-size: 0.75rem;
+}
+
+.atom-button[data-size="sm"]:focus-visible {
+    padding-inline: calc(0.75rem - 1px);
 }
 
 .atom-button[data-size="lg"] {
     min-height: 44px;
-    padding: 0 18px;
+    padding: 0 1.25rem;
+    font-size: 1.125rem;
+}
+
+.atom-button[data-size="lg"]:focus-visible {
+    padding-inline: calc(1.25rem - 1px);
+}
+
+.atom-button[data-shape="square"],
+.atom-button[data-shape="rounded"],
+.atom-button[data-shape="circle"] {
+    width: var(--atom-control-height);
+    height: var(--atom-control-height);
+    min-height: var(--atom-control-height);
+    padding-inline: 0;
+}
+
+.atom-button[data-shape="square"]:focus-visible,
+.atom-button[data-shape="rounded"]:focus-visible,
+.atom-button[data-shape="circle"]:focus-visible {
+    padding-inline: 0;
+}
+
+.atom-button[data-size="sm"][data-shape="square"],
+.atom-button[data-size="sm"][data-shape="rounded"],
+.atom-button[data-size="sm"][data-shape="circle"] {
+    width: 32px;
+    height: 32px;
+    min-height: 32px;
+}
+
+.atom-button[data-size="lg"][data-shape="square"],
+.atom-button[data-size="lg"][data-shape="rounded"],
+.atom-button[data-size="lg"][data-shape="circle"] {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+}
+
+.atom-button[data-shape="rounded"] {
+    border-radius: var(--atom-radius-box);
+}
+
+.atom-button[data-shape="circle"] {
+    border-radius: 9999px;
 }
 
 .atom-button:hover {
-    background: var(--atom-color-primary-hover);
+    border-color: color-mix(in oklab, var(--atom-button-hover-bg), #000 5%);
+    background: var(--atom-button-hover-bg);
+    color: var(--atom-button-fg);
     text-decoration: none;
 }
 
-.atom-button[data-variant="secondary"] {
-    border-color: var(--atom-color-secondary);
-    background: var(--atom-color-secondary);
+.atom-button:active {
+    translate: 0 0.5px;
+    border-color: color-mix(in oklab, var(--atom-button-active-bg), #000 7%);
+    background: var(--atom-button-active-bg);
+    box-shadow: var(--atom-button-inset) inset;
 }
 
-.atom-button[data-variant="secondary"]:hover {
-    background: var(--atom-color-secondary-hover);
+.atom-button:focus-visible {
+    outline: 0;
+    border-width: 2px;
+    border-color: var(--atom-button-bg);
+    padding-inline: calc(1rem - 1px);
+}
+
+.atom-button__spinner {
+    width: 1em;
+    height: 1em;
+    border: 2px solid currentColor;
+    border-right-color: transparent;
+    border-radius: 9999px;
+    animation: atom-button-spin 0.7s linear infinite;
+}
+
+@keyframes atom-button-spin {
+    to {
+        rotate: 360deg;
+    }
+}
+
+.atom-button:disabled,
+.atom-button[disabled],
+.atom-button[aria-disabled="true"] {
+    pointer-events: none;
+    border-color: transparent;
+    background: color-mix(in oklab, var(--atom-color-base-content) 10%, transparent);
+    color: color-mix(in oklch, var(--atom-color-base-content) 26%, transparent);
+    box-shadow: none;
+}
+
+.atom-button[data-variant="primary"] {
+    --atom-button-color: var(--atom-color-primary);
+    --atom-button-bg: var(--atom-color-primary);
+    --atom-button-fg: var(--atom-color-primary-content);
+    --atom-button-soft-bg: var(--atom-color-base-100);
+}
+
+.atom-button[data-variant="secondary"] {
+    --atom-button-color: var(--atom-color-secondary);
+    --atom-button-bg: var(--atom-color-secondary);
+    --atom-button-fg: var(--atom-color-secondary-content);
+    --atom-button-soft-bg: var(--atom-color-base-100);
 }
 
 .atom-button[data-variant="ghost"] {
-    background: var(--atom-color-surface);
-    color: var(--atom-color-primary);
+    --atom-button-bg: transparent;
+    --atom-button-fg: var(--atom-color-base-content);
+    --atom-button-border: transparent;
+    --atom-button-hover-bg: color-mix(in oklab, var(--atom-color-base-content) 8%, transparent);
+    --atom-button-active-bg: color-mix(in oklab, var(--atom-color-base-content) 12%, transparent);
+    --atom-button-shadow: none;
+    --atom-button-inset: none;
 }
 
 .atom-button[data-variant="ghost"]:hover {
-    background: var(--atom-color-primary-soft);
-    color: var(--atom-color-primary-hover);
+    color: var(--atom-button-fg);
 }
 
 .atom-button[data-variant="danger"] {
-    border-color: var(--atom-color-danger);
-    background: var(--atom-color-danger);
-}
-
-.atom-button[data-variant="danger"]:hover {
-    background: var(--atom-color-danger-hover);
+    --atom-button-color: var(--atom-color-danger);
+    --atom-button-bg: var(--atom-color-danger);
+    --atom-button-fg: var(--atom-color-danger-content);
+    --atom-button-soft-bg: var(--atom-color-base-100);
 }
 
 .atom-button[data-variant="success"] {
-    border-color: var(--atom-color-success);
-    background: var(--atom-color-success);
-}
-
-.atom-button[data-variant="success"]:hover {
-    background: var(--atom-color-success-hover);
+    --atom-button-color: var(--atom-color-success);
+    --atom-button-bg: var(--atom-color-success);
+    --atom-button-fg: var(--atom-color-success-content);
+    --atom-button-soft-bg: var(--atom-color-base-100);
 }
 
 .atom-button[data-variant="warning"] {
-    border-color: var(--atom-color-warning);
-    background: var(--atom-color-warning);
-}
-
-.atom-button[data-variant="warning"]:hover {
-    background: var(--atom-color-warning-hover);
+    --atom-button-color: var(--atom-color-warning);
+    --atom-button-bg: var(--atom-color-warning);
+    --atom-button-fg: var(--atom-color-warning-content);
+    --atom-button-soft-bg: var(--atom-color-base-100);
 }
 
 .atom-button[data-variant="info"] {
-    border-color: var(--atom-color-info);
-    background: var(--atom-color-info);
-}
-
-.atom-button[data-variant="info"]:hover {
-    background: var(--atom-color-info-hover);
+    --atom-button-color: var(--atom-color-info);
+    --atom-button-bg: var(--atom-color-info);
+    --atom-button-fg: var(--atom-color-info-content);
+    --atom-button-soft-bg: var(--atom-color-base-100);
 }
 
 .atom-button[data-appearance="outline"] {
-    background: transparent;
-    color: var(--atom-color-primary);
+    --atom-button-bg: transparent;
+    --atom-button-fg: var(--atom-button-color);
+    --atom-button-border: var(--atom-button-color);
+    --atom-button-hover-bg: color-mix(in oklab, var(--atom-button-color) 8%, transparent);
+    --atom-button-active-bg: color-mix(in oklab, var(--atom-button-color) 12%, transparent);
+    --atom-button-shadow: none;
+    --atom-button-inset: none;
 }
 
 .atom-button[data-appearance="soft"] {
-    border-color: transparent;
-    background: var(--atom-color-primary-soft);
-    color: var(--atom-color-primary-text);
+    --atom-button-bg: color-mix(in oklab, var(--atom-button-color) 8%, var(--atom-button-soft-bg));
+    --atom-button-fg: var(--atom-button-color);
+    --atom-button-border: color-mix(in oklab, var(--atom-button-color) 10%, var(--atom-button-soft-bg));
+    --atom-button-hover-bg: color-mix(in oklab, var(--atom-button-color) 14%, var(--atom-button-soft-bg));
+    --atom-button-active-bg: color-mix(in oklab, var(--atom-button-color) 18%, var(--atom-button-soft-bg));
+    --atom-button-shadow: none;
+    --atom-button-inset: none;
 }
 
 .atom-button[data-variant="link"],
@@ -104,13 +226,14 @@
     border-radius: 0;
     background: transparent;
     color: var(--atom-color-primary);
+    box-shadow: none;
 }
 
 .atom-button[data-variant="link"]:hover,
 .atom-button[data-variant="link-danger"]:hover {
     background: transparent;
     color: var(--atom-color-primary-hover);
-    text-decoration: underline;
+    text-decoration: none;
 }
 
 .atom-button[data-variant="link-danger"] {
@@ -119,4 +242,52 @@
 
 .atom-button[data-variant="link-danger"]:hover {
     color: var(--atom-color-danger-text);
+}
+
+.atom-button-group {
+    display: inline-flex;
+    align-items: stretch;
+    vertical-align: middle;
+}
+
+.atom-button-group > .atom-button {
+    position: relative;
+    border-radius: 0;
+}
+
+.atom-button-group > .atom-button:hover,
+.atom-button-group > .atom-button:focus-visible {
+    z-index: 1;
+}
+
+.atom-button-group:not([data-orientation="vertical"]) > .atom-button + .atom-button {
+    margin-left: -1px;
+}
+
+.atom-button-group:not([data-orientation="vertical"]) > .atom-button:first-child {
+    border-top-left-radius: var(--atom-radius-field);
+    border-bottom-left-radius: var(--atom-radius-field);
+}
+
+.atom-button-group:not([data-orientation="vertical"]) > .atom-button:last-child {
+    border-top-right-radius: var(--atom-radius-field);
+    border-bottom-right-radius: var(--atom-radius-field);
+}
+
+.atom-button-group[data-orientation="vertical"] {
+    flex-direction: column;
+}
+
+.atom-button-group[data-orientation="vertical"] > .atom-button + .atom-button {
+    margin-top: -1px;
+}
+
+.atom-button-group[data-orientation="vertical"] > .atom-button:first-child {
+    border-top-left-radius: var(--atom-radius-field);
+    border-top-right-radius: var(--atom-radius-field);
+}
+
+.atom-button-group[data-orientation="vertical"] > .atom-button:last-child {
+    border-bottom-right-radius: var(--atom-radius-field);
+    border-bottom-left-radius: var(--atom-radius-field);
 }

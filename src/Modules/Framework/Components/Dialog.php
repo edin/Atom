@@ -13,8 +13,9 @@ final class Dialog implements ComponentInterface
 {
     public ?Fragment $content = null;
     public ?Fragment $actions = null;
+    public ?DialogModel $model = null;
     public AttributeBag $attributes;
-    public bool $show = false;
+    public ?bool $show = null;
     public string $title = "";
     public string $description = "";
     public string $class = "";
@@ -26,7 +27,9 @@ final class Dialog implements ComponentInterface
 
     public function render(): string
     {
-        if (!$this->show) {
+        $this->bindModel();
+
+        if (!$this->shouldShow()) {
             return "";
         }
 
@@ -100,5 +103,17 @@ final class Dialog implements ComponentInterface
     private function descriptionId(): string
     {
         return $this->labelId() . "-description";
+    }
+
+    private function bindModel(): void
+    {
+        if ($this->model !== null && $this->show === null) {
+            $this->show = $this->model->show;
+        }
+    }
+
+    private function shouldShow(): bool
+    {
+        return $this->show === true;
     }
 }

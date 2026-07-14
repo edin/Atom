@@ -7,13 +7,13 @@ namespace Atom\Page;
 use Atom\Router\RouteAction;
 use Atom\Router\RouteEntry;
 use Atom\Router\Router;
-use ReflectionAttribute;
-use ReflectionClass;
-use ReflectionMethod;
 
 final readonly class PageRouteRegistrar
 {
-    public function __construct(private PageDiscovery $discovery = new PageDiscovery())
+    public function __construct(
+        private PageDiscovery $discovery = new PageDiscovery(),
+        private PageActionDiscovery $actions = new PageActionDiscovery()
+    )
     {
     }
 
@@ -100,20 +100,6 @@ final readonly class PageRouteRegistrar
      */
     private function actionMethods(string $pageClass): array
     {
-        $methods = [];
-        $reflection = new ReflectionClass($pageClass);
-
-        foreach ($reflection->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
-            if ($method->getDeclaringClass()->getName() === Page::class) {
-                continue;
-            }
-
-            foreach ($method->getAttributes(PageAction::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
-                $action = $attribute->newInstance();
-                $methods[strtoupper($action->method)] = strtoupper($action->method);
-            }
-        }
-
-        return array_values($methods);
+        return $this->actions->methods($pageClass);
     }
 }

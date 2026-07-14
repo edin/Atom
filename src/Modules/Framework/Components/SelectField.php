@@ -21,7 +21,7 @@ final class SelectField extends FieldEntry
             "name" => $this->name,
             "class" => Html::classes("atom-select", $this->fieldClass()),
             "aria-invalid" => $this->hasError() ? "true" : null,
-            "aria-describedby" => $this->hasError() ? $this->fieldId() . "-error" : null,
+            "aria-describedby" => $this->describedBy(),
         ], $this->attributes->all()), $this->optionsHtml());
     }
 
@@ -34,13 +34,18 @@ final class SelectField extends FieldEntry
             $value = $this->optionPart($option, $this->optionValue, $key);
             $text = $this->optionPart($option, $this->optionText, $value);
 
-            $html .= Html::tag("option", [
-                "value" => $value,
-                "selected" => (string) $value === $selected,
-            ], Html::escape($text));
+            $html .= $this->optionHtml($value, $text, (string) $value === $selected);
         }
 
         return $html;
+    }
+
+    private function optionHtml(mixed $value, mixed $text, bool $selected): string
+    {
+        $attributes = ' value="' . Html::escape($value) . '"'
+            . Html::attributes(["selected" => $selected]);
+
+        return "<option{$attributes}>" . Html::escape($text) . "</option>";
     }
 
     private function optionPart(mixed $option, string $name, mixed $fallback): mixed

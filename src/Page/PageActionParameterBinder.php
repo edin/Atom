@@ -112,7 +112,7 @@ final readonly class PageActionParameterBinder
         }
 
         throw new PageActionException(
-            "Page action '{$call->name}' was called with " . count($call->arguments) .
+            "Page action '{$call->fullName()}' was called with " . count($call->arguments) .
             " argument(s), but " . $method->getDeclaringClass()->getName() . "::" . $method->getName() .
             "() accepts " . $method->getNumberOfParameters() . "."
         );

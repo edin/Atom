@@ -9,20 +9,29 @@
 <Stack gap="md">
     <ComponentExample title="Basic alerts" description="Use semantic variants for common status messages.">
         <Stack gap="sm">
-            <Alert variant="neutral">Neutral alert</Alert>
-            <Alert variant="info">Info alert</Alert>
-            <Alert variant="success">Success alert</Alert>
-            <Alert variant="warning">Warning alert</Alert>
-            <Alert variant="danger">Danger alert</Alert>
+            <Alert variant="neutral" icon="lucide:info">Neutral alert</Alert>
+            <Alert variant="info" icon="lucide:circle-alert">Info alert</Alert>
+            <Alert variant="success" icon="lucide:circle-check">Success alert</Alert>
+            <Alert variant="warning" icon="lucide:triangle-alert">Warning alert</Alert>
+            <Alert variant="danger" icon="lucide:circle-x">Danger alert</Alert>
+        </Stack>
+    </ComponentExample>
+
+    <ComponentExample title="Appearances" description="Use solid, soft, outline, or ghost treatments depending on emphasis.">
+        <Stack gap="sm">
+            <Alert variant="success" appearance="">Solid alert</Alert>
+            <Alert variant="success" appearance="soft">Soft alert</Alert>
+            <Alert variant="success" appearance="outline">Outline alert</Alert>
+            <Alert variant="success" appearance="ghost">Ghost alert</Alert>
         </Stack>
     </ComponentExample>
 
     <ComponentExample title="Title and description" description="Title and description give the alert a richer information shape.">
-        <Alert title="You have 10 messages" description="Open your inbox when you have a moment." variant="info" />
+        <Alert title="You have 10 messages" description="Open your inbox when you have a moment." variant="info" icon="fa-solid fa-envelope" />
     </ComponentExample>
 
     <ComponentExample title="Actions" description="Actions are passed as a named fragment.">
-        <Alert title="Review changes" description="This article has unpublished edits." variant="warning" appearance="outline">
+        <Alert title="Review changes" description="This article has unpublished edits." variant="warning" appearance="outline" icon="lucide:git-pull-request-arrow">
             <Alert.Actions>
                 <Button size="sm" appearance="soft">Review</Button>
                 <Button size="sm" variant="ghost">Dismiss</Button>

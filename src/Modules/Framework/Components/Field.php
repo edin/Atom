@@ -15,6 +15,7 @@ final class Field implements ComponentInterface
     public AttributeBag $attributes;
     public string $label = "";
     public string $name = "";
+    public string $help = "";
     public ?string $for = null;
     public string $class = "";
 
@@ -26,6 +27,10 @@ final class Field implements ComponentInterface
         }
 
         $content .= $this->content?->render() ?? "";
+
+        if ($this->help !== "") {
+            $content .= Html::tag("p", ["class" => "atom-field-help"], Html::escape($this->help));
+        }
 
         return Html::tag("label", Html::mergeAttributes([
             "class" => Html::classes("atom-field", $this->class),

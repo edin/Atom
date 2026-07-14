@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Showcase\Pages\Components;
 
+use Atom\Modules\Framework\Components\DialogModel;
 use Atom\Page\PageAction;
 use Atom\Page\PageRoute;
 use Atom\Page\State;
@@ -19,6 +20,14 @@ final class DialogsPage extends AppPage
 
     #[State]
     public string $lastAction = "No dialog action yet.";
+
+    #[State]
+    public DialogModel $deleteDialog;
+
+    public function __construct()
+    {
+        $this->deleteDialog = new DialogModel();
+    }
 
     #[PageAction("openDialog")]
     public function openDialog(string $name): void
@@ -37,7 +46,9 @@ final class DialogsPage extends AppPage
     #[PageAction("confirmDelete")]
     public function confirmDelete(): void
     {
+        $id = $this->deleteDialog->value;
+        $this->deleteDialog->close();
         $this->openDialog = "";
-        $this->lastAction = "Article deleted.";
+        $this->lastAction = $id === null ? "Article deleted." : "Article {$id} deleted.";
     }
 }

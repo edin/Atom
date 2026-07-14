@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Showcase;
 
 use Atom\Module\ModuleRegistry;
+use Atom\Modules\DevReload\DevReloadModule;
 use Atom\Modules\Framework\Framework;
 use Atom\Page\PageRegistry;
 use Atom\View\Component\ComponentRegistry;
@@ -20,6 +21,11 @@ final class Application extends \Atom\Application
     protected function modules(ModuleRegistry $modules): void
     {
         $modules->add(Framework::module());
+        $modules->add(new DevReloadModule([
+            "@root/app",
+            "@root/public",
+            "@root/../src",
+        ]), "/atom/dev");
     }
 
     protected function pages(PageRegistry $pages): void

@@ -1,57 +1,107 @@
 .atom-badge {
+    --atom-badge-color: var(--atom-color-primary);
+    --atom-badge-fg: var(--atom-color-primary-text);
+    --atom-badge-bg: var(--atom-color-primary);
+    --atom-badge-solid-fg: var(--atom-color-primary-content);
+    --atom-badge-soft-bg: var(--atom-color-base-100);
     display: inline-flex;
     align-items: center;
-    min-height: 24px;
-    padding: 0 9px;
-    border-radius: 999px;
-    background: var(--atom-color-primary-soft);
-    color: var(--atom-color-primary-text);
-    font-size: 0.9rem;
+    justify-content: center;
+    gap: 0.375rem;
+    width: fit-content;
+    height: 1.5rem;
+    padding: 0 calc(0.75rem - 1px);
+    border: 1px solid transparent;
+    border-radius: var(--atom-radius-selector);
+    background: transparent;
+    color: var(--atom-badge-fg);
+    font-size: 0.875rem;
+    font-weight: 500;
     line-height: 1;
+    vertical-align: middle;
+}
+
+.atom-badge[data-size="xs"] {
+    height: 1rem;
+    padding: 0 calc(0.5rem - 1px);
+    font-size: 0.625rem;
 }
 
 .atom-badge[data-size="sm"] {
-    min-height: 20px;
-    padding: 0 7px;
-    font-size: 0.8rem;
+    height: 1.25rem;
+    padding: 0 calc(0.625rem - 1px);
+    font-size: 0.75rem;
 }
 
 .atom-badge[data-size="lg"] {
-    min-height: 28px;
-    padding: 0 11px;
+    height: 1.75rem;
+    padding: 0 calc(0.875rem - 1px);
+    font-size: 1rem;
+}
+
+.atom-badge[data-size="xl"] {
+    height: 2rem;
+    padding: 0 calc(1rem - 1px);
+    font-size: 1.125rem;
 }
 
 .atom-badge[data-variant="neutral"] {
-    background: var(--atom-color-soft);
-    color: var(--atom-color-muted);
+    --atom-badge-color: var(--atom-color-base-content);
+    --atom-badge-fg: var(--atom-color-muted);
+    --atom-badge-bg: var(--atom-color-base-200);
+    --atom-badge-solid-fg: var(--atom-color-base-content);
+    --atom-badge-soft-bg: var(--atom-color-base-100);
 }
 
 .atom-badge[data-variant="secondary"] {
-    background: var(--atom-color-secondary-soft);
-    color: var(--atom-color-secondary-text);
+    --atom-badge-color: var(--atom-color-secondary);
+    --atom-badge-fg: var(--atom-color-secondary-text);
+    --atom-badge-bg: var(--atom-color-secondary);
+    --atom-badge-solid-fg: var(--atom-color-secondary-content);
 }
 
 .atom-badge[data-variant="success"] {
-    background: var(--atom-color-success-soft);
-    color: var(--atom-color-success-text);
+    --atom-badge-color: var(--atom-color-success);
+    --atom-badge-fg: var(--atom-color-success-text);
+    --atom-badge-bg: var(--atom-color-success);
+    --atom-badge-solid-fg: var(--atom-color-success-content);
 }
 
 .atom-badge[data-variant="info"] {
-    background: var(--atom-color-info-soft);
-    color: var(--atom-color-info-text);
+    --atom-badge-color: var(--atom-color-info);
+    --atom-badge-fg: var(--atom-color-info-text);
+    --atom-badge-bg: var(--atom-color-info);
+    --atom-badge-solid-fg: var(--atom-color-info-content);
 }
 
 .atom-badge[data-variant="warning"] {
-    background: var(--atom-color-warning-soft);
-    color: var(--atom-color-warning-text);
+    --atom-badge-color: var(--atom-color-warning);
+    --atom-badge-fg: var(--atom-color-warning-text);
+    --atom-badge-bg: var(--atom-color-warning);
+    --atom-badge-solid-fg: var(--atom-color-warning-content);
 }
 
 .atom-badge[data-variant="danger"] {
-    background: var(--atom-color-danger-soft);
-    color: var(--atom-color-danger-text);
+    --atom-badge-color: var(--atom-color-danger);
+    --atom-badge-fg: var(--atom-color-danger-text);
+    --atom-badge-bg: var(--atom-color-danger);
+    --atom-badge-solid-fg: var(--atom-color-danger-content);
+}
+
+.atom-badge[data-appearance="soft"] {
+    border-color: color-mix(in oklab, var(--atom-badge-color) 18%, var(--atom-badge-soft-bg));
+    background: color-mix(in oklab, var(--atom-badge-color) 10%, var(--atom-badge-soft-bg));
+    color: var(--atom-badge-fg);
 }
 
 .atom-badge[data-appearance="outline"] {
-    border: 1px solid currentColor;
+    border-color: color-mix(in oklab, var(--atom-badge-color) 68%, transparent);
     background: transparent;
+    color: var(--atom-badge-fg);
+}
+
+.atom-badge[data-appearance="solid"] {
+    border-color: color-mix(in oklab, var(--atom-badge-bg), #000 6%);
+    background: var(--atom-badge-bg);
+    color: var(--atom-badge-solid-fg);
 }

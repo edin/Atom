@@ -41,7 +41,10 @@ final class FormsPage extends AppPage
     #[PageAction("submit")]
     public function submit(): void
     {
-        $this->validateModel($this->form);
+        if ($this->validateModel($this->form)) {
+            $this->flash("Your form model was hydrated, validated, and saved by a page action.", "success", "Form submitted");
+        }
+
         $this->loadCategories();
     }
 

@@ -29,14 +29,14 @@
             <Alert variant="info">{{ $this->lastAction }}</Alert>
 
             <Inline gap="sm">
-                <Button variant="danger" atom:action="openDialog('delete')">Delete article</Button>
+                <Button variant="danger" atom:action="deleteDialog.open(42)">Delete article</Button>
             </Inline>
 
-            <Dialog :show="$this->openDialog === 'delete'" title="Delete article?" description="This action cannot be undone.">
-                <p>The article will be removed from the current list.</p>
+            <Dialog :model="$this->deleteDialog" title="Delete article?" description="This action cannot be undone.">
+                <p>Article {{ $this->deleteDialog->value }} will be removed from the current list.</p>
 
                 <Dialog.Actions>
-                    <Button variant="ghost" atom:action="closeDialog">Cancel</Button>
+                    <Button variant="ghost" atom:action="deleteDialog.close()">Cancel</Button>
                     <Button variant="danger" atom:action="confirmDelete">Delete</Button>
                 </Dialog.Actions>
             </Dialog>

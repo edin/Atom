@@ -59,6 +59,35 @@
     align-items: center;
 }
 
+.atom-split-view {
+    display: grid;
+    gap: var(--atom-space-4);
+    min-width: 0;
+}
+
+.atom-split-view.has-side {
+    grid-template-columns: minmax(0, 1fr) minmax(260px, var(--atom-split-side-width, 380px));
+    align-items: start;
+}
+
+.atom-split-view[data-gap="sm"] {
+    gap: var(--atom-space-2);
+}
+
+.atom-split-view[data-gap="lg"] {
+    gap: var(--atom-space-5);
+}
+
+.atom-split-view__main,
+.atom-split-view__side {
+    min-width: 0;
+}
+
+.atom-split-view__side {
+    position: sticky;
+    top: var(--atom-space-4);
+}
+
 .atom-page-header {
     display: flex;
     align-items: flex-start;
@@ -68,7 +97,7 @@
 
 .atom-page-header__main {
     display: grid;
-    gap: var(--atom-space-2);
+    gap: 2px;
 }
 
 .atom-page-header__title {
@@ -80,6 +109,7 @@
 .atom-page-header__description {
     margin: 0;
     color: var(--atom-color-muted);
+    line-height: 1.4;
 }
 
 .atom-page-header__actions {
@@ -90,6 +120,10 @@
     gap: var(--atom-space-2);
 }
 
+.atom-page-header__actions > .atom-form {
+    margin: 0;
+}
+
 .atom-toolbar {
     padding: var(--atom-space-3);
     border: 1px solid var(--atom-color-line);
@@ -97,15 +131,55 @@
     background: var(--atom-color-soft);
 }
 
+.atom-toolbar[data-appearance="flat"] {
+    border: 0;
+    border-radius: 0;
+}
+
+.atom-toolbar[data-appearance="plain"] {
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+}
+
+.atom-toolbar__section {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: inherit;
+    min-width: 0;
+}
+
+.atom-toolbar__section--start {
+    flex: 1 1 auto;
+}
+
+.atom-toolbar__section--end {
+    flex: 0 0 auto;
+    justify-content: flex-end;
+    margin-left: auto;
+}
+
 .atom-toolbar > .atom-input,
 .atom-toolbar > .atom-select,
-.atom-toolbar > .atom-textarea {
+.atom-toolbar > .atom-textarea,
+.atom-toolbar > .atom-field,
+.atom-toolbar__section > .atom-input,
+.atom-toolbar__section > .atom-select,
+.atom-toolbar__section > .atom-textarea,
+.atom-toolbar__section > .atom-field {
     flex: 1 1 220px;
     width: auto;
     min-width: 0;
 }
 
-.atom-toolbar > .atom-button {
+.atom-toolbar > .atom-button,
+.atom-toolbar > .atom-button-group,
+.atom-toolbar > .atom-control-group,
+.atom-toolbar__section > .atom-button,
+.atom-toolbar__section > .atom-button-group,
+.atom-toolbar__section > .atom-control-group {
     flex: 0 0 auto;
 }
 
@@ -277,5 +351,13 @@
     .atom-app-shell__sidebar {
         border-right: 0;
         border-bottom: 1px solid var(--atom-color-line);
+    }
+
+    .atom-split-view.has-side {
+        grid-template-columns: 1fr;
+    }
+
+    .atom-split-view__side {
+        position: static;
     }
 }

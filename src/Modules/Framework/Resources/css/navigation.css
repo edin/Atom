@@ -96,7 +96,13 @@ a.atom-tab:active {
     border-radius: var(--atom-radius);
     background: var(--atom-color-surface);
     color: var(--atom-color-text);
+    font: inherit;
+    font-size: 0.92rem;
+    font-weight: 500;
+    line-height: 1;
     text-decoration: none;
+    appearance: none;
+    cursor: pointer;
 }
 
 .atom-pagination__item:hover {

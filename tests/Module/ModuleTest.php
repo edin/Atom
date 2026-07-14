@@ -12,6 +12,8 @@ use Atom\Modules\Framework\Components\FieldError;
 use Atom\Modules\Framework\Components\TextArea;
 use Atom\Modules\Framework\Components\TextInput;
 use Atom\Modules\Framework\Components\ValidationSummary;
+use Atom\Modules\DevReload\DevReloadModule;
+use Atom\Modules\DevReload\DevReloadWatcher;
 use Atom\Modules\Framework\Framework;
 use Atom\Module\ModuleContext;
 use Atom\Module\ModuleInterface;
@@ -21,6 +23,8 @@ use Atom\Router\RouteMatcher;
 use Atom\Tests\Page\PageFixtures\HelloPage;
 use Atom\View\Component\ComponentInterface;
 use Atom\View\Component\ComponentRegistry;
+use Atom\Http\Request;
+use Atom\Support\Paths;
 use PHPUnit\Framework\TestCase;
 
 final class ModuleTest extends TestCase
@@ -111,6 +115,45 @@ final class ModuleTest extends TestCase
         $this->assertSame(TextArea::class, $components->get("TextArea"));
         $this->assertSame(TextInput::class, $components->get("TextInput"));
         $this->assertSame(ValidationSummary::class, $components->get("ValidationSummary"));
+    }
+
+    public function testDevReloadModuleRegistersVersionEndpointAndResources(): void
+    {
+        $directory = $this->tempDirectory();
+        file_put_contents($directory . DIRECTORY_SEPARATOR . "page.atom.html", "<p>Hello</p>");
+
+        $app = new ModuleTestApplication();
+        $app->initialize();
+        $app->getPaths()->alias("watched", $directory);
+
+        $app->registerModule(new DevReloadModule(["@watched"]), "/atom/dev");
+
+        $version = $app->handle(new Request("GET", "/atom/dev/reload-version"));
+        $script = $app->handle(new Request("GET", "/atom/dev/resources/reload.js"));
+
+        $this->assertSame(200, $version->getStatus());
+        $this->assertSame("application/json", $version->headers()->get("Content-Type"));
+        $this->assertStringContainsString('"version"', $version->getContent());
+        $this->assertSame(200, $script->getStatus());
+        $this->assertSame("application/javascript; charset=utf-8", $script->headers()->get("Content-Type"));
+        $this->assertStringContainsString("window.location.reload()", $script->getContent());
+    }
+
+    public function testDevReloadWatcherVersionChangesWhenWatchedFilesChange(): void
+    {
+        $directory = $this->tempDirectory();
+        $file = $directory . DIRECTORY_SEPARATOR . "page.atom.html";
+        file_put_contents($file, "<p>Before</p>");
+
+        $paths = new Paths();
+        $paths->alias("watched", $directory);
+        $watcher = new DevReloadWatcher($paths);
+        $before = $watcher->version(["@watched"]);
+
+        sleep(1);
+        file_put_contents($file, "<p>After</p>");
+
+        $this->assertNotSame($before, $watcher->version(["@watched"]));
     }
 
     public function testModuleContextRegistersPagesUnderBasePath(): void

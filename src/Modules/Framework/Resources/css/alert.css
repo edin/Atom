@@ -1,161 +1,150 @@
 .atom-alert {
+    --atom-alert-color: var(--atom-color-base-content);
+    --atom-alert-bg: var(--atom-color-base-200);
+    --atom-alert-fg: var(--atom-color-base-content);
+    --atom-alert-soft-bg: var(--atom-color-base-200);
+    --atom-alert-soft-fg: var(--atom-color-text);
+    --atom-alert-border: color-mix(in oklab, var(--atom-alert-bg), #000 6%);
     display: flex;
     align-items: flex-start;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: var(--atom-space-4);
-    padding: 12px 14px;
-    border: 1px solid var(--atom-color-line);
-    border-radius: var(--atom-radius);
-    background: var(--atom-color-soft);
-    color: var(--atom-color-text);
+    min-height: 44px;
+    padding: 13px 15px;
+    border: 1px solid var(--atom-alert-border);
+    border-radius: var(--atom-radius-box);
+    background: var(--atom-alert-bg);
+    color: var(--atom-alert-fg);
+    line-height: 1.45;
 }
 
 .atom-alert__content {
     display: grid;
-    gap: var(--atom-space-1);
+    flex: 1 1 auto;
+    gap: 2px;
+    min-width: 0;
+}
+
+.atom-alert__icon {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    padding-top: 1px;
+}
+
+.atom-alert__icon .atom-icon {
+    width: 1.25em;
+    height: 1.25em;
+    border-radius: 0;
+    background: transparent;
+    color: currentColor;
+    font-size: 1.12rem;
 }
 
 .atom-alert__title {
     display: block;
-    font-weight: 700;
+    font-weight: 750;
+    line-height: 1.25;
 }
 
 .atom-alert__description,
 .atom-alert__body {
     margin: 0;
+    color: color-mix(in oklch, currentColor 92%, var(--atom-color-base-100));
 }
 
 .atom-alert__actions {
     display: inline-flex;
-    align-items: center;
-    gap: var(--atom-space-2);
     flex: 0 0 auto;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--atom-space-2);
+    margin-left: auto;
 }
 
 .atom-alert[data-size="sm"] {
+    min-height: 36px;
     padding: 9px 11px;
-    font-size: 0.9rem;
+    font-size: 0.875rem;
 }
 
 .atom-alert[data-size="lg"] {
-    padding: 16px 18px;
+    min-height: 52px;
+    padding: 17px 19px;
+    font-size: 1.05rem;
 }
 
 .atom-alert[data-variant="primary"] {
-    border-color: var(--atom-color-primary);
-    background: var(--atom-color-primary);
-    color: #ffffff;
+    --atom-alert-color: var(--atom-color-primary);
+    --atom-alert-bg: var(--atom-color-primary);
+    --atom-alert-fg: var(--atom-color-primary-content);
+    --atom-alert-soft-bg: var(--atom-color-base-100);
+    --atom-alert-soft-fg: var(--atom-color-primary-text);
+    --atom-alert-border: color-mix(in oklab, var(--atom-alert-bg), #000 6%);
 }
 
 .atom-alert[data-variant="secondary"] {
-    border-color: var(--atom-color-secondary);
-    background: var(--atom-color-secondary);
-    color: #ffffff;
+    --atom-alert-color: var(--atom-color-secondary);
+    --atom-alert-bg: var(--atom-color-secondary);
+    --atom-alert-fg: var(--atom-color-secondary-content);
+    --atom-alert-soft-bg: var(--atom-color-base-100);
+    --atom-alert-soft-fg: var(--atom-color-secondary-text);
+    --atom-alert-border: color-mix(in oklab, var(--atom-alert-bg), #000 6%);
 }
 
 .atom-alert[data-variant="success"] {
-    border-color: var(--atom-color-success);
-    background: var(--atom-color-success);
-    color: #ffffff;
+    --atom-alert-color: var(--atom-color-success);
+    --atom-alert-bg: var(--atom-color-success);
+    --atom-alert-fg: var(--atom-color-success-content);
+    --atom-alert-soft-bg: var(--atom-color-base-100);
+    --atom-alert-soft-fg: var(--atom-color-success-text);
+    --atom-alert-border: color-mix(in oklab, var(--atom-alert-bg), #000 6%);
 }
 
 .atom-alert[data-variant="info"] {
-    border-color: var(--atom-color-info);
-    background: var(--atom-color-info);
-    color: #ffffff;
+    --atom-alert-color: var(--atom-color-info);
+    --atom-alert-bg: var(--atom-color-info);
+    --atom-alert-fg: var(--atom-color-info-content);
+    --atom-alert-soft-bg: var(--atom-color-base-100);
+    --atom-alert-soft-fg: var(--atom-color-info-text);
+    --atom-alert-border: color-mix(in oklab, var(--atom-alert-bg), #000 6%);
 }
 
 .atom-alert[data-variant="warning"] {
-    border-color: var(--atom-color-warning);
-    background: var(--atom-color-warning);
-    color: #ffffff;
+    --atom-alert-color: var(--atom-color-warning);
+    --atom-alert-bg: var(--atom-color-warning);
+    --atom-alert-fg: var(--atom-color-warning-content);
+    --atom-alert-soft-bg: var(--atom-color-base-100);
+    --atom-alert-soft-fg: var(--atom-color-warning-text);
+    --atom-alert-border: color-mix(in oklab, var(--atom-alert-bg), #000 6%);
 }
 
 .atom-alert[data-variant="danger"] {
-    border-color: var(--atom-color-danger);
-    background: var(--atom-color-danger);
-    color: #ffffff;
+    --atom-alert-color: var(--atom-color-danger);
+    --atom-alert-bg: var(--atom-color-danger);
+    --atom-alert-fg: var(--atom-color-danger-content);
+    --atom-alert-soft-bg: var(--atom-color-base-100);
+    --atom-alert-soft-fg: var(--atom-color-danger-text);
+    --atom-alert-border: color-mix(in oklab, var(--atom-alert-bg), #000 6%);
 }
 
 .atom-alert[data-appearance="soft"] {
-    border-color: var(--atom-color-line);
-    background: var(--atom-color-soft);
-    color: var(--atom-color-text);
-}
-
-.atom-alert[data-variant="primary"][data-appearance="soft"] {
-    border-color: var(--atom-color-primary-line);
-    background: var(--atom-color-primary-soft);
-    color: var(--atom-color-primary-text);
-}
-
-.atom-alert[data-variant="secondary"][data-appearance="soft"] {
-    border-color: var(--atom-color-secondary-line);
-    background: var(--atom-color-secondary-soft);
-    color: var(--atom-color-secondary-text);
-}
-
-.atom-alert[data-variant="success"][data-appearance="soft"] {
-    border-color: var(--atom-color-success-line);
-    background: var(--atom-color-success-soft);
-    color: var(--atom-color-success-text);
-}
-
-.atom-alert[data-variant="info"][data-appearance="soft"] {
-    border-color: var(--atom-color-info-line);
-    background: var(--atom-color-info-soft);
-    color: var(--atom-color-info-text);
-}
-
-.atom-alert[data-variant="warning"][data-appearance="soft"] {
-    border-color: var(--atom-color-warning-line);
-    background: var(--atom-color-warning-soft);
-    color: var(--atom-color-warning-text);
-}
-
-.atom-alert[data-variant="danger"][data-appearance="soft"] {
-    border-color: var(--atom-color-danger-line);
-    background: var(--atom-color-danger-soft);
-    color: var(--atom-color-danger-text);
+    border-color: color-mix(in oklab, var(--atom-alert-color) 24%, var(--atom-alert-soft-bg));
+    background: color-mix(in oklab, var(--atom-alert-color) 10%, var(--atom-alert-soft-bg));
+    color: var(--atom-alert-soft-fg);
 }
 
 .atom-alert[data-appearance="outline"] {
+    border-color: var(--atom-alert-color);
     background: transparent;
+    color: var(--atom-alert-soft-fg);
 }
 
 .atom-alert[data-appearance="ghost"] {
     border-color: transparent;
     background: transparent;
-}
-
-.atom-alert[data-variant="primary"][data-appearance="outline"],
-.atom-alert[data-variant="primary"][data-appearance="ghost"] {
-    color: var(--atom-color-primary-text);
-}
-
-.atom-alert[data-variant="secondary"][data-appearance="outline"],
-.atom-alert[data-variant="secondary"][data-appearance="ghost"] {
-    color: var(--atom-color-secondary-text);
-}
-
-.atom-alert[data-variant="success"][data-appearance="outline"],
-.atom-alert[data-variant="success"][data-appearance="ghost"] {
-    color: var(--atom-color-success-text);
-}
-
-.atom-alert[data-variant="info"][data-appearance="outline"],
-.atom-alert[data-variant="info"][data-appearance="ghost"] {
-    color: var(--atom-color-info-text);
-}
-
-.atom-alert[data-variant="warning"][data-appearance="outline"],
-.atom-alert[data-variant="warning"][data-appearance="ghost"] {
-    color: var(--atom-color-warning-text);
-}
-
-.atom-alert[data-variant="danger"][data-appearance="outline"],
-.atom-alert[data-variant="danger"][data-appearance="ghost"] {
-    color: var(--atom-color-danger-text);
+    color: var(--atom-alert-soft-fg);
 }
 
 .atom-toast-region {
@@ -258,4 +247,97 @@
 .atom-toast[data-variant="danger"] .atom-toast__description,
 .atom-toast[data-variant="danger"] .atom-toast__body {
     color: inherit;
+}
+
+.atom-snackbar-region {
+    position: fixed;
+    z-index: 65;
+    width: min(520px, calc(100vw - 32px));
+    pointer-events: none;
+}
+
+.atom-snackbar-region[data-position="bottom-center"] {
+    right: 50%;
+    bottom: 16px;
+    transform: translateX(50%);
+}
+
+.atom-snackbar-region[data-position="bottom-start"] {
+    bottom: 16px;
+    left: 16px;
+}
+
+.atom-snackbar-region[data-position="bottom-end"] {
+    right: 16px;
+    bottom: 16px;
+}
+
+.atom-snackbar-region[data-position="top-center"] {
+    top: 16px;
+    right: 50%;
+    transform: translateX(50%);
+}
+
+.atom-snackbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--atom-space-3);
+    min-height: 48px;
+    padding: 10px 12px 10px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--atom-radius);
+    background: #111827;
+    color: #f9fafb;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.24);
+    pointer-events: auto;
+}
+
+.atom-snackbar__message {
+    min-width: 0;
+    line-height: 1.45;
+}
+
+.atom-snackbar__actions {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: var(--atom-space-2);
+}
+
+.atom-snackbar__actions .atom-button {
+    border-color: rgba(255, 255, 255, 0.22);
+    color: #ffffff;
+}
+
+.atom-snackbar__actions .atom-button:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.atom-snackbar[data-variant="success"] {
+    background: var(--atom-color-success-text);
+}
+
+.atom-snackbar[data-variant="info"] {
+    background: var(--atom-color-info-text);
+}
+
+.atom-snackbar[data-variant="warning"] {
+    background: var(--atom-color-warning-text);
+}
+
+.atom-snackbar[data-variant="danger"] {
+    background: var(--atom-color-danger-text);
+}
+
+@media (max-width: 640px) {
+    .atom-snackbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .atom-snackbar__actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
 }

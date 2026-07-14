@@ -30,7 +30,7 @@
             <?= $context->fragment($component->content) ?>
         </section>
     </main>
-    <script src="/atom/framework/resources/atom.js?v=7"></script>
+    <script src="/atom/framework/resources/atom.js?v=9"></script>
     <script src="/atom/framework/resources/morphdom.js?v=2.7.8"></script>
     <script src="/atom/framework/resources/atom-morphdom.js?v=3"></script>
 </body>

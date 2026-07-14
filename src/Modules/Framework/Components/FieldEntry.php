@@ -18,6 +18,7 @@ abstract class FieldEntry implements ComponentInterface
     public string $label = "";
     public ?string $id = null;
     public ?string $bind = null;
+    public string $help = "";
     public string $class = "";
     public string $invalidClass = "is-invalid";
     #[FromContext("model")]
@@ -25,7 +26,7 @@ abstract class FieldEntry implements ComponentInterface
 
     public function render(): string
     {
-        return $this->field($this->renderControl() . $this->error());
+        return $this->field($this->renderControl() . $this->help() . $this->error());
     }
 
     abstract protected function renderControl(): string;
@@ -47,6 +48,13 @@ abstract class FieldEntry implements ComponentInterface
         return $message === null
             ? ""
             : Html::tag("p", ["id" => $this->fieldId() . "-error", "class" => "atom-field-error"], Html::escape($message));
+    }
+
+    protected function help(): string
+    {
+        return $this->help === ""
+            ? ""
+            : Html::tag("p", ["id" => $this->fieldId() . "-help", "class" => "atom-field-help"], Html::escape($this->help));
     }
 
     protected function fieldId(): string
@@ -80,6 +88,21 @@ abstract class FieldEntry implements ComponentInterface
     protected function hasError(): bool
     {
         return $this->page->errors()->has($this->boundName());
+    }
+
+    protected function describedBy(): ?string
+    {
+        $ids = [];
+
+        if ($this->help !== "") {
+            $ids[] = $this->fieldId() . "-help";
+        }
+
+        if ($this->hasError()) {
+            $ids[] = $this->fieldId() . "-error";
+        }
+
+        return $ids === [] ? null : implode(" ", $ids);
     }
 
     protected function boundName(): string

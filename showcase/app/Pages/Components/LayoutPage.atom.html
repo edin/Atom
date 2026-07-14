@@ -42,6 +42,37 @@
         </AppShell>
     </ComponentExample>
 
+    <ComponentExample title="Split view" description="SplitView keeps the primary content visible while a right pane handles editing or details.">
+        <SplitView :model="$this->editor" sideWidth="360px">
+            <Panel title="Articles" description="Clicking edit in a real page can open the side pane.">
+                <Stack gap="sm">
+                    <Inline justify="between" align="center">
+                        <span>Building an Atom admin</span>
+                        <Button size="sm" appearance="soft" atom:action="editor.open(1)">Edit</Button>
+                    </Inline>
+
+                    <Inline justify="between" align="center">
+                        <span>Component showcase notes</span>
+                        <Button size="sm" appearance="soft" atom:action="editor.open(2)">Edit</Button>
+                    </Inline>
+                </Stack>
+            </Panel>
+
+            <SplitView.Side>
+                <Panel title="Edit article" description="Side panes are regular fragments, so forms work here too.">
+                    <Stack gap="sm">
+                        <TextField label="Title" name="title" value="Article {{ $this->editor->value }}" />
+                        <TextAreaField label="Summary" name="summary" value="A compact editor that does not hide the table." />
+                        <FormActions align="end">
+                            <Button variant="ghost" atom:action="editor.close()">Cancel</Button>
+                            <Button>Save</Button>
+                        </FormActions>
+                    </Stack>
+                </Panel>
+            </SplitView.Side>
+        </SplitView>
+    </ComponentExample>
+
     <ComponentExample title="Page header" description="PageHeader gives list and editor pages a consistent title, description, and action area.">
         <PageHeader title="Articles" description="Manage blog content and publishing state.">
             <PageHeader.Actions>
@@ -52,8 +83,19 @@
 
     <ComponentExample title="Toolbar" description="Toolbar groups filters, search inputs, and page-level commands.">
         <Toolbar gap="sm">
-            <TextInput name="search" placeholder="Search articles..." />
-            <Button appearance="soft">Search</Button>
+            <Toolbar.Start>
+                <TextInput name="search" placeholder="Search articles..." />
+                <Button appearance="soft" icon="fa-solid fa-magnifying-glass">Search</Button>
+            </Toolbar.Start>
+
+            <Toolbar.End>
+                <ButtonGroup>
+                    <Button shape="square" icon="fa-solid fa-list" aria-label="List view" />
+                    <Button shape="square" icon="fa-solid fa-table-cells" aria-label="Table view" />
+                </ButtonGroup>
+
+                <Button variant="primary" icon="fa-solid fa-plus">New article</Button>
+            </Toolbar.End>
         </Toolbar>
     </ComponentExample>
 

@@ -18,6 +18,10 @@ final class PagedCollectionTest extends TestCase
         $this->assertSame(2, $collection->getPageSize());
         $this->assertSame(2, $collection->getCurrentPage());
         $this->assertSame(3, $collection->getTotalPages());
+        $this->assertSame(2, $collection->page());
+        $this->assertSame(2, $collection->pageSize());
+        $this->assertSame(5, $collection->totalCount());
+        $this->assertSame(3, $collection->totalPages());
         $this->assertTrue($collection->hasPrevious());
         $this->assertTrue($collection->hasNext());
     }

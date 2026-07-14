@@ -9,10 +9,54 @@
 <Stack gap="md">
     <ComponentExample title="Variants" description="Button variants are exposed as data attributes so styling can stay in CSS.">
         <Inline gap="sm">
-            <Button>Default</Button>
+            <Button>Neutral</Button>
+            <Button variant="primary">Primary</Button>
             <Button variant="secondary">Secondary</Button>
             <Button variant="ghost">Ghost</Button>
+            <Button variant="info">Info</Button>
+            <Button variant="success">Success</Button>
+            <Button variant="warning">Warning</Button>
             <Button variant="danger">Danger</Button>
+        </Inline>
+    </ComponentExample>
+
+    <ComponentExample title="Icon actions" description="Shape keeps icon-only buttons visually balanced inside compact surfaces.">
+        <Inline gap="sm" align="center">
+            <Button shape="square" appearance="soft" icon="fa-solid fa-pen" aria-label="Edit article" />
+            <Button shape="rounded" variant="primary" icon="fa-solid fa-thumbtack" aria-label="Pin article" />
+            <Button shape="circle" variant="danger" appearance="soft" icon="fa-solid fa-trash" aria-label="Delete article" />
+        </Inline>
+    </ComponentExample>
+
+    <ComponentExample title="Button icons" description="Use icon and icon-right for common action labels.">
+        <Inline gap="sm">
+            <Button variant="primary" icon="fa-solid fa-plus">Create article</Button>
+            <Button appearance="soft" icon-right="fa-solid fa-arrow-right">Continue</Button>
+        </Inline>
+    </ComponentExample>
+
+    <ComponentExample title="Button groups" description="Join related actions into one compact control.">
+        <Stack gap="sm">
+            <ButtonGroup>
+                <Button icon="fa-solid fa-list">List</Button>
+                <Button icon="fa-solid fa-table-cells">Table</Button>
+                <Button icon="fa-solid fa-chart-simple">Stats</Button>
+            </ButtonGroup>
+
+            <ButtonGroup>
+                <Button shape="square" icon="fa-solid fa-align-left" aria-label="Align left" />
+                <Button shape="square" icon="fa-solid fa-align-center" aria-label="Align center" />
+                <Button shape="square" icon="fa-solid fa-align-right" aria-label="Align right" />
+            </ButtonGroup>
+        </Stack>
+    </ComponentExample>
+
+    <ComponentExample title="States" description="Disabled and loading states work for buttons and anchors.">
+        <Inline gap="sm">
+            <Button disabled>Disabled</Button>
+            <Button variant="primary" loading>Saving</Button>
+            <Button href="/" disabled atom:navigate>Disabled link</Button>
+            <Button shape="square" appearance="soft" loading aria-label="Loading" />
         </Inline>
     </ComponentExample>
 
@@ -28,7 +72,7 @@
         <Form submit="noop">
             <TextField label="Example title" name="title" value="A form field next to buttons" />
             <FormActions>
-                <Button type="submit">Save</Button>
+                <Button type="submit" variant="primary">Save</Button>
                 <Button type="button" variant="ghost">Cancel</Button>
             </FormActions>
         </Form>

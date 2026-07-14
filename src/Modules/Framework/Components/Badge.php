@@ -15,7 +15,7 @@ final class Badge implements ComponentInterface
     public AttributeBag $attributes;
     public string $text = "";
     public string $variant = "primary";
-    public string $appearance = "soft";
+    public string $appearance = "";
     public string $size = "";
     public string $class = "";
 
