@@ -15,4 +15,9 @@ final readonly class FromFile implements SourceAttributeInterface
     {
         return "file";
     }
+
+    public function name(): ?string
+    {
+        return $this->name;
+    }
 }

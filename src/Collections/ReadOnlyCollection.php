@@ -10,6 +10,7 @@ use IteratorAggregate;
 use JsonSerializable;
 use Traversable;
 
+/** @phpstan-consistent-constructor */
 class ReadOnlyCollection implements Countable, IteratorAggregate, JsonSerializable
 {
     protected array $items = [];

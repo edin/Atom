@@ -15,4 +15,9 @@ final readonly class FromQuery implements SourceAttributeInterface
     {
         return "query";
     }
+
+    public function name(): ?string
+    {
+        return $this->name;
+    }
 }

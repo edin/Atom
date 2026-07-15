@@ -202,13 +202,7 @@ final class RouteEntry
 
     public function getMethodList(): string
     {
-        if (is_array($this->method)) {
-            return implode("|", $this->method);
-        } elseif (is_string($this->method)) {
-            return $this->method;
-        }
-
-        return "";
+        return is_array($this->method) ? implode("|", $this->method) : $this->method;
     }
 
     public function getRouteAction(): RouteAction

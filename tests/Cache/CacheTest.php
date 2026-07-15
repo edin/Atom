@@ -138,6 +138,24 @@ final class CacheTest extends TestCase
         $cache->increment("name");
     }
 
+    public function testIncrementRejectsPositiveIntegerOverflow(): void
+    {
+        $cache = $this->cache();
+        $cache->set("counter", PHP_INT_MAX);
+
+        $this->expectException(CacheException::class);
+        $cache->increment("counter");
+    }
+
+    public function testIncrementRejectsNegativeIntegerOverflow(): void
+    {
+        $cache = $this->cache();
+        $cache->set("counter", PHP_INT_MIN);
+
+        $this->expectException(CacheException::class);
+        $cache->increment("counter", -1);
+    }
+
     public function testPrefixesAreIsolatedAndClearOnlyAffectsCurrentPrefix(): void
     {
         $directory = $this->directory();

@@ -297,7 +297,7 @@ final class Injector
         throw new DependencyResolutionException("Unable to resolve parameter '{$parameter->getName()}'.");
     }
 
-    private function reflectCallable(callable|array $callback): ReflectionFunctionAbstract
+    private function reflectCallable(callable|array $callback): ReflectionFunction|ReflectionMethod
     {
         if (is_array($callback)) {
             return new ReflectionMethod($callback[0], $callback[1]);

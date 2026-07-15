@@ -11,6 +11,7 @@ use Atom\Database\Orm\Relation\BelongsToRelation;
 use Atom\Database\Orm\Relation\HasManyRelation;
 use Atom\Database\Orm\Relation\HasOneRelation;
 use Atom\Database\Orm\Relation\Relation;
+use LogicException;
 use ReflectionProperty;
 
 final readonly class RelationMetadata
@@ -83,6 +84,7 @@ final readonly class RelationMetadata
             self::BELONGS_TO => new BelongsToRelation($this, $metadataFactory),
             self::HAS_ONE => new HasOneRelation($this, $metadataFactory),
             self::HAS_MANY => new HasManyRelation($this, $metadataFactory),
+            default => throw new LogicException("Unsupported relation type '{$this->type}'."),
         };
     }
 }

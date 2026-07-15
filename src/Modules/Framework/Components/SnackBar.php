@@ -64,19 +64,18 @@ final class SnackBar implements ComponentInterface
 
     private function bindFlash(): void
     {
+        $page = $this->page();
         if (
             !$this->flash ||
-            $this->page() === null ||
-            !$this->page()->hasFlash() ||
+            $page === null ||
+            !$page->hasFlash() ||
             $this->hasExplicitContent()
         ) {
             return;
         }
 
-        $page = $this->page();
-
-        $this->text = $page?->flashMessage() !== "" ? $page->flashMessage() : ($page?->flashTitle() ?? "");
-        $this->variant = $page?->flashVariant() ?? $this->variant;
+        $this->text = $page->flashMessage() !== "" ? $page->flashMessage() : $page->flashTitle();
+        $this->variant = $page->flashVariant();
     }
 
     private function shouldShow(): bool

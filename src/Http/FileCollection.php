@@ -19,7 +19,7 @@ final class FileCollection implements Countable, IteratorAggregate, JsonSerializ
     private array $files = [];
 
     /**
-     * @param array<string, mixed> $files
+     * @param array<string, mixed> $rawFiles
      */
     public function __construct(private array $rawFiles = [])
     {

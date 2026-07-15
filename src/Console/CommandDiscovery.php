@@ -78,7 +78,7 @@ final class CommandDiscovery
     {
         $relative = substr($file, strlen($directory) + 1);
 
-        if ($relative === false || !str_ends_with($relative, ".php")) {
+        if (!str_ends_with($relative, ".php")) {
             return null;
         }
 
@@ -88,4 +88,3 @@ final class CommandDiscovery
         return $namespace . "\\" . $class;
     }
 }
-

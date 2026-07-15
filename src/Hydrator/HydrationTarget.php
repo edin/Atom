@@ -10,7 +10,6 @@ use ReflectionAttribute;
 use ReflectionNamedType;
 use ReflectionParameter;
 use ReflectionProperty;
-use Reflector;
 
 final readonly class HydrationTarget
 {
@@ -44,7 +43,7 @@ final readonly class HydrationTarget
 
         $sourceAttribute = $this->sourceAttribute($reflection);
         $this->source = $sourceAttribute?->source();
-        $this->sourceName = $sourceAttribute?->name ?? $this->name;
+        $this->sourceName = $sourceAttribute?->name() ?? $this->name;
         $this->raw = $reflection->getAttributes(Raw::class) !== [];
         $this->transformers = $this->transformers($reflection);
     }
@@ -82,7 +81,7 @@ final readonly class HydrationTarget
             : $reflection->getDefaultValue();
     }
 
-    private function sourceAttribute(Reflector $reflection): ?SourceAttributeInterface
+    private function sourceAttribute(ReflectionProperty|ReflectionParameter $reflection): ?SourceAttributeInterface
     {
         foreach ($reflection->getAttributes(SourceAttributeInterface::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {
             return $attribute->newInstance();
@@ -94,7 +93,7 @@ final readonly class HydrationTarget
     /**
      * @return ValueTransformerInterface[]
      */
-    private function transformers(Reflector $reflection): array
+    private function transformers(ReflectionProperty|ReflectionParameter $reflection): array
     {
         $transformers = [];
         foreach ($reflection->getAttributes(ValueTransformerInterface::class, ReflectionAttribute::IS_INSTANCEOF) as $attribute) {

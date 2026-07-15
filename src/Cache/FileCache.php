@@ -147,10 +147,13 @@ final readonly class FileCache implements CacheInterface, PrunableCacheInterface
                 if (!is_int($item["value"])) {
                     throw new CacheException("Cache value must be an integer to increment it.");
                 }
-                $value = $item["value"] + $amount;
-                if (!is_int($value)) {
+                if (
+                    ($amount > 0 && $item["value"] > PHP_INT_MAX - $amount) ||
+                    ($amount < 0 && $item["value"] < PHP_INT_MIN - $amount)
+                ) {
                     throw new CacheException("Cache increment overflowed the integer range.");
                 }
+                $value = $item["value"] + $amount;
                 $expiresAt = $item["expiresAt"];
             }
             if ($expiresAt === null || $expiresAt > $this->now()) {

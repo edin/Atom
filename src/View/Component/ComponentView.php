@@ -24,6 +24,8 @@ final readonly class ComponentView
             ...$variables,
         ];
 
+        $bufferLevel = ob_get_level();
+
         try {
             ob_start();
 
@@ -36,7 +38,7 @@ final readonly class ComponentView
 
             return ob_get_clean() ?: "";
         } catch (Throwable $exception) {
-            if (ob_get_level() > 0) {
+            while (ob_get_level() > $bufferLevel) {
                 ob_end_clean();
             }
 

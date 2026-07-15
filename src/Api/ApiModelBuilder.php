@@ -403,6 +403,6 @@ final class ApiModelBuilder
     {
         preg_match_all('/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/', $path, $matches);
 
-        return $matches[1] ?? [];
+        return $matches[1];
     }
 }

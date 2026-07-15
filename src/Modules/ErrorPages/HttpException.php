@@ -10,7 +10,7 @@ use Throwable;
 class HttpException extends RuntimeException implements HttpExceptionInterface
 {
     /**
-     * @param array<string, string> $headers
+     * @param array<string, string> $httpHeaders
      */
     public function __construct(
         private readonly int $httpStatus,

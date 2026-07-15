@@ -87,20 +87,19 @@ final class Toast implements ComponentInterface
 
     private function bindFlash(): void
     {
+        $page = $this->page();
         if (
             !$this->flash ||
-            $this->page() === null ||
-            !$this->page()->hasFlash() ||
+            $page === null ||
+            !$page->hasFlash() ||
             $this->hasExplicitContent()
         ) {
             return;
         }
 
-        $page = $this->page();
-
-        $this->title = $page?->flashTitle() ?? "";
-        $this->description = $page?->flashMessage() ?? "";
-        $this->variant = $page?->flashVariant() ?? $this->variant;
+        $this->title = $page->flashTitle();
+        $this->description = $page->flashMessage();
+        $this->variant = $page->flashVariant();
     }
 
     private function shouldShow(): bool

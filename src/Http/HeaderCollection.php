@@ -78,7 +78,7 @@ final class HeaderCollection implements Countable, IteratorAggregate, JsonSerial
     }
 
     /**
-     * @return string[]
+     * @return ($name is null ? array<string, string[]> : string[])
      */
     public function all(?string $name = null): array
     {

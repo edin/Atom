@@ -1,0 +1,9 @@
+parameters:
+    level: 4
+    paths:
+        - src
+    tmpDir: resource/cache/phpstan
+    treatPhpDocTypesAsCertain: false
+    excludePaths:
+        analyse:
+            - src/Modules/ErrorPages/Views/*.php

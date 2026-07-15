@@ -15,4 +15,9 @@ final readonly class FromHeader implements SourceAttributeInterface
     {
         return "header";
     }
+
+    public function name(): ?string
+    {
+        return $this->name;
+    }
 }

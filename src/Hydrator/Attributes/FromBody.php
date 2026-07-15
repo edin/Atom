@@ -15,4 +15,9 @@ final readonly class FromBody implements SourceAttributeInterface
     {
         return "body";
     }
+
+    public function name(): ?string
+    {
+        return $this->name;
+    }
 }

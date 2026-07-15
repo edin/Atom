@@ -15,4 +15,9 @@ final readonly class FromRoute implements SourceAttributeInterface
     {
         return "route";
     }
+
+    public function name(): ?string
+    {
+        return $this->name;
+    }
 }

@@ -35,8 +35,10 @@ From the framework root:
 
 ```powershell
 composer install
-vendor\bin\phpunit.bat tests
+composer check
 ```
+
+Run checks individually with `composer analyse` and `composer test`.
 
 From the sample app:
 

@@ -183,10 +183,10 @@ final readonly class DefaultErrorPageHandler implements ErrorPageHandlerInterfac
                 "exception" => $page->exception,
             ];
 
-            $requestId = $page->request->headers()->get(
-                $this->requestIds?->headerName ?? "X-Request-Id",
-                ""
-            ) ?? "";
+            $requestIdHeader = $this->requestIds === null
+                ? "X-Request-Id"
+                : $this->requestIds->headerName;
+            $requestId = $page->request->headers()->get($requestIdHeader, "") ?? "";
             if ($requestId !== "") {
                 $context["request_id"] = $requestId;
             }
