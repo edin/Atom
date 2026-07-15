@@ -90,6 +90,14 @@ final readonly class Request
         );
     }
 
+    public function withHeader(string $name, string $value): self
+    {
+        $headers = new HeaderCollection($this->headers->toArray());
+        $headers->set($name, $value);
+
+        return $this->withServerParams($this->server->toArray(), $headers->toArray());
+    }
+
     public function getPath(): string
     {
         return $this->path === "" ? "/" : $this->path;

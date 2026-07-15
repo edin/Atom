@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Atom\View\Ast;
 
-final readonly class IfNode implements ViewNode
+final readonly class IfNode implements ViewNodeInterface
 {
     public string $condition;
 
-    /** @var ViewNode[] */
+    /** @var ViewNodeInterface[] */
     public array $then;
 
     /**
      * @param IfBranchNode[] $branches
-     * @param ViewNode[] $else
+     * @param ViewNodeInterface[] $else
      */
     public function __construct(
         public array $branches,

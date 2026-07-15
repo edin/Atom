@@ -12,7 +12,7 @@ use Atom\View\Ast\ElementNode;
 use Atom\View\Ast\ExpressionNode;
 use Atom\View\Ast\FragmentNode;
 use Atom\View\Ast\TextNode;
-use Atom\View\Ast\ViewNode;
+use Atom\View\Ast\ViewNodeInterface;
 use Atom\View\Render\ExpressionEvaluatorInterface;
 use Atom\View\Render\ViewContext;
 use Atom\View\Render\ViewRenderException;
@@ -35,7 +35,7 @@ final readonly class ComponentHydrator
     }
 
     /**
-     * @param Closure(array<int, ViewNode>, ViewContext): string $renderNodes
+     * @param Closure(array<int, ViewNodeInterface>, ViewContext): string $renderNodes
      */
     public function hydrate(ComponentInterface $component, ElementNode $node, ViewContext $context, Closure $renderNodes): void
     {
@@ -156,8 +156,8 @@ final readonly class ComponentHydrator
     }
 
     /**
-     * @param Closure(array<int, ViewNode>, ViewContext): string $renderNodes
-     * @return ViewNode[]
+     * @param Closure(array<int, ViewNodeInterface>, ViewContext): string $renderNodes
+     * @return ViewNodeInterface[]
      */
     private function assignChildren(ComponentInterface $component, ElementNode $node, ViewContext $context, Closure $renderNodes): array
     {
@@ -250,8 +250,8 @@ final readonly class ComponentHydrator
     }
 
     /**
-     * @param ViewNode[] $children
-     * @param Closure(array<int, ViewNode>, ViewContext): string $renderNodes
+     * @param ViewNodeInterface[] $children
+     * @param Closure(array<int, ViewNodeInterface>, ViewContext): string $renderNodes
      */
     private function assignFragments(ComponentInterface $component, ElementNode $node, array $children, ViewContext $context, Closure $renderNodes): void
     {
@@ -294,7 +294,7 @@ final readonly class ComponentHydrator
     }
 
     /**
-     * @param ViewNode[] $content
+     * @param ViewNodeInterface[] $content
      */
     private function hasMeaningfulContent(array $content): bool
     {
@@ -562,7 +562,7 @@ final readonly class ComponentHydrator
     }
 
     /**
-     * @param ViewNode[] $content
+     * @param ViewNodeInterface[] $content
      */
     private function firstContentNode(array $content): string
     {

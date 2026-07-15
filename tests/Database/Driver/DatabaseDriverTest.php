@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atom\Tests\Database\Driver;
 
-use Atom\Database\DatabaseDriver;
+use Atom\Database\DatabaseDriverInterface;
 use Atom\Database\Driver\MySqlDriver;
 use Atom\Database\Driver\PostgresDriver;
 use Atom\Database\Driver\SqliteDriver;
@@ -35,7 +35,7 @@ final class DatabaseDriverTest extends TestCase
     {
         $driver = new MySqlDriver("atom", "localhost", "root", "secret");
 
-        $this->assertInstanceOf(DatabaseDriver::class, $driver);
+        $this->assertInstanceOf(DatabaseDriverInterface::class, $driver);
         $this->assertInstanceOf(MySqlCompiler::class, $driver->compiler());
         $this->assertInstanceOf(MySqlSchemaCompiler::class, $driver->schemaCompiler());
         $this->assertInstanceOf(MySqlSchemaInspector::class, $driver->schemaInspector(new DatabaseConnection($driver)));
@@ -48,7 +48,7 @@ final class DatabaseDriverTest extends TestCase
     {
         $driver = SqliteDriver::memory();
 
-        $this->assertInstanceOf(DatabaseDriver::class, $driver);
+        $this->assertInstanceOf(DatabaseDriverInterface::class, $driver);
         $this->assertInstanceOf(SqliteCompiler::class, $driver->compiler());
         $this->assertInstanceOf(DatabaseSqliteSchemaCompiler::class, $driver->schemaCompiler());
         $this->assertInstanceOf(SqliteSchemaInspector::class, $driver->schemaInspector(new DatabaseConnection($driver)));
@@ -61,7 +61,7 @@ final class DatabaseDriverTest extends TestCase
     {
         $driver = new PostgresDriver("atom", "localhost", "root", "secret");
 
-        $this->assertInstanceOf(DatabaseDriver::class, $driver);
+        $this->assertInstanceOf(DatabaseDriverInterface::class, $driver);
         $this->assertInstanceOf(PostgresCompiler::class, $driver->compiler());
         $this->assertInstanceOf(PostgresSchemaCompiler::class, $driver->schemaCompiler());
         $this->assertInstanceOf(PostgresSchemaInspector::class, $driver->schemaInspector(new DatabaseConnection($driver)));

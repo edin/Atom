@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Atom\Tests;
 
 use Atom\Application;
-use Atom\Bootstrapper;
-use Atom\BootstrapProvider;
+use Atom\BootstrapperInterface;
+use Atom\BootstrapProviderInterface;
 use Atom\Bootstrappers;
 use Atom\Config\Config;
 use Atom\Config\Options;
@@ -21,6 +21,7 @@ use Atom\Http\Cookie;
 use Atom\Http\CorsMiddleware;
 use Atom\Http\CorsOptions;
 use Atom\Http\MiddlewareRegistry;
+use Atom\Http\RequestIdMiddleware;
 use Atom\Page\PageRegistry;
 use Atom\Profiler\Profile;
 use Atom\Profiler\Profiler;
@@ -91,6 +92,19 @@ final class ApplicationTest extends TestCase
         $this->assertSame(204, $response->getStatus());
         $this->assertSame("https://app.example.com", $response->headers()->get("Access-Control-Allow-Origin"));
         $this->assertContains(CorsMiddleware::class, $app->getMiddlewares()->all());
+    }
+
+    public function testGlobalResponseMiddlewareProcessesRenderedExceptions(): void
+    {
+        $app = new TestCorsApplication();
+
+        $response = $app->handle(new Request("GET", "/explode"));
+
+        $this->assertSame(500, $response->getStatus());
+        $this->assertMatchesRegularExpression(
+            '/^[a-f0-9]{32}$/',
+            $response->headers()->get("X-Request-Id", "") ?? ""
+        );
     }
 
     public function testQueuedCookieIsAppliedWhenActionReturnsDifferentResponse(): void
@@ -306,7 +320,7 @@ final class TestBootstrapperApplication extends Application
     }
 }
 
-final readonly class TestBootstrapperProvider implements ServiceProviderInterface, BootstrapProvider
+final readonly class TestBootstrapperProvider implements ServiceProviderInterface, BootstrapProviderInterface
 {
     public function __construct(private TestBootstrapperApplication $app)
     {
@@ -322,7 +336,7 @@ final readonly class TestBootstrapperProvider implements ServiceProviderInterfac
     }
 }
 
-final readonly class TestBootstrapper implements Bootstrapper
+final readonly class TestBootstrapper implements BootstrapperInterface
 {
     public function __construct(private TestBootstrapperApplication $app)
     {
@@ -455,12 +469,17 @@ final class TestCorsApplication extends Application
 
     protected function middlewares(MiddlewareRegistry $middlewares): void
     {
-        $middlewares->add(CorsMiddleware::class);
+        $middlewares
+            ->add(RequestIdMiddleware::class)
+            ->add(CorsMiddleware::class);
     }
 
     protected function bootstrap(Injector $injector): void
     {
         Route::get("/api", fn(): string => "api");
+        Route::get("/explode", static function (): never {
+            throw new \RuntimeException("route failed");
+        });
     }
 }
 

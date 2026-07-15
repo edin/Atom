@@ -99,6 +99,21 @@ final class CorsTest extends TestCase
         $this->assertFalse($response->headers()->has("Vary"));
     }
 
+    public function testWildcardAllowedHeadersStillRejectsMalformedRequestedHeader(): void
+    {
+        $response = (new CorsMiddleware(new CorsOptions(
+            allowedOrigins: "https://app.example.com",
+            allowedHeaders: "*"
+        )))->process(new Request("OPTIONS", "/api", headers: [
+            "Origin" => "https://app.example.com",
+            "Access-Control-Request-Method" => "GET",
+            "Access-Control-Request-Headers" => "X-Good\r\nInjected",
+        ]), new CorsTestHandler());
+
+        $this->assertSame(403, $response->getStatus());
+        $this->assertFalse($response->headers()->has("Access-Control-Allow-Headers"));
+    }
+
     public function testWildcardOriginWithCredentialsIsRejected(): void
     {
         $this->expectException(InvalidArgumentException::class);

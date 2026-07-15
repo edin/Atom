@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Atom\Modules\ApiExplorer\UI\Pages;
 
 use Atom\Api\ApiDescription;
-use Atom\Modules\ApiExplorer\ApiExplorerConfig;
+use Atom\Modules\ApiExplorer\ApiExplorerOptions;
 use Atom\Api\ApiModelBuilder;
 use Atom\Modules\ApiExplorer\UI\Models\ApiOperationDescriptor;
 use Atom\Di\InjectionContext;
@@ -90,7 +90,7 @@ final class ApiExplorerPage extends Page
 
     public function resourcePath(): string
     {
-        return $this->config()->resourcePath;
+        return $this->options()->resourcePath;
     }
 
     private function normalizeSelectedId(int $id): int
@@ -120,16 +120,16 @@ final class ApiExplorerPage extends Page
 
     private function apiPathPrefix(): string
     {
-        return $this->config()->apiPathPrefix;
+        return $this->options()->apiPathPrefix;
     }
 
-    private function config(): ApiExplorerConfig
+    private function options(): ApiExplorerOptions
     {
-        $config = $this->route?->getRouteEntry()->getMetadataOfType(ApiExplorerConfig::class);
+        $options = $this->route?->getRouteEntry()->getMetadataOfType(ApiExplorerOptions::class);
 
-        return $config instanceof ApiExplorerConfig
-            ? $config
-            : new ApiExplorerConfig("/atom/api/resources", "/atom/api/explorer");
+        return $options instanceof ApiExplorerOptions
+            ? $options
+            : new ApiExplorerOptions("/atom/api/resources", "/atom/api/explorer");
     }
 
     /**

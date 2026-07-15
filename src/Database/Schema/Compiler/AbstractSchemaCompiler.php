@@ -10,7 +10,7 @@ use Atom\Database\Schema\IndexDefinition;
 use Atom\Database\Schema\Operation\AddTableOperation;
 use Atom\Database\Schema\Operation\AlterTableOperation;
 use Atom\Database\Schema\Operation\DropTableOperation;
-use Atom\Database\Schema\Operation\SchemaOperation;
+use Atom\Database\Schema\Operation\SchemaOperationInterface;
 use Atom\Database\Schema\Schema;
 use Atom\Database\Schema\SchemaCommandBatch;
 use Atom\Database\Schema\SchemaPlan;
@@ -47,7 +47,7 @@ abstract class AbstractSchemaCompiler implements SchemaCompilerInterface
     /**
      * @return Command[]
      */
-    protected function compileOperation(SchemaOperation $operation): array
+    protected function compileOperation(SchemaOperationInterface $operation): array
     {
         return match (true) {
             $operation instanceof AddTableOperation => [$this->compileCreateTable($operation->table)],
@@ -118,7 +118,7 @@ abstract class AbstractSchemaCompiler implements SchemaCompilerInterface
     /**
      * @return Command[]
      */
-    protected function compileIndexes(SchemaOperation $operation): array
+    protected function compileIndexes(SchemaOperationInterface $operation): array
     {
         if (!$operation instanceof AddTableOperation && !$operation instanceof AlterTableOperation) {
             return [];

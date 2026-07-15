@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Atom\Tests\Collections;
 
 use Atom\Collections\Collection;
@@ -9,14 +11,14 @@ use PHPUnit\Framework\TestCase;
 
 final class SetTest extends TestCase
 {
-    private $set;
+    private Set $set;
 
     protected function setUp(): void
     {
         $this->set = Set::from([1, 2]);
     }
 
-    public function testInstanceType()
+    public function testInstanceType(): void
     {
         $this->assertInstanceOf(Set::class, $this->set);
         $this->assertInstanceOf(ReadOnlyCollection::class, $this->set);
@@ -47,20 +49,20 @@ final class SetTest extends TestCase
         $this->assertSame([2], $this->set->toArray());
     }
 
-    public function testUnion()
+    public function testUnion(): void
     {
         $set = $this->set->union([3, 4]);
         $this->assertCount(4, $set);
     }
 
-    public function testUnionOverlaping()
+    public function testUnionOverlapping(): void
     {
         $set = $this->set->union([2, 3]);
         $this->assertCount(3, $set);
         $this->assertSame([1, 2, 3], $set->toArray());
     }
 
-    public function testIntersect()
+    public function testIntersect(): void
     {
         $set = $this->set->intersect([2, 3]);
         $this->assertCount(1, $set);

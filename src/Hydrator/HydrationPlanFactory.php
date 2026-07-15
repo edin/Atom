@@ -18,16 +18,27 @@ final class HydrationPlanFactory
         }
 
         $reflection = new ReflectionClass($className);
+        $constructorParameters = [];
+        $promoted = [];
+        $constructor = $reflection->getConstructor();
+        if ($constructor !== null) {
+            foreach ($constructor->getParameters() as $parameter) {
+                $constructorParameters[] = HydrationTarget::fromParameter($parameter);
+                if ($parameter->isPromoted()) {
+                    $promoted[$parameter->getName()] = true;
+                }
+            }
+        }
         $properties = [];
 
         foreach ($reflection->getProperties() as $property) {
-            if ($property->isStatic() || $property->isReadOnly()) {
+            if ($property->isStatic() || $property->isReadOnly() || isset($promoted[$property->getName()])) {
                 continue;
             }
 
             $properties[] = HydrationTarget::fromProperty($property);
         }
 
-        return $this->plans[$className] = new HydrationPlan($reflection, $properties);
+        return $this->plans[$className] = new HydrationPlan($reflection, $constructorParameters, $properties);
     }
 }

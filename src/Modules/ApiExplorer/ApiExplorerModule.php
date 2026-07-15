@@ -27,7 +27,7 @@ final readonly class ApiExplorerModule implements ModuleInterface
 
         $resourcePath = $context->resourcePath();
         $pagePath = $context->mountedPath("/explorer");
-        $config = new ApiExplorerConfig($resourcePath, $pagePath, $this->apiPathPrefix);
+        $options = new ApiExplorerOptions($resourcePath, $pagePath, $this->apiPathPrefix);
         foreach ($context->resources("/resources", __DIR__ . "/UI/Resources") as $entry) {
             $entry->metadata(new ApiHidden());
         }
@@ -38,7 +38,7 @@ final readonly class ApiExplorerModule implements ModuleInterface
         $context->component("ApiExplorer.TryRequest", TryRequestPanel::class);
 
         foreach ($context->pages(__DIR__ . "/UI/Pages") as $entry) {
-            $entry->metadata($config);
+            $entry->metadata($options);
             $entry->metadata(new ApiHidden());
         }
 
@@ -51,7 +51,7 @@ final readonly class ApiExplorerModule implements ModuleInterface
                 ->name("atom.api-explorer")
                 ->title("API Explorer")
                 ->description("Inspect registered API routes.")
-                ->metadata($config)
+                ->metadata($options)
                 ->metadata(new ApiHidden())
         );
 

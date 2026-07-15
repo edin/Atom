@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atom\Database;
 
-use Atom\BootstrapProvider;
+use Atom\BootstrapProviderInterface;
 use Atom\Bootstrappers;
 use Atom\Config\Config;
 use Atom\Console\ConsoleCommandProviderInterface;
@@ -29,10 +29,10 @@ use Atom\Database\Seeder\SeederOptions;
 use Atom\Database\Seeder\SeederRunner;
 use Atom\Support\Paths;
 
-final readonly class DatabaseServices implements ServiceProviderInterface, ConsoleCommandProviderInterface, BootstrapProvider
+final readonly class DatabaseServices implements ServiceProviderInterface, ConsoleCommandProviderInterface, BootstrapProviderInterface
 {
     public function __construct(
-        private DatabaseDriver $driver,
+        private DatabaseDriverInterface $driver,
         private MigrationOptions $migrations = new MigrationOptions(),
         private SeederOptions $seeders = new SeederOptions()
     ) {
@@ -53,7 +53,7 @@ final readonly class DatabaseServices implements ServiceProviderInterface, Conso
 
     public function register(Bindings $bindings): void
     {
-        $bindings->value(DatabaseDriver::class, $this->driver);
+        $bindings->value(DatabaseDriverInterface::class, $this->driver);
 
         $bindings->bind(DatabaseConnection::class)
             ->toSelf()
@@ -72,7 +72,7 @@ final readonly class DatabaseServices implements ServiceProviderInterface, Conso
             ->singleton();
 
         $bindings->bind(DatabaseResetterInterface::class)
-            ->toFactory(fn(Injector $injector): DatabaseResetterInterface => $injector->get(DatabaseDriver::class)->resetter())
+            ->toFactory(fn(Injector $injector): DatabaseResetterInterface => $injector->get(DatabaseDriverInterface::class)->resetter())
             ->singleton();
 
         $bindings->bind(MigrationOptions::class)
@@ -84,7 +84,7 @@ final readonly class DatabaseServices implements ServiceProviderInterface, Conso
 
         $bindings->bind(DatabaseLockManagerInterface::class)
             ->toFactory(fn(Injector $injector): DatabaseLockManagerInterface => $injector
-                ->get(DatabaseDriver::class)
+                ->get(DatabaseDriverInterface::class)
                 ->lockManager($injector->get(DatabaseConnection::class)))
             ->singleton();
 

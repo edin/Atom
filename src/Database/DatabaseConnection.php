@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Atom\Database;
 
 use Atom\Database\Sql\Command;
-use Atom\Database\Sql\SqlQuery;
+use Atom\Database\Sql\SqlQueryInterface;
 use PDO;
 use Throwable;
 
@@ -13,11 +13,11 @@ final class DatabaseConnection
 {
     private ?PDO $pdo = null;
 
-    public function __construct(private readonly DatabaseDriver $driver)
+    public function __construct(private readonly DatabaseDriverInterface $driver)
     {
     }
 
-    public function driver(): DatabaseDriver
+    public function driver(): DatabaseDriverInterface
     {
         return $this->driver;
     }
@@ -27,7 +27,7 @@ final class DatabaseConnection
         return $this->pdo ??= $this->driver->connect();
     }
 
-    public function compile(SqlQuery $query): Command
+    public function compile(SqlQueryInterface $query): Command
     {
         return $this->driver->compiler()->compile($query);
     }
@@ -35,7 +35,7 @@ final class DatabaseConnection
     /**
      * @param array<string, mixed> $parameters
      */
-    public function execute(string|SqlQuery|Command $query, array $parameters = []): int
+    public function execute(string|SqlQueryInterface|Command $query, array $parameters = []): int
     {
         $statement = $this->prepare($query, $parameters);
         $statement->execute();
@@ -49,7 +49,7 @@ final class DatabaseConnection
      * @param array<string, mixed> $parameters
      * @return array<int, array<string, mixed>>
      */
-    public function all(string|SqlQuery|Command $query, array $parameters = []): array
+    public function all(string|SqlQueryInterface|Command $query, array $parameters = []): array
     {
         $statement = $this->prepare($query, $parameters);
         $statement->execute();
@@ -63,7 +63,7 @@ final class DatabaseConnection
      * @param array<string, mixed> $parameters
      * @return array<string, mixed>|null
      */
-    public function first(string|SqlQuery|Command $query, array $parameters = []): ?array
+    public function first(string|SqlQueryInterface|Command $query, array $parameters = []): ?array
     {
         $statement = $this->prepare($query, $parameters);
         $statement->execute();
@@ -76,7 +76,7 @@ final class DatabaseConnection
     /**
      * @param array<string, mixed> $parameters
      */
-    public function scalar(string|SqlQuery|Command $query, array $parameters = []): mixed
+    public function scalar(string|SqlQueryInterface|Command $query, array $parameters = []): mixed
     {
         $statement = $this->prepare($query, $parameters);
         $statement->execute();
@@ -109,7 +109,7 @@ final class DatabaseConnection
     /**
      * @param array<string, mixed> $parameters
      */
-    private function prepare(string|SqlQuery|Command $query, array $parameters = []): \PDOStatement
+    private function prepare(string|SqlQueryInterface|Command $query, array $parameters = []): \PDOStatement
     {
         $command = match (true) {
             is_string($query) => new Command($query, $parameters),

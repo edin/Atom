@@ -15,21 +15,43 @@ final readonly class RequestHydrator
     public function hydrate(string $className, HydrationContext $context): object
     {
         $plan = $this->plans->for($className);
-        $instance = $plan->createInstance();
+        $arguments = [];
+        foreach ($plan->constructorParameters as $parameter) {
+            $resolved = $context->resolve($parameter->source ?? "auto", $parameter->sourceName);
+            if (!$resolved["found"] && $parameter->hasDefaultValue) {
+                $arguments[] = $parameter->defaultValue;
+                continue;
+            }
+            $arguments[] = $this->coerce($resolved["value"], $parameter, $className);
+        }
+        $instance = $plan->createInstance($arguments);
 
         foreach ($plan->properties as $property) {
-            $value = $context->get($property->source ?? "auto", $property->sourceName);
+            $resolved = $context->resolve($property->source ?? "auto", $property->sourceName);
 
-            if ($value === null && $property->hasDefaultValue) {
+            if (!$resolved["found"] && $property->hasDefaultValue) {
                 continue;
             }
 
             $property->setValue(
                 $instance,
-                $this->coercer->coerce($value, $property, $className)
+                $this->coerce($resolved["value"], $property, $className)
             );
         }
 
         return $instance;
+    }
+
+    private function coerce(mixed $value, HydrationTarget $target, string $className): mixed
+    {
+        return $this->coercer->coerce(
+            $value,
+            $target,
+            $className,
+            fn(string $nestedClass, array $data): object => $this->hydrate(
+                $nestedClass,
+                new HydrationContext(body: $data)
+            )
+        );
     }
 }

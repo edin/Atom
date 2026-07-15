@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atom\Modules\ApiExplorer;
 
-final readonly class ApiExplorerConfig
+final readonly class ApiExplorerOptions
 {
     public function __construct(
         public string $resourcePath,

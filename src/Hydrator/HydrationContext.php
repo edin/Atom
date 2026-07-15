@@ -36,13 +36,42 @@ final readonly class HydrationContext
 
     public function get(string $source, string $name): mixed
     {
+        return $this->resolve($source, $name)["value"];
+    }
+
+    /** @return array{found: bool, value: mixed} */
+    public function resolve(string $source, string $name): array
+    {
         return match ($source) {
-            "body" => $this->body[$name] ?? null,
-            "query" => $this->query[$name] ?? null,
-            "route" => $this->route[$name] ?? null,
-            "header" => $this->request?->headers()->get($name),
-            "file" => $this->request?->files()->get($name),
-            default => $this->body[$name] ?? $this->query[$name] ?? $this->route[$name] ?? null,
+            "body" => $this->arrayValue($this->body, $name),
+            "query" => $this->arrayValue($this->query, $name),
+            "route" => $this->arrayValue($this->route, $name),
+            "header" => $this->request !== null && $this->request->headers()->has($name)
+                ? ["found" => true, "value" => $this->request->headers()->get($name)]
+                : ["found" => false, "value" => null],
+            "file" => $this->request !== null && $this->request->files()->has($name)
+                ? ["found" => true, "value" => $this->request->files()->get($name)]
+                : ["found" => false, "value" => null],
+            default => $this->automaticValue($name),
         };
+    }
+
+    /** @param array<string, mixed> $values @return array{found: bool, value: mixed} */
+    private function arrayValue(array $values, string $name): array
+    {
+        return array_key_exists($name, $values)
+            ? ["found" => true, "value" => $values[$name]]
+            : ["found" => false, "value" => null];
+    }
+
+    /** @return array{found: bool, value: mixed} */
+    private function automaticValue(string $name): array
+    {
+        foreach ([$this->body, $this->query, $this->route] as $values) {
+            if (array_key_exists($name, $values)) {
+                return ["found" => true, "value" => $values[$name]];
+            }
+        }
+        return ["found" => false, "value" => null];
     }
 }

@@ -24,10 +24,10 @@ final readonly class Log
         self::logger()->error($message, $context);
     }
 
-    private static function logger(): Logger
+    private static function logger(): LoggerInterface
     {
-        return Container::has(Logger::class)
-            ? Container::get(Logger::class)
+        return Container::has(LoggerInterface::class)
+            ? Container::get(LoggerInterface::class)
             : new NullLogger();
     }
 }

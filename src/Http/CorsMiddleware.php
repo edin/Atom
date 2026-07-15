@@ -24,6 +24,17 @@ final readonly class CorsMiddleware implements MiddlewareInterface
         $this->headers = $this->list($options->allowedHeaders);
         $this->exposedHeaders = $this->list($options->exposedHeaders);
 
+        foreach ($this->methods as $method) {
+            if (!$this->isToken($method)) {
+                throw new InvalidArgumentException("CORS allowed methods must contain valid HTTP tokens.");
+            }
+        }
+        foreach ([...$this->headers, ...$this->exposedHeaders] as $header) {
+            if ($header !== "*" && !$this->isToken($header)) {
+                throw new InvalidArgumentException("CORS header names must contain valid HTTP tokens.");
+            }
+        }
+
         if ($options->allowCredentials && in_array("*", $this->origins, true)) {
             throw new InvalidArgumentException("CORS wildcard origins cannot be combined with credentials.");
         }
@@ -41,7 +52,7 @@ final readonly class CorsMiddleware implements MiddlewareInterface
 
         $allowedOrigin = $this->allowedOrigin($origin);
         if ($this->isPreflight($request)) {
-            return $this->preflight($request, $origin, $allowedOrigin);
+            return $this->preflight($request, $allowedOrigin);
         }
 
         $response = $handler->handle($request);
@@ -57,14 +68,14 @@ final readonly class CorsMiddleware implements MiddlewareInterface
         return $response;
     }
 
-    private function preflight(Request $request, string $origin, ?string $allowedOrigin): Response
+    private function preflight(Request $request, ?string $allowedOrigin): Response
     {
         $method = strtoupper(trim($request->headers()->get("Access-Control-Request-Method", "") ?? ""));
         $requestedHeaders = $this->list(
             $request->headers()->get("Access-Control-Request-Headers", "") ?? ""
         );
 
-        if ($allowedOrigin === null || !in_array($method, $this->methods, true)
+        if (!$this->isToken($method) || $allowedOrigin === null || !in_array($method, $this->methods, true)
             || !$this->headersAllowed($requestedHeaders)) {
             return (new Response())->status(403)->content("CORS preflight request denied.");
         }
@@ -117,6 +128,11 @@ final readonly class CorsMiddleware implements MiddlewareInterface
     /** @param string[] $requested */
     private function headersAllowed(array $requested): bool
     {
+        foreach ($requested as $header) {
+            if (!$this->isToken($header)) {
+                return false;
+            }
+        }
         if (in_array("*", $this->headers, true)) {
             return true;
         }
@@ -127,6 +143,11 @@ final readonly class CorsMiddleware implements MiddlewareInterface
             }
         }
         return true;
+    }
+
+    private function isToken(string $value): bool
+    {
+        return $value !== "" && preg_match("/^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/D", $value) === 1;
     }
 
     /** @return string[] */

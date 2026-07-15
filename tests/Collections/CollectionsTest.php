@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Atom\Tests\Collections;
 
 use Atom\Collections\Collection;
@@ -9,26 +11,26 @@ use PHPUnit\Framework\TestCase;
 
 final class CollectionsTest extends TestCase
 {
-    private $collection;
+    private ReadOnlyCollection $collection;
 
     protected function setUp(): void
     {
         $this->collection = ReadOnlyCollection::from([1, 2, 3, 4, 5]);
     }
 
-    public function testInstanceType()
+    public function testInstanceType(): void
     {
         $this->assertInstanceOf(ReadOnlyCollection::class, $this->collection);
         $this->assertCount(5, $this->collection);
     }
 
-    public function testFirstAndLast()
+    public function testFirstAndLast(): void
     {
         $this->assertEquals(1, $this->collection->first());
         $this->assertEquals(5, $this->collection->last());
     }
 
-    public function testContains()
+    public function testContains(): void
     {
         $this->assertTrue($this->collection->contains(1));
         $this->assertTrue($this->collection->contains(2));
@@ -56,7 +58,7 @@ final class CollectionsTest extends TestCase
         $this->assertSame("missing", $this->collection->at(10, "missing"));
     }
 
-    public function testFilter()
+    public function testFilter(): void
     {
         $collection = $this->collection->filter(function ($x) {
             return $x > 1;
@@ -85,7 +87,7 @@ final class CollectionsTest extends TestCase
         $this->assertSame(2, $queue->peek());
     }
 
-    public function testMap()
+    public function testMap(): void
     {
         $collection = $this->collection->map(function ($x) {
             return $x * 2;
@@ -97,7 +99,7 @@ final class CollectionsTest extends TestCase
         $this->assertTrue($collection->contains(10));
     }
 
-    public function testFlatMap()
+    public function testFlatMap(): void
     {
         $collection = $this->collection->flatMap(function ($x) {
             return [$x, -$x];
@@ -110,7 +112,7 @@ final class CollectionsTest extends TestCase
         $this->assertTrue($collection->contains(5));
     }
 
-    public function testReduce()
+    public function testReduce(): void
     {
         $value = $this->collection->reduce(function ($a, $b) {
             return $a + $b;
@@ -119,13 +121,13 @@ final class CollectionsTest extends TestCase
         $this->assertEquals(15, $value);
     }
 
-    public function testReverse()
+    public function testReverse(): void
     {
         $collection = $this->collection->reversed();
         $this->assertEquals([5, 4, 3, 2, 1], $collection->toArray());
     }
 
-    public function testConcat()
+    public function testConcat(): void
     {
         $collection = $this->collection->concat([6, 7]);
         $this->assertEquals([1, 2, 3, 4, 5, 6, 7], $collection->toArray());
@@ -148,12 +150,12 @@ final class CollectionsTest extends TestCase
         $this->assertSame(1, $collection->first());
     }
 
-    public function testImplode()
+    public function testImplode(): void
     {
         $this->assertEquals("1,2,3,4,5", $this->collection->implode(","));
     }
 
-    public function testChunkBy()
+    public function testChunkBy(): void
     {
         $chunks = $this->collection->chunkBy(2);
 

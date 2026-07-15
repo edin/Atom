@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Atom\View\Ast;
 
-final readonly class ForEachNode implements ViewNode
+final readonly class ForEachNode implements ViewNodeInterface
 {
     /**
-     * @param ViewNode[] $children
+     * @param ViewNodeInterface[] $children
      */
     public function __construct(
         public string $source,

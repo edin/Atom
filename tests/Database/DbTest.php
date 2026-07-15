@@ -8,7 +8,7 @@ use Atom\Application;
 use Atom\Config\Config;
 use Atom\Database\DatabaseConnection;
 use Atom\Database\DatabaseConfig;
-use Atom\Database\DatabaseDriver;
+use Atom\Database\DatabaseDriverInterface;
 use Atom\Database\DatabasePaths;
 use Atom\Database\DatabaseServices;
 use Atom\Database\Db;
@@ -320,7 +320,7 @@ final class DbTest extends TestCase
         $db = $injector->get(Db::class);
         $connection = $injector->get(DatabaseConnection::class);
 
-        $this->assertSame($driver, $injector->get(DatabaseDriver::class));
+        $this->assertSame($driver, $injector->get(DatabaseDriverInterface::class));
         $this->assertSame($connection, $db->connection());
     }
 
@@ -341,7 +341,7 @@ final class DbTest extends TestCase
             ->add(DatabaseServices::fromConfig($config, $paths))
             ->injector();
 
-        $this->assertSame("sqlite:D:/Atom/storage/app.sqlite", $injector->get(DatabaseDriver::class)->dsn());
+        $this->assertSame("sqlite:D:/Atom/storage/app.sqlite", $injector->get(DatabaseDriverInterface::class)->dsn());
         $this->assertSame("D:/Atom/app/Migrations", $injector->get(\Atom\Database\Migration\MigrationOptions::class)->directory);
         $this->assertSame("D:/Atom/app/Seeders", $injector->get(\Atom\Database\Seeder\SeederOptions::class)->directory);
     }

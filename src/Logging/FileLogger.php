@@ -9,7 +9,7 @@ use JsonException;
 use RuntimeException;
 use Throwable;
 
-final readonly class FileLogger implements Logger
+final readonly class FileLogger implements LoggerInterface
 {
     public function __construct(private string $path)
     {

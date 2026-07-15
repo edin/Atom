@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atom\Database\Sql;
 
-final class SelectQuery implements SqlQuery
+final class SelectQuery implements SqlQueryInterface
 {
     private ?Table $from = null;
     /** @var array<int, Column|SelectExpression> */

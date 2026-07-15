@@ -9,7 +9,7 @@ use Atom\Database\Schema\Inspector\SchemaInspectorInterface;
 use Atom\Database\Schema\Operation\AddTableOperation;
 use Atom\Database\Schema\Operation\AlterTableOperation;
 use Atom\Database\Schema\Operation\DropTableOperation;
-use Atom\Database\Schema\Operation\SchemaOperation;
+use Atom\Database\Schema\Operation\SchemaOperationInterface;
 
 final class Schema
 {
@@ -85,7 +85,7 @@ final class Schema
     }
 
     /**
-     * @return SchemaOperation[]
+     * @return SchemaOperationInterface[]
      */
     public function operations(): array
     {
@@ -98,7 +98,7 @@ final class Schema
         return $operations;
     }
 
-    private function addOperation(SchemaOperation $operation): self
+    private function addOperation(SchemaOperationInterface $operation): self
     {
         $this->batches[] = new SchemaBatch([$operation]);
         return $this;

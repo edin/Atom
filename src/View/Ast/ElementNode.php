@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Atom\View\Ast;
 
-final readonly class ElementNode implements ViewNode
+final readonly class ElementNode implements ViewNodeInterface
 {
     /**
      * @param array<int, AttributeNode|AttributeSpreadNode> $attributes
-     * @param ViewNode[] $children
+     * @param ViewNodeInterface[] $children
      */
     public function __construct(
         public string $name,

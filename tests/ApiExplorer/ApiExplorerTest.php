@@ -8,7 +8,7 @@ use Atom\Api\Attributes\ArrayOf;
 use Atom\Api\Attributes\ErrorResponse;
 use Atom\Api\Attributes\ResponseOf;
 use Atom\Modules\ApiExplorer\ApiExplorer;
-use Atom\Modules\ApiExplorer\ApiExplorerConfig;
+use Atom\Modules\ApiExplorer\ApiExplorerOptions;
 use Atom\Modules\ApiExplorer\ApiExplorerRedirectHandler;
 use Atom\Modules\ApiExplorer\UI\Components\AppShell;
 use Atom\Modules\ApiExplorer\UI\Components\EndpointDetails;
@@ -78,10 +78,10 @@ final class ApiExplorerTest extends TestCase
         $this->assertSame("/dev/api/resources/{path*}", $apiResources->getFullPath());
         $this->assertSame(ApiExplorerRedirectHandler::class, $entry->getRouteAction()->controllerType);
         $this->assertSame("redirect", $entry->getRouteAction()->methodName);
-        $this->assertSame("/dev/api/resources", $entry->getMetadataOfType(ApiExplorerConfig::class)->resourcePath);
-        $this->assertSame("/dev/api/explorer", $entry->getMetadataOfType(ApiExplorerConfig::class)->pagePath);
-        $this->assertSame("/api", $entry->getMetadataOfType(ApiExplorerConfig::class)->apiPathPrefix);
-        $this->assertSame("/api", $page->getMetadataOfType(ApiExplorerConfig::class)?->apiPathPrefix);
+        $this->assertSame("/dev/api/resources", $entry->getMetadataOfType(ApiExplorerOptions::class)->resourcePath);
+        $this->assertSame("/dev/api/explorer", $entry->getMetadataOfType(ApiExplorerOptions::class)->pagePath);
+        $this->assertSame("/api", $entry->getMetadataOfType(ApiExplorerOptions::class)->apiPathPrefix);
+        $this->assertSame("/api", $page->getMetadataOfType(ApiExplorerOptions::class)?->apiPathPrefix);
         $this->assertSame(ApiExplorerPage::class, $page->getMetadataOfType(PageRouteMetadata::class)?->pageClass);
     }
 

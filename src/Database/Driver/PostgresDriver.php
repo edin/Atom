@@ -16,7 +16,7 @@ use Atom\Database\Schema\Inspector\SchemaInspectorInterface;
 use Atom\Database\Schema\Reset\DatabaseResetterInterface;
 use Atom\Database\Schema\Reset\PostgresDatabaseResetter;
 use Atom\Database\Sql\Compiler\PostgresCompiler;
-use Atom\Database\Sql\Compiler\QueryCompiler;
+use Atom\Database\Sql\Compiler\QueryCompilerInterface;
 
 final class PostgresDriver extends AbstractPdoDriver
 {
@@ -39,7 +39,7 @@ final class PostgresDriver extends AbstractPdoDriver
         parent::__construct($dsn, $username, $password, $options);
     }
 
-    public function compiler(): QueryCompiler
+    public function compiler(): QueryCompilerInterface
     {
         return new PostgresCompiler();
     }

@@ -7,6 +7,8 @@ namespace Atom;
 use Atom\Config\Config;
 use Atom\Config\Env;
 use Atom\Config\Options;
+use Atom\Cache\CacheInterface;
+use Atom\Cache\CacheServices;
 use Atom\Di\Bindings;
 use Atom\Di\InjectionContext;
 use Atom\Di\Injector;
@@ -26,6 +28,7 @@ use Atom\Http\RequestHandlerInterface;
 use Atom\Http\MiddlewareInterface;
 use Atom\Http\MiddlewareRegistry;
 use Atom\Dispatcher\MiddlewarePipeline;
+use Atom\Dispatcher\ExceptionRenderingRequestHandler;
 use Atom\Module\ModuleContext;
 use Atom\Module\ModuleInterface;
 use Atom\Module\ModuleRegistry;
@@ -143,6 +146,11 @@ abstract class Application
         return $this->getInjector()->get(SessionInterface::class, $this->currentContext);
     }
 
+    final public function getCache(): CacheInterface
+    {
+        return $this->getInjector()->get(CacheInterface::class, $this->currentContext);
+    }
+
     final public function getFlash(): FlashBag
     {
         return $this->getInjector()->get(FlashBag::class, $this->currentContext);
@@ -183,6 +191,7 @@ abstract class Application
     final protected function registerDefaultServices(ServiceProviderRegistry $providers): void
     {
         $providers
+            ->add(CacheServices::class)
             ->add(ConsoleServices::class)
             ->add(DispatcherServices::class)
             ->add(PageServices::class)
@@ -326,7 +335,7 @@ abstract class Application
             }
 
             foreach ($providers->providers() as $provider) {
-                if ($provider instanceof BootstrapProvider) {
+                if ($provider instanceof BootstrapProviderInterface) {
                     $provider->bootstrappers($this->bootstrappers);
                 }
             }
@@ -358,7 +367,11 @@ abstract class Application
                 "request.dispatch",
                 fn(): Response => (new MiddlewarePipeline(
                     $this->resolveGlobalMiddlewares(),
-                    $this->getDispatcher()
+                    new ExceptionRenderingRequestHandler(
+                        $this->getDispatcher(),
+                        fn(Throwable $exception, Request $activeRequest): Response =>
+                            $this->renderException($exception, $activeRequest)
+                    )
                 ))->handle($activeRequest)
             );
             $this->addProfilerHeaders($response);

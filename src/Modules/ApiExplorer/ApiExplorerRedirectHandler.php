@@ -12,12 +12,12 @@ final readonly class ApiExplorerRedirectHandler
 {
     public function redirect(MatchedRoute $route, Response $response): Response
     {
-        $config = $route->getRouteEntry()->getMetadataOfType(ApiExplorerConfig::class);
+        $options = $route->getRouteEntry()->getMetadataOfType(ApiExplorerOptions::class);
 
-        if (!$config instanceof ApiExplorerConfig) {
+        if (!$options instanceof ApiExplorerOptions) {
             throw new RuntimeException("API Explorer route is missing configuration.");
         }
 
-        return $response->redirect($config->pagePath);
+        return $response->redirect($options->pagePath);
     }
 }

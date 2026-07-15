@@ -9,7 +9,7 @@ use ReflectionClass;
 use ReflectionNamedType;
 use ReflectionProperty;
 
-final readonly class JsonPageStateSerializer implements PageStateSerializer
+final readonly class JsonPageStateSerializer implements PageStateSerializerInterface
 {
     public function serialize(Page $page): string
     {

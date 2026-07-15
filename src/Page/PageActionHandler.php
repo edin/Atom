@@ -19,7 +19,7 @@ final readonly class PageActionHandler
     public function __construct(
         private Injector $injector,
         private InjectionContext $context,
-        private PageStateSerializer $state = new JsonPageStateSerializer(),
+        private PageStateSerializerInterface $state = new JsonPageStateSerializer(),
         private PageInputHydratorInterface $input = new PageInputHydrator(),
         private PageActionParameterBinder $parameters = new PageActionParameterBinder()
     ) {

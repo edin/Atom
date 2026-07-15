@@ -6,7 +6,7 @@ namespace Atom\Database\Schema\Operation;
 
 use Atom\Database\Schema\Table;
 
-final readonly class AddTableOperation implements SchemaOperation
+final readonly class AddTableOperation implements SchemaOperationInterface
 {
     public function __construct(public Table $table)
     {

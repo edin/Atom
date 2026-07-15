@@ -5,10 +5,18 @@ declare(strict_types=1);
 namespace Atom\Hydrator;
 
 use Atom\Hydrator\Exception\HydrationException;
+use BackedEnum;
+use ReflectionEnum;
+use UnitEnum;
 
 final class ValueCoercer
 {
-    public function coerce(mixed $value, HydrationTarget $property, string $className): mixed
+    public function coerce(
+        mixed $value,
+        HydrationTarget $property,
+        string $className,
+        ?callable $objectHydrator = null
+    ): mixed
     {
         if (!$property->raw && is_string($value)) {
             $value = trim($value);
@@ -35,7 +43,7 @@ final class ValueCoercer
         }
 
         if (!$property->isBuiltin) {
-            return $this->coerceObject($value, $property, $className);
+            return $this->coerceObject($value, $property, $className, $objectHydrator);
         }
 
         return $this->coerceBuiltin($value, $property, $className);
@@ -59,10 +67,41 @@ final class ValueCoercer
         };
     }
 
-    private function coerceObject(mixed $value, HydrationTarget $property, string $className): mixed
+    private function coerceObject(
+        mixed $value,
+        HydrationTarget $property,
+        string $className,
+        ?callable $objectHydrator
+    ): mixed
     {
         if (is_object($value) && is_a($value, $property->typeName)) {
             return $value;
+        }
+
+        if (is_subclass_of($property->typeName, BackedEnum::class)) {
+            if (!is_scalar($value)) {
+                return $this->fail($className, $property, $property->typeName, $value);
+            }
+            $backingType = (new ReflectionEnum($property->typeName))->getBackingType()?->getName();
+            if ($backingType === "int") {
+                if (filter_var($value, FILTER_VALIDATE_INT) === false) {
+                    return $this->fail($className, $property, $property->typeName, $value);
+                }
+                $backingValue = (int) $value;
+            } else {
+                $backingValue = (string) $value;
+            }
+            return $property->typeName::tryFrom($backingValue)
+                ?? $this->fail($className, $property, $property->typeName, $value);
+        }
+
+        if (is_subclass_of($property->typeName, UnitEnum::class) && is_string($value)) {
+            foreach ($property->typeName::cases() as $case) {
+                if ($case->name === $value) {
+                    return $case;
+                }
+            }
+            return $this->fail($className, $property, $property->typeName, $value);
         }
 
         if (is_a($property->typeName, \DateTimeInterface::class, true)) {
@@ -79,6 +118,10 @@ final class ValueCoercer
                     return $this->fail($className, $property, $property->typeName, $value);
                 }
             }
+        }
+
+        if (is_array($value) && $objectHydrator !== null) {
+            return $objectHydrator($property->typeName, $value);
         }
 
         return $this->fail($className, $property, $property->typeName, $value);

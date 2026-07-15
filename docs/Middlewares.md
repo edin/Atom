@@ -14,7 +14,11 @@ use Atom\Http\MiddlewareRegistry;
 protected function middlewares(MiddlewareRegistry $middlewares): void
 {
     $middlewares->add(TrustedProxyMiddleware::class);
+    $middlewares->add(TrustedHostMiddleware::class);
+    $middlewares->add(RequestIdMiddleware::class);
+    $middlewares->add(RequestBodyLimitMiddleware::class);
     $middlewares->add(CorsMiddleware::class);
+    $middlewares->add(RateLimitMiddleware::class);
 }
 ```
 

@@ -17,7 +17,11 @@ The main concepts are:
 - [CSRF Protection](Csrf.md)
 - [Security Headers](SecurityHeaders.md)
 - [Trusted Proxies](TrustedProxies.md)
+- [Trusted Hosts](TrustedHosts.md)
 - [CORS](Cors.md)
+- [Request Middleware](RequestMiddleware.md)
+- [Cache](Cache.md)
+- [Rate Limiting](RateLimiting.md)
 - [Error Pages](ErrorPages.md)
 - [API Explorer](ApiExplorer.md)
 - [Database](Database.md)
@@ -27,6 +31,7 @@ The main concepts are:
 - [Console](Console.md)
 - [Middlewares](Middlewares.md)
 - [Validation](Validation.md)
+- [Hydration](Hydration.md)
 
 ## Application Flow
 

@@ -95,7 +95,7 @@ Use `run()` in a front controller. It calls `handle()`, emits the response, and 
 
 ## Bootstrappers
 
-Service providers can contribute runtime bootstrappers by implementing `BootstrapProvider`.
+Service providers can contribute runtime bootstrappers by implementing `BootstrapProviderInterface`.
 
 Bootstrappers run after modules, components, and pages are registered, and before the application `bootstrap()` hook. `DatabaseServices` uses this to configure the `Model` base class automatically.
 

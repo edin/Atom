@@ -7,7 +7,7 @@ namespace Atom\View\Ast;
 final readonly class IfBranchNode
 {
     /**
-     * @param ViewNode[] $children
+     * @param ViewNodeInterface[] $children
      */
     public function __construct(
         public string $condition,

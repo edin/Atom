@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atom\Database\Sql;
 
-final class UpdateQuery implements SqlQuery
+final class UpdateQuery implements SqlQueryInterface
 {
     private ?Table $table = null;
     /** @var array<string, mixed> */

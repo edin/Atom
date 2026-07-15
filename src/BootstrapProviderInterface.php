@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atom;
 
-interface BootstrapProvider
+interface BootstrapProviderInterface
 {
     public function bootstrappers(Bootstrappers $bootstrappers): void;
 }

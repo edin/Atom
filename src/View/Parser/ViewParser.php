@@ -13,7 +13,7 @@ use Atom\View\Ast\IfNode;
 use Atom\View\Ast\RawTextNode;
 use Atom\View\Ast\TemplateNode;
 use Atom\View\Ast\TextNode;
-use Atom\View\Ast\ViewNode;
+use Atom\View\Ast\ViewNodeInterface;
 use Atom\View\Parser\Token\ViewToken;
 use Atom\View\Parser\Token\ViewTokenType;
 
@@ -44,7 +44,7 @@ final class ViewParser
     }
 
     /**
-     * @return ViewNode[]
+     * @return ViewNodeInterface[]
      * @param string[] $untilDirectives
      */
     private function parseChildren(?string $untilTag = null, array $untilDirectives = []): array
@@ -86,7 +86,7 @@ final class ViewParser
         return $nodes;
     }
 
-    private function parseNode(): ViewNode
+    private function parseNode(): ViewNodeInterface
     {
         $token = $this->current();
 
@@ -136,13 +136,13 @@ final class ViewParser
     }
 
     /**
-     * @param ViewNode[] $children
-     * @return ViewNode[]
+     * @param ViewNodeInterface[] $children
+     * @return ViewNodeInterface[]
      */
     private function parseFragments(string $owner, array $children): array
     {
         return array_map(
-            fn(ViewNode $child): ViewNode => $child instanceof ElementNode && $this->isFragmentElement($owner, $child)
+            fn(ViewNodeInterface $child): ViewNodeInterface => $child instanceof ElementNode && $this->isFragmentElement($owner, $child)
                 ? $this->toFragment($owner, $child)
                 : $child,
             $children
@@ -166,7 +166,7 @@ final class ViewParser
         );
     }
 
-    private function parseDirective(ViewToken $token): ViewNode
+    private function parseDirective(ViewToken $token): ViewNodeInterface
     {
         return match (strtolower($token->value)) {
             "if" => $this->parseIf($token),

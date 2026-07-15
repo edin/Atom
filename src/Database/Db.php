@@ -6,10 +6,10 @@ namespace Atom\Database;
 
 use Atom\Database\Orm\RowHydrator;
 use Atom\Database\Orm\ColumnMetadata;
-use Atom\Database\Orm\ColumnValueProvider;
+use Atom\Database\Orm\ColumnValueProviderInterface;
 use Atom\Database\Sql\Command;
 use Atom\Database\Sql\Query;
-use Atom\Database\Sql\SqlQuery;
+use Atom\Database\Sql\SqlQueryInterface;
 use DateTimeInterface;
 use RuntimeException;
 
@@ -26,7 +26,7 @@ final readonly class Db
         return $this->connection;
     }
 
-    public function compile(SqlQuery $query): Command
+    public function compile(SqlQueryInterface $query): Command
     {
         return $this->connection->compile($query);
     }
@@ -50,7 +50,7 @@ final readonly class Db
     /**
      * @param array<string, mixed> $parameters
      */
-    public function execute(string|SqlQuery|Command $query, array $parameters = []): int
+    public function execute(string|SqlQueryInterface|Command $query, array $parameters = []): int
     {
         return $this->connection->execute($query, $parameters);
     }
@@ -129,7 +129,7 @@ final readonly class Db
      * @param array<string, mixed> $parameters
      * @return array<int, array<string, mixed>>
      */
-    public function all(string|SqlQuery|Command $query, array $parameters = []): array
+    public function all(string|SqlQueryInterface|Command $query, array $parameters = []): array
     {
         return $this->connection->all($query, $parameters);
     }
@@ -138,7 +138,7 @@ final readonly class Db
      * @param array<string, mixed> $parameters
      * @return array<string, mixed>|null
      */
-    public function first(string|SqlQuery|Command $query, array $parameters = []): ?array
+    public function first(string|SqlQueryInterface|Command $query, array $parameters = []): ?array
     {
         return $this->connection->first($query, $parameters);
     }
@@ -147,7 +147,7 @@ final readonly class Db
      * @param class-string $className
      * @param array<string, mixed> $parameters
      */
-    public function firstAs(string $className, string|SqlQuery|Command $query, array $parameters = []): ?object
+    public function firstAs(string $className, string|SqlQueryInterface|Command $query, array $parameters = []): ?object
     {
         $row = $this->first($query, $parameters);
         return $row === null ? null : $this->hydrator->hydrate($className, $row);
@@ -158,7 +158,7 @@ final readonly class Db
      * @param array<string, mixed> $parameters
      * @return object[]
      */
-    public function allAs(string $className, string|SqlQuery|Command $query, array $parameters = []): array
+    public function allAs(string $className, string|SqlQueryInterface|Command $query, array $parameters = []): array
     {
         return array_map(
             fn(array $row): object => $this->hydrator->hydrate($className, $row),
@@ -199,7 +199,7 @@ final readonly class Db
     /**
      * @param array<string, mixed> $parameters
      */
-    public function scalar(string|SqlQuery|Command $query, array $parameters = []): mixed
+    public function scalar(string|SqlQueryInterface|Command $query, array $parameters = []): mixed
     {
         return $this->connection->scalar($query, $parameters);
     }
@@ -238,13 +238,13 @@ final readonly class Db
     }
 
     /**
-     * @param class-string<ColumnValueProvider> $providerClass
+     * @param class-string<ColumnValueProviderInterface> $providerClass
      */
     private function provideValue(object $entity, ColumnMetadata $column, string $providerClass): mixed
     {
         $provider = new $providerClass();
-        if (!$provider instanceof ColumnValueProvider) {
-            throw new RuntimeException("Column value provider '{$providerClass}' must implement ColumnValueProvider.");
+        if (!$provider instanceof ColumnValueProviderInterface) {
+            throw new RuntimeException("Column value provider '{$providerClass}' must implement ColumnValueProviderInterface.");
         }
 
         $value = $provider->value($entity, $column);

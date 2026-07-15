@@ -120,6 +120,90 @@ final class RequestHydratorTest extends TestCase
         $this->assertSame("route", $target->source);
         $this->assertSame("userId", $target->sourceName);
     }
+
+    public function testHydratesReadonlyConstructorDtoFromMultipleSources(): void
+    {
+        $request = new Request("POST", "/users", headers: ["X-Trace" => "trace-1"]);
+        $dto = (new RequestHydrator())->hydrate(ReadonlyUserDto::class, new HydrationContext(
+            body: ["full_name" => "  Atom  ", "enabled" => "yes"],
+            query: ["page" => "3"],
+            request: $request
+        ));
+
+        $this->assertSame("Atom", $dto->name);
+        $this->assertSame(3, $dto->page);
+        $this->assertTrue($dto->enabled);
+        $this->assertSame("trace-1", $dto->trace);
+    }
+
+    public function testConstructorDefaultsApplyOnlyWhenInputIsMissing(): void
+    {
+        $hydrator = new RequestHydrator();
+        $missing = $hydrator->hydrate(NullableDefaultDto::class, new HydrationContext());
+        $explicitNull = $hydrator->hydrate(NullableDefaultDto::class, new HydrationContext(
+            body: ["nickname" => null]
+        ));
+
+        $this->assertSame("anonymous", $missing->nickname);
+        $this->assertNull($explicitNull->nickname);
+    }
+
+    public function testHydratesBackedAndUnitEnums(): void
+    {
+        $dto = (new RequestHydrator())->hydrate(EnumDto::class, new HydrationContext(body: [
+            "role" => "admin",
+            "priority" => "2",
+            "state" => "Active",
+        ]));
+
+        $this->assertSame(HydratorRole::Admin, $dto->role);
+        $this->assertSame(HydratorPriority::High, $dto->priority);
+        $this->assertSame(HydratorState::Active, $dto->state);
+    }
+
+    public function testInvalidEnumValueThrowsHydrationException(): void
+    {
+        $this->expectException(HydrationException::class);
+        $this->expectExceptionMessage(HydratorRole::class);
+
+        (new RequestHydrator())->hydrate(EnumDto::class, new HydrationContext(body: [
+            "role" => "owner",
+            "priority" => "2",
+            "state" => "Active",
+        ]));
+    }
+
+    public function testHydratesNestedConstructorDtoAndRemainingWritableProperties(): void
+    {
+        $dto = (new RequestHydrator())->hydrate(ConstructorWithPropertyDto::class, new HydrationContext(body: [
+            "id" => "42",
+            "address" => ["city" => "  Sarajevo  ", "postalCode" => "71000"],
+            "note" => "  ready  ",
+        ]));
+
+        $this->assertSame(42, $dto->id);
+        $this->assertSame("Sarajevo", $dto->address->city);
+        $this->assertSame(71000, $dto->address->postalCode);
+        $this->assertSame("ready", $dto->note);
+    }
+
+    public function testConstructorParameterTransformerRunsBeforeCoercion(): void
+    {
+        $dto = (new RequestHydrator())->hydrate(ConstructorDateDto::class, new HydrationContext(
+            body: ["created" => "15.07.2026"]
+        ));
+
+        $this->assertSame("2026-07-15", $dto->created->format("Y-m-d"));
+    }
+
+    public function testMissingRequiredConstructorParameterThrowsHydrationException(): void
+    {
+        $this->expectException(HydrationException::class);
+        $this->expectExceptionMessage(ReadonlyUserDto::class . "::name");
+
+        (new RequestHydrator())->hydrate(ReadonlyUserDto::class, new HydrationContext());
+    }
+
 }
 
 #[Dto]
@@ -174,5 +258,86 @@ final class ParameterTargetExample
 {
     public function handle(#[FromRoute("userId")] int $id): void
     {
+    }
+}
+
+#[Dto]
+final readonly class ReadonlyUserDto
+{
+    public function __construct(
+        #[FromBody("full_name")]
+        public string $name,
+        #[FromQuery]
+        public int $page = 1,
+        #[FromBody]
+        public bool $enabled = false,
+        #[FromHeader("X-Trace")]
+        public ?string $trace = null
+    ) {
+    }
+}
+
+#[Dto]
+final readonly class NullableDefaultDto
+{
+    public function __construct(public ?string $nickname = "anonymous")
+    {
+    }
+}
+
+enum HydratorRole: string
+{
+    case Member = "member";
+    case Admin = "admin";
+}
+
+enum HydratorPriority: int
+{
+    case Normal = 1;
+    case High = 2;
+}
+
+enum HydratorState
+{
+    case Active;
+    case Disabled;
+}
+
+#[Dto]
+final readonly class EnumDto
+{
+    public function __construct(
+        public HydratorRole $role,
+        public HydratorPriority $priority,
+        public HydratorState $state
+    ) {
+    }
+}
+
+#[Dto]
+final readonly class NestedAddressDto
+{
+    public function __construct(public string $city, public int $postalCode)
+    {
+    }
+}
+
+#[Dto]
+final class ConstructorWithPropertyDto
+{
+    public string $note = "";
+
+    public function __construct(public readonly int $id, public readonly NestedAddressDto $address)
+    {
+    }
+}
+
+#[Dto]
+final readonly class ConstructorDateDto
+{
+    public function __construct(
+        #[DateFormat("d.m.Y")]
+        public \DateTimeImmutable $created
+    ) {
     }
 }

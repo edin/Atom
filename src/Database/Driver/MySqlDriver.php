@@ -16,7 +16,7 @@ use Atom\Database\Schema\Inspector\SchemaInspectorInterface;
 use Atom\Database\Schema\Reset\DatabaseResetterInterface;
 use Atom\Database\Schema\Reset\MySqlDatabaseResetter;
 use Atom\Database\Sql\Compiler\MySqlCompiler;
-use Atom\Database\Sql\Compiler\QueryCompiler;
+use Atom\Database\Sql\Compiler\QueryCompilerInterface;
 
 final class MySqlDriver extends AbstractPdoDriver
 {
@@ -40,7 +40,7 @@ final class MySqlDriver extends AbstractPdoDriver
         parent::__construct($dsn, $username, $password, $options);
     }
 
-    public function compiler(): QueryCompiler
+    public function compiler(): QueryCompilerInterface
     {
         return new MySqlCompiler();
     }

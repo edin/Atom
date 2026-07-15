@@ -14,6 +14,10 @@ use Atom\Http\RequestHandlerInterface;
 use Atom\Http\Response;
 use Atom\Http\TrustedProxyMiddleware;
 use Atom\Http\CorsMiddleware;
+use Atom\Http\RequestIdMiddleware;
+use Atom\Http\RequestBodyLimitMiddleware;
+use Atom\Http\TrustedHostMiddleware;
+use Atom\Http\RateLimitMiddleware;
 use Atom\Hydrator\DtoTypeFactory;
 use Atom\Router\Router;
 
@@ -46,6 +50,22 @@ final class DispatcherServices implements ServiceProviderInterface
             ->scoped();
 
         $bindings->bind(CorsMiddleware::class)
+            ->toSelf()
+            ->scoped();
+
+        $bindings->bind(RequestIdMiddleware::class)
+            ->toSelf()
+            ->scoped();
+
+        $bindings->bind(RequestBodyLimitMiddleware::class)
+            ->toSelf()
+            ->scoped();
+
+        $bindings->bind(TrustedHostMiddleware::class)
+            ->toSelf()
+            ->scoped();
+
+        $bindings->bind(RateLimitMiddleware::class)
             ->toSelf()
             ->scoped();
 

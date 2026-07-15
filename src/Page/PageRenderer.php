@@ -29,7 +29,7 @@ final readonly class PageRenderer
         private ViewParser $parser = new ViewParser(),
         private TemplateCache $templates = new TemplateCache(),
         private ViewRenderer $renderer = new ViewRenderer(),
-        private PageStateSerializer $state = new JsonPageStateSerializer()
+        private PageStateSerializerInterface $state = new JsonPageStateSerializer()
     ) {
     }
 

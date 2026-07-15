@@ -13,7 +13,7 @@ use Atom\View\Ast\IfNode;
 use Atom\View\Ast\RawTextNode;
 use Atom\View\Ast\TemplateNode;
 use Atom\View\Ast\TextNode;
-use Atom\View\Ast\ViewNode;
+use Atom\View\Ast\ViewNodeInterface;
 use Atom\View\Component\ComponentFactoryInterface;
 use Atom\View\Component\ComponentHydrator;
 use Atom\View\Component\ComponentInterface;
@@ -45,7 +45,7 @@ final readonly class ViewRenderer
     }
 
     /**
-     * @param ViewNode[] $nodes
+     * @param ViewNodeInterface[] $nodes
      */
     private function renderNodes(array $nodes, ViewContext $context): string
     {
@@ -58,7 +58,7 @@ final readonly class ViewRenderer
         return $output;
     }
 
-    private function renderNode(ViewNode $node, ViewContext $context): string
+    private function renderNode(ViewNodeInterface $node, ViewContext $context): string
     {
         return match (true) {
             $node instanceof TextNode => $node->text,
@@ -137,16 +137,16 @@ final readonly class ViewRenderer
             return $this->renderNodes($result->children, $componentContext);
         }
 
-        if ($result instanceof ViewNode) {
+        if ($result instanceof ViewNodeInterface) {
             return $this->renderNode($result, $componentContext);
         }
 
         if (is_array($result)) {
             foreach ($result as $index => $node) {
-                if (!$node instanceof ViewNode) {
+                if (!$node instanceof ViewNodeInterface) {
                     throw new ViewRenderException(
                         "Component {$componentClass} returned an array with unsupported value at index '{$index}': "
-                        . get_debug_type($node) . ". Expected every item to implement " . ViewNode::class . "."
+                        . get_debug_type($node) . ". Expected every item to implement " . ViewNodeInterface::class . "."
                     );
                 }
             }
@@ -156,7 +156,7 @@ final readonly class ViewRenderer
 
         throw new ViewRenderException(
             "Component {$componentClass} returned unsupported render result " . get_debug_type($result)
-            . ". Expected string, " . TemplateNode::class . ", " . ViewNode::class . ", or array<ViewNode>."
+            . ". Expected string, " . TemplateNode::class . ", " . ViewNodeInterface::class . ", or array<ViewNodeInterface>."
         );
     }
 

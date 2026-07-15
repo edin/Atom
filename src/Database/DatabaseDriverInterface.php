@@ -9,14 +9,14 @@ use Atom\Database\Lock\DatabaseLockManagerInterface;
 use Atom\Database\Schema\Compiler\SchemaCompilerInterface;
 use Atom\Database\Schema\Inspector\SchemaInspectorInterface;
 use Atom\Database\Schema\Reset\DatabaseResetterInterface;
-use Atom\Database\Sql\Compiler\QueryCompiler;
+use Atom\Database\Sql\Compiler\QueryCompilerInterface;
 use PDO;
 
-interface DatabaseDriver
+interface DatabaseDriverInterface
 {
     public function connect(): PDO;
 
-    public function compiler(): QueryCompiler;
+    public function compiler(): QueryCompilerInterface;
 
     public function schemaCompiler(): SchemaCompilerInterface;
 

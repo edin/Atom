@@ -6,10 +6,10 @@ namespace Atom;
 
 final class Bootstrappers
 {
-    /** @var list<Bootstrapper> */
+    /** @var list<BootstrapperInterface> */
     private array $bootstrappers = [];
 
-    public function add(Bootstrapper $bootstrapper): self
+    public function add(BootstrapperInterface $bootstrapper): self
     {
         $this->bootstrappers[] = $bootstrapper;
 
@@ -17,7 +17,7 @@ final class Bootstrappers
     }
 
     /**
-     * @return list<Bootstrapper>
+     * @return list<BootstrapperInterface>
      */
     public function all(): array
     {

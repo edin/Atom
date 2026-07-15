@@ -427,8 +427,8 @@ A component may return:
 ```php
 string
 TemplateNode
-ViewNode
-array<ViewNode>
+ViewNodeInterface
+array<ViewNodeInterface>
 ```
 
 Most application components return strings or use a native component template.

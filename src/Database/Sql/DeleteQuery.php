@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atom\Database\Sql;
 
-final class DeleteQuery implements SqlQuery
+final class DeleteQuery implements SqlQueryInterface
 {
     private ?Table $table = null;
     private WhereGroup $where;

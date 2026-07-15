@@ -5,11 +5,11 @@
 Atom logging starts with a small typed service:
 
 ```php
-use Atom\Logging\Logger;
+use Atom\Logging\LoggerInterface;
 
 final readonly class ArticleService
 {
-    public function __construct(private Logger $logger)
+    public function __construct(private LoggerInterface $logger)
     {
     }
 
@@ -70,7 +70,7 @@ Log::info("Article published", ["id" => 42]);
 Log::error("Publish failed", ["exception" => $exception]);
 ```
 
-The facade resolves `Logger` from `Container::get(Logger::class)`. If no application or logger is configured yet, it falls back to `NullLogger`.
+The facade resolves `LoggerInterface` from `Container::get(LoggerInterface::class)`. If no application or logger is configured yet, it falls back to `NullLogger`.
 
 ## Container Bridge
 
@@ -78,9 +78,9 @@ The facade resolves `Logger` from `Container::get(Logger::class)`. If no applica
 
 ```php
 use Atom\Container;
-use Atom\Logging\Logger;
+use Atom\Logging\LoggerInterface;
 
-$logger = Container::get(Logger::class);
+$logger = Container::get(LoggerInterface::class);
 ```
 
 Prefer constructor injection for application code. Use `Container` and `Log` for bootstrapping, scripts, framework internals, or short-lived glue code.

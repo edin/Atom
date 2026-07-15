@@ -15,19 +15,19 @@ use Atom\Database\Sql\Op;
 use Atom\Database\Sql\SelectExpression;
 use Atom\Database\Sql\SelectQuery;
 use Atom\Database\Sql\Sort;
-use Atom\Database\Sql\SqlQuery;
+use Atom\Database\Sql\SqlQueryInterface;
 use Atom\Database\Sql\Table;
 use Atom\Database\Sql\UpdateQuery;
 use Atom\Database\Sql\WhereGroup;
 use RuntimeException;
 
-abstract class AbstractSqlCompiler implements QueryCompiler
+abstract class AbstractSqlCompiler implements QueryCompilerInterface
 {
     /** @var array<string, mixed> */
     private array $parameters = [];
     private int $parameterIndex = 0;
 
-    public function compile(SqlQuery $query): Command
+    public function compile(SqlQueryInterface $query): Command
     {
         $this->parameters = [];
         $this->parameterIndex = 0;

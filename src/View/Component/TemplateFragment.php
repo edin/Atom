@@ -14,14 +14,14 @@ use Atom\View\Ast\IfBranchNode;
 use Atom\View\Ast\IfNode;
 use Atom\View\Ast\RawTextNode;
 use Atom\View\Ast\TextNode;
-use Atom\View\Ast\ViewNode;
+use Atom\View\Ast\ViewNodeInterface;
 use Atom\View\Html;
 use Closure;
 
 final readonly class TemplateFragment
 {
     /**
-     * @param ViewNode[] $nodes
+     * @param ViewNodeInterface[] $nodes
      * @param Closure(array<string, mixed>): string $renderer
      */
     public function __construct(
@@ -58,7 +58,7 @@ final readonly class TemplateFragment
     }
 
     /**
-     * @return ViewNode[]
+     * @return ViewNodeInterface[]
      */
     public function nodes(): array
     {
@@ -76,14 +76,14 @@ final readonly class TemplateFragment
     }
 
     /**
-     * @param ViewNode[] $nodes
+     * @param ViewNodeInterface[] $nodes
      */
     private function sourceFromNodes(array $nodes): string
     {
         return implode("", array_map($this->sourceFromNode(...), $nodes));
     }
 
-    private function sourceFromNode(ViewNode $node): string
+    private function sourceFromNode(ViewNodeInterface $node): string
     {
         return match (true) {
             $node instanceof TextNode => $node->text,

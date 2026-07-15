@@ -9,19 +9,25 @@ use ReflectionClass;
 final readonly class HydrationPlan
 {
     /**
+     * @param HydrationTarget[] $constructorParameters
      * @param HydrationTarget[] $properties
      */
-    public function __construct(public ReflectionClass $reflection, public array $properties)
+    public function __construct(
+        public ReflectionClass $reflection,
+        public array $constructorParameters,
+        public array $properties
+    )
     {
     }
 
-    public function createInstance(): object
+    /** @param mixed[] $arguments */
+    public function createInstance(array $arguments = []): object
     {
         $constructor = $this->reflection->getConstructor();
-        if ($constructor === null || $constructor->getNumberOfRequiredParameters() === 0) {
+        if ($constructor === null) {
             return $this->reflection->newInstance();
         }
 
-        return $this->reflection->newInstanceWithoutConstructor();
+        return $this->reflection->newInstanceArgs($arguments);
     }
 }

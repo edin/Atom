@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atom\Database\Sql;
 
-final class InsertQuery implements SqlQuery
+final class InsertQuery implements SqlQueryInterface
 {
     private ?Table $table = null;
     /** @var array<string, mixed> */

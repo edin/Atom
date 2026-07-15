@@ -2,6 +2,8 @@
 
 Atom registers a standalone error pages module by default. It renders framework-generated `404` and `405` responses and unhandled exceptions without using the page engine, component library, JavaScript, or external assets.
 
+When the optional Logging module provides a `LoggerInterface`, unhandled exceptions are recorded automatically before the response is rendered. Log context includes the error reference, configured request ID, method, path, effective client IP, matched route metadata, exception, and previous exception when available. The same exception object is logged at most once per request, and logging failures never prevent error-page rendering.
+
 The default HTML document is a native PHP view with its own small stylesheet. The diagnostic panel is a second native PHP view. They are located under `src/Modules/ErrorPages/Views` and are rendered directly through an isolated output buffer rather than Atom's view engine. If the error handler cannot be resolved or a view throws while rendering, the application falls back to a plain-text `500 Internal Server Error` response.
 
 ## Configuration

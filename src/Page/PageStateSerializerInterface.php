@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atom\Page;
 
-interface PageStateSerializer
+interface PageStateSerializerInterface
 {
     public function serialize(Page $page): string;
 

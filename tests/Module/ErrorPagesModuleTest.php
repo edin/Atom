@@ -6,8 +6,11 @@ namespace Atom\Tests\Module;
 
 use Atom\Application;
 use Atom\Di\Injector;
+use Atom\Di\InjectionContext;
 use Atom\Http\Request;
+use Atom\Http\RequestIdOptions;
 use Atom\Http\Response;
+use Atom\Logging\LoggerInterface;
 use Atom\Module\ModuleContext;
 use Atom\Module\ModuleInterface;
 use Atom\Module\ModuleRegistry;
@@ -16,6 +19,8 @@ use Atom\Modules\ErrorPages\ErrorPageHandlerInterface;
 use Atom\Modules\ErrorPages\ErrorPagesOptions;
 use Atom\Modules\ErrorPages\HttpException;
 use Atom\Router\Route;
+use Atom\Router\MatchedRoute;
+use Atom\Router\RouteEntry;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Throwable;
@@ -165,6 +170,55 @@ final class ErrorPagesModuleTest extends TestCase
         $this->assertSame("text/plain; charset=utf-8", $response->headers()->get("Content-Type"));
         $this->assertSame("Internal Server Error", $response->getContent());
     }
+
+    public function testExceptionLoggingIncludesRequestAndRouteContextOnlyOnce(): void
+    {
+        $logger = new RecordingErrorPageLogger();
+        $context = new InjectionContext();
+        $route = RouteEntry::get("/explode", static fn(): string => "never")->name("explode");
+        $context->set(MatchedRoute::class, new MatchedRoute($route));
+        $handler = new DefaultErrorPageHandler(
+            new ErrorPagesOptions(),
+            $logger,
+            $context,
+            new RequestIdOptions(headerName: "X-Correlation-Id")
+        );
+        $previous = new RuntimeException("root cause");
+        $exception = new RuntimeException("route failed", previous: $previous);
+        $request = new Request("POST", "/explode", serverParams: [
+            "REMOTE_ADDR" => "198.51.100.7",
+        ], headers: ["X-Correlation-Id" => "request_123"]);
+
+        $handler->forException($exception, $request);
+        $handler->forException($exception, $request);
+
+        $this->assertCount(1, $logger->errors);
+        $log = $logger->errors[0];
+        $this->assertSame("Unhandled exception", $log["message"]);
+        $this->assertSame("request_123", $log["context"]["request_id"] ?? null);
+        $this->assertSame("198.51.100.7", $log["context"]["client_ip"] ?? null);
+        $this->assertSame("POST", $log["context"]["method"] ?? null);
+        $this->assertSame("/explode", $log["context"]["path"] ?? null);
+        $this->assertSame("explode", $log["context"]["route_name"] ?? null);
+        $this->assertSame("/explode", $log["context"]["route_path"] ?? null);
+        $this->assertSame("GET", $log["context"]["route_methods"] ?? null);
+        $this->assertSame($exception, $log["context"]["exception"] ?? null);
+        $this->assertSame($previous, $log["context"]["previous_exception"] ?? null);
+        $this->assertStringStartsWith("err_", (string) ($log["context"]["error_id"] ?? ""));
+    }
+
+    public function testLoggingFailureDoesNotPreventExceptionRendering(): void
+    {
+        $handler = new DefaultErrorPageHandler(new ErrorPagesOptions(), new BrokenErrorPageLogger());
+
+        $response = $handler->forException(
+            new RuntimeException("route failed"),
+            new Request("GET", "/explode")
+        );
+
+        $this->assertSame(500, $response->getStatus());
+        $this->assertStringContainsString("Something went wrong", $response->getContent());
+    }
 }
 
 class ErrorTestApplication extends Application
@@ -232,5 +286,32 @@ final readonly class BrokenErrorHandler implements ErrorPageHandlerInterface
     public function forException(Throwable $exception, Request $request): Response
     {
         throw new RuntimeException("error renderer failed");
+    }
+}
+
+final class RecordingErrorPageLogger implements LoggerInterface
+{
+    /** @var list<array{message: string, context: array<string, mixed>}> */
+    public array $errors = [];
+
+    public function info(string $message, array $context = []): void
+    {
+    }
+
+    public function error(string $message, array $context = []): void
+    {
+        $this->errors[] = ["message" => $message, "context" => $context];
+    }
+}
+
+final readonly class BrokenErrorPageLogger implements LoggerInterface
+{
+    public function info(string $message, array $context = []): void
+    {
+    }
+
+    public function error(string $message, array $context = []): void
+    {
+        throw new RuntimeException("log unavailable");
     }
 }

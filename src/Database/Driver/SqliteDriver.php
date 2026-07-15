@@ -15,7 +15,7 @@ use Atom\Database\Schema\Inspector\SchemaInspectorInterface;
 use Atom\Database\Schema\Inspector\SqliteSchemaInspector;
 use Atom\Database\Schema\Reset\DatabaseResetterInterface;
 use Atom\Database\Schema\Reset\SqliteDatabaseResetter;
-use Atom\Database\Sql\Compiler\QueryCompiler;
+use Atom\Database\Sql\Compiler\QueryCompilerInterface;
 use Atom\Database\Sql\Compiler\SqliteCompiler;
 
 final class SqliteDriver extends AbstractPdoDriver
@@ -33,7 +33,7 @@ final class SqliteDriver extends AbstractPdoDriver
         return new self(":memory:", $options);
     }
 
-    public function compiler(): QueryCompiler
+    public function compiler(): QueryCompilerInterface
     {
         return new SqliteCompiler();
     }

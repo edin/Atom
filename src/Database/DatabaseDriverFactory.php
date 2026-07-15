@@ -14,12 +14,12 @@ final readonly class DatabaseDriverFactory
     {
     }
 
-    public static function fromEnv(string $root = ""): DatabaseDriver
+    public static function fromEnv(string $root = ""): DatabaseDriverInterface
     {
         return (new self($root))->create(DatabaseConfig::fromEnv());
     }
 
-    public function create(DatabaseConfig $config): DatabaseDriver
+    public function create(DatabaseConfig $config): DatabaseDriverInterface
     {
         return match (strtolower($config->driver)) {
             "sqlite" => new SqliteDriver($this->path($config->database), $config->options),

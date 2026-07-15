@@ -56,6 +56,8 @@ class Response
             403 => "Forbidden",
             404 => "Not Found",
             405 => "Method Not Allowed",
+            413 => "Content Too Large",
+            429 => "Too Many Requests",
             500 => "Internal Server Error",
             default => "",
         };

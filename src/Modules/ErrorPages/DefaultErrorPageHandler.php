@@ -6,16 +6,26 @@ namespace Atom\Modules\ErrorPages;
 
 use Atom\Http\Request;
 use Atom\Http\Response;
-use Atom\Logging\Logger;
+use Atom\Http\RequestIdOptions;
+use Atom\Di\InjectionContext;
+use Atom\Logging\LoggerInterface;
+use Atom\Router\MatchedRoute;
 use RuntimeException;
 use Throwable;
+use WeakMap;
 
 final readonly class DefaultErrorPageHandler implements ErrorPageHandlerInterface
 {
+    /** @var WeakMap<Throwable, bool> */
+    private WeakMap $logged;
+
     public function __construct(
         private ErrorPagesOptions $options,
-        private ?Logger $logger = null
+        private ?LoggerInterface $logger = null,
+        private ?InjectionContext $context = null,
+        private ?RequestIdOptions $requestIds = null
     ) {
+        $this->logged = new WeakMap();
     }
 
     public function forStatus(int $status, Request $request, array $headers = []): Response
@@ -160,17 +170,50 @@ final readonly class DefaultErrorPageHandler implements ErrorPageHandlerInterfac
 
     private function log(ErrorPage $page): void
     {
-        if ($this->logger === null || $page->exception === null) {
+        if ($this->logger === null || $page->exception === null || isset($this->logged[$page->exception])) {
             return;
         }
+        $this->logged[$page->exception] = true;
 
         try {
-            $this->logger->error("Unhandled exception", [
+            $context = [
                 "error_id" => $page->id,
                 "method" => $page->request->getMethod(),
                 "path" => $page->request->getPath(),
                 "exception" => $page->exception,
-            ]);
+            ];
+
+            $requestId = $page->request->headers()->get(
+                $this->requestIds?->headerName ?? "X-Request-Id",
+                ""
+            ) ?? "";
+            if ($requestId !== "") {
+                $context["request_id"] = $requestId;
+            }
+            if ($page->request->getClientIp() !== "") {
+                $context["client_ip"] = $page->request->getClientIp();
+            }
+            if ($page->exception->getPrevious() !== null) {
+                $context["previous_exception"] = $page->exception->getPrevious();
+            }
+
+            $route = $this->context?->get(MatchedRoute::class);
+            if ($route instanceof MatchedRoute) {
+                $entry = $route->getRouteEntry();
+                $context["route_path"] = $entry->getFullPath();
+                $context["route_methods"] = $entry->getMethodList();
+                if ($entry->getName() !== null) {
+                    $context["route_name"] = $entry->getName();
+                }
+                if ($entry->getController() !== null) {
+                    $context["controller"] = $entry->getController();
+                }
+                if ($entry->getMethodName() !== null) {
+                    $context["controller_method"] = $entry->getMethodName();
+                }
+            }
+
+            $this->logger->error("Unhandled exception", $context);
         } catch (Throwable) {
         }
     }

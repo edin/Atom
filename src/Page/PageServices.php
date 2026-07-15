@@ -64,7 +64,7 @@ final readonly class PageServices implements ServiceProviderInterface
             ->to(PageInputHydrator::class)
             ->scoped();
 
-        $bindings->bind(PageStateSerializer::class)
+        $bindings->bind(PageStateSerializerInterface::class)
             ->to(JsonPageStateSerializer::class)
             ->scoped();
     }

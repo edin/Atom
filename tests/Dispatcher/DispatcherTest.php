@@ -19,6 +19,9 @@ use Atom\Http\RequestHandlerInterface;
 use Atom\Http\Response;
 use Atom\Http\TrustedProxyMiddleware;
 use Atom\Http\TrustedProxyOptions;
+use Atom\Hydrator\Attributes\Dto;
+use Atom\Hydrator\Attributes\FromBody;
+use Atom\Hydrator\Attributes\FromRoute;
 use Atom\Modules\ErrorPages\DefaultErrorPageHandler;
 use Atom\Modules\ErrorPages\ErrorPageHandlerInterface;
 use Atom\Modules\ErrorPages\ErrorPagesOptions;
@@ -165,6 +168,24 @@ final class DispatcherTest extends TestCase
         $this->assertSame("https://app.example.com", $response->getContent());
     }
 
+    public function testDispatcherHydratesReadonlyConstructorDtoForRouteAction(): void
+    {
+        $router = new Router();
+        $router->add(RouteEntry::post(
+            "/users/{id}",
+            fn(DispatcherConstructorDto $dto): string => "{$dto->id}:{$dto->name}:{$dto->enabled}"
+        ));
+        $dispatcher = $this->dispatcher($router);
+
+        $response = $dispatcher->handle(new Request(
+            "POST",
+            "/users/42",
+            parsedBody: ["full_name" => " Atom ", "enabled" => "yes"]
+        ));
+
+        $this->assertSame("42:Atom:1", $response->getContent());
+    }
+
     private function converter(Response $response): ResultConverter
     {
         $bindings = Bindings::create();
@@ -232,5 +253,19 @@ final readonly class PlainObjectResult
     public function __toString(): string
     {
         return "plain-object";
+    }
+}
+
+#[Dto]
+final readonly class DispatcherConstructorDto
+{
+    public function __construct(
+        #[FromRoute]
+        public int $id,
+        #[FromBody("full_name")]
+        public string $name,
+        #[FromBody]
+        public bool $enabled = false
+    ) {
     }
 }

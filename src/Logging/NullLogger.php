@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Atom\Logging;
 
-final readonly class NullLogger implements Logger
+final readonly class NullLogger implements LoggerInterface
 {
     public function info(string $message, array $context = []): void
     {

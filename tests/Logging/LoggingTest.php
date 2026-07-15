@@ -8,9 +8,11 @@ use Atom\Application;
 use Atom\Di\Injector;
 use Atom\Logging\FileLogger;
 use Atom\Logging\Log;
-use Atom\Logging\Logger;
+use Atom\Logging\LoggerInterface;
 use Atom\Modules\Logging\Logging;
 use Atom\Modules\Logging\LoggingOptions;
+use Atom\Module\ModuleRegistry;
+use Atom\Http\Request;
 use Atom\Router\Route;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -54,7 +56,7 @@ final class LoggingTest extends TestCase
         $app->initialize();
         $app->registerModule(Logging::file($path));
 
-        $logger = $app->getInjector()->get(Logger::class);
+        $logger = $app->getInjector()->get(LoggerInterface::class);
 
         $this->assertInstanceOf(FileLogger::class, $logger);
 
@@ -77,12 +79,31 @@ final class LoggingTest extends TestCase
 
         $app->registerModule(Logging::module());
 
-        $app->getInjector()->get(Logger::class)->info("Configured");
+        $app->getInjector()->get(LoggerInterface::class)->info("Configured");
 
         $contents = file_get_contents($path);
 
         $this->assertIsString($contents);
         $this->assertStringContainsString("INFO: Configured", $contents);
+    }
+
+    public function testUnhandledExceptionLogsRequestAndRouteContextThroughModule(): void
+    {
+        $path = $this->tempPath();
+        $app = new ExceptionLoggingTestApplication($path);
+
+        $response = $app->handle(new Request("GET", "/explode", serverParams: [
+            "REMOTE_ADDR" => "198.51.100.9",
+        ], headers: ["X-Request-Id" => "request_456"]));
+        $contents = file_get_contents($path);
+
+        $this->assertSame(500, $response->getStatus());
+        $this->assertIsString($contents);
+        $this->assertStringContainsString("ERROR: Unhandled exception", $contents);
+        $this->assertStringContainsString('"request_id":"request_456"', $contents);
+        $this->assertStringContainsString('"client_ip":"198.51.100.9"', $contents);
+        $this->assertStringContainsString('"route_name":"explode"', $contents);
+        $this->assertStringContainsString('"message":"route failed"', $contents);
     }
 
     private function tempPath(): string
@@ -95,5 +116,25 @@ final class LoggingTestApplication extends Application
 {
     protected function bootstrap(Injector $injector): void
     {
+    }
+}
+
+final class ExceptionLoggingTestApplication extends Application
+{
+    public function __construct(private readonly string $logPath)
+    {
+        parent::__construct();
+    }
+
+    protected function modules(ModuleRegistry $modules): void
+    {
+        $modules->add(Logging::file($this->logPath));
+    }
+
+    protected function bootstrap(Injector $injector): void
+    {
+        Route::get("/explode", static function (): never {
+            throw new RuntimeException("route failed");
+        })->name("explode");
     }
 }

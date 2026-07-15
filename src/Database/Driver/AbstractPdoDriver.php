@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Atom\Database\Driver;
 
-use Atom\Database\DatabaseDriver;
+use Atom\Database\DatabaseDriverInterface;
 use PDO;
 
-abstract class AbstractPdoDriver implements DatabaseDriver
+abstract class AbstractPdoDriver implements DatabaseDriverInterface
 {
     /**
      * @param array<int, mixed> $options
