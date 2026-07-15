@@ -20,8 +20,12 @@ use Atom\Dispatcher\ResponseEmitterInterface;
 use Atom\Console\ConsoleApplication;
 use Atom\Console\ConsoleServices;
 use Atom\Http\Request;
+use Atom\Http\CookieJar;
 use Atom\Http\Response;
 use Atom\Http\RequestHandlerInterface;
+use Atom\Http\MiddlewareInterface;
+use Atom\Http\MiddlewareRegistry;
+use Atom\Dispatcher\MiddlewarePipeline;
 use Atom\Module\ModuleContext;
 use Atom\Module\ModuleInterface;
 use Atom\Module\ModuleRegistry;
@@ -34,6 +38,10 @@ use Atom\Profiler\Profiler;
 use Atom\Router\MatchedRoute;
 use Atom\Router\Route;
 use Atom\Router\Router;
+use Atom\Session\SessionInterface;
+use Atom\Session\FlashBag;
+use Atom\Session\SessionServices;
+use Atom\Security\SecurityServices;
 use Atom\Support\Paths;
 use Atom\View\Component\ComponentRegistry;
 use RuntimeException;
@@ -48,6 +56,7 @@ abstract class Application
     private ?ModuleRegistry $modules = null;
     private ?PageRegistry $pages = null;
     private ?Bootstrappers $bootstrappers = null;
+    private ?MiddlewareRegistry $middlewares = null;
     private ?Profiler $profiler = null;
     private ?Bindings $bindings = null;
     private ?Injector $injector = null;
@@ -129,6 +138,16 @@ abstract class Application
         return $this->getInjector()->get(Response::class, $this->currentContext);
     }
 
+    final public function getSession(): SessionInterface
+    {
+        return $this->getInjector()->get(SessionInterface::class, $this->currentContext);
+    }
+
+    final public function getFlash(): FlashBag
+    {
+        return $this->getInjector()->get(FlashBag::class, $this->currentContext);
+    }
+
     final public function getDispatcher(): RequestHandlerInterface
     {
         return $this->getInjector()->get(Dispatcher::class, $this->currentContext);
@@ -142,6 +161,11 @@ abstract class Application
     final public function getConsole(): ConsoleApplication
     {
         return $this->getInjector()->get(ConsoleApplication::class);
+    }
+
+    final public function getMiddlewares(): MiddlewareRegistry
+    {
+        return $this->middlewares ?? throw new RuntimeException("Application has not been initialized.");
     }
 
     final public function registerModule(ModuleInterface $module, string $basePath = ""): void
@@ -161,7 +185,9 @@ abstract class Application
         $providers
             ->add(ConsoleServices::class)
             ->add(DispatcherServices::class)
-            ->add(PageServices::class);
+            ->add(PageServices::class)
+            ->add(SessionServices::class)
+            ->add(SecurityServices::class);
     }
 
     protected function services(ServiceProviderRegistry $providers): void
@@ -177,6 +203,10 @@ abstract class Application
     }
 
     protected function pages(PageRegistry $pages): void
+    {
+    }
+
+    protected function middlewares(MiddlewareRegistry $middlewares): void
     {
     }
 
@@ -272,6 +302,8 @@ abstract class Application
             $this->modules->add(ErrorPages::module());
             $this->pages = new PageRegistry();
             $this->bootstrappers = new Bootstrappers();
+            $this->middlewares = new MiddlewareRegistry();
+            $bindings->value(MiddlewareRegistry::class, $this->middlewares);
 
             Route::setRouter($this->injector->get(Router::class));
 
@@ -281,6 +313,7 @@ abstract class Application
             }
 
             $this->components($this->injector->get(ComponentRegistry::class));
+            $this->middlewares($this->middlewares);
 
             $this->pages($this->pages);
             $pageRegistrar = new PageRouteRegistrar();
@@ -323,14 +356,44 @@ abstract class Application
             $activeRequest = $this->getRequest();
             $response = $this->getProfiler()->measure(
                 "request.dispatch",
-                fn(): Response => $this->getDispatcher()->handle($activeRequest)
+                fn(): Response => (new MiddlewarePipeline(
+                    $this->resolveGlobalMiddlewares(),
+                    $this->getDispatcher()
+                ))->handle($activeRequest)
             );
             $this->addProfilerHeaders($response);
-
-            return $response;
         } catch (Throwable $exception) {
-            return $this->renderException($exception, $request ?? Request::fromGlobals());
+            $response = $this->renderException($exception, $request ?? Request::fromGlobals());
         }
+
+        try {
+            $this->saveSession();
+        } catch (Throwable $exception) {
+            $response = $this->renderException($exception, $request ?? Request::fromGlobals());
+        }
+
+        return $this->applyCookies($response);
+    }
+
+    /** @return MiddlewareInterface[] */
+    private function resolveGlobalMiddlewares(): array
+    {
+        if ($this->middlewares === null || $this->injector === null) {
+            return [];
+        }
+
+        $resolved = [];
+        foreach ($this->middlewares->all() as $middleware) {
+            if (is_string($middleware)) {
+                $middleware = $this->injector->get($middleware, $this->currentContext);
+            }
+            if (!$middleware instanceof MiddlewareInterface) {
+                throw new RuntimeException("Can't initialize global middleware, unsupported definition.");
+            }
+            $resolved[] = $middleware;
+        }
+
+        return $resolved;
     }
 
     final public function run(?Request $request = null): Response
@@ -356,6 +419,28 @@ abstract class Application
 
             $response->header($header, $value);
         }
+    }
+
+    private function saveSession(): void
+    {
+        if ($this->injector === null || $this->currentContext === null) {
+            return;
+        }
+
+        $session = $this->injector->get(SessionInterface::class, $this->currentContext);
+        if ($session instanceof SessionInterface) {
+            $session->save();
+        }
+    }
+
+    private function applyCookies(Response $response): Response
+    {
+        if ($this->injector === null || $this->currentContext === null) {
+            return $response;
+        }
+
+        $cookies = $this->injector->get(CookieJar::class, $this->currentContext);
+        return $cookies instanceof CookieJar ? $cookies->apply($response) : $response;
     }
 
     private function renderException(Throwable $exception, Request $request): Response

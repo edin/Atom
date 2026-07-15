@@ -15,6 +15,9 @@ use Atom\Dispatcher\RouteInvoker;
 use Atom\Di\Injector;
 use Atom\Http\Request;
 use Atom\Http\Response;
+use Atom\Http\CookieJar;
+use Atom\Http\TrustedProxyMiddleware;
+use Atom\Http\CorsMiddleware;
 use Atom\Router\Router;
 use PHPUnit\Framework\TestCase;
 
@@ -31,6 +34,9 @@ final class DispatcherServicesTest extends TestCase
         $this->assertArrayHasKey(Injector::class, $bindings->providers());
         $this->assertArrayHasKey(Router::class, $bindings->providers());
         $this->assertArrayHasKey(Request::class, $bindings->providers());
+        $this->assertArrayHasKey(CookieJar::class, $bindings->providers());
+        $this->assertArrayHasKey(TrustedProxyMiddleware::class, $bindings->providers());
+        $this->assertArrayHasKey(CorsMiddleware::class, $bindings->providers());
         $this->assertArrayHasKey(Response::class, $bindings->providers());
         $this->assertArrayHasKey(ResponseEmitterInterface::class, $bindings->providers());
         $this->assertArrayHasKey(ResultHandlerRegistry::class, $bindings->providers());

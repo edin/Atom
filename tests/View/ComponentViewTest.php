@@ -1744,6 +1744,9 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('new FormData(form)', $script);
         $this->assertStringContainsString('"X-Atom-Event": eventName', $script);
         $this->assertStringContainsString('"X-Atom-Field": name', $script);
+        $this->assertStringContainsString('meta[name="csrf-token"]', $script);
+        $this->assertStringContainsString('input[name="_token"]', $script);
+        $this->assertStringContainsString('headers["X-CSRF-Token"] = token;', $script);
         $this->assertStringContainsString('document.addEventListener("change"', $script);
     }
 

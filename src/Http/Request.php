@@ -11,6 +11,7 @@ final readonly class Request
     private FileCollection $files;
     private ParameterCollection $server;
     private HeaderCollection $headers;
+    private CookieCollection $cookies;
 
     /**
      * @param array<string, mixed> $queryParams
@@ -34,6 +35,7 @@ final readonly class Request
         $this->server = new ParameterCollection($serverParams);
         $this->files = new FileCollection($files);
         $this->headers = $headers === [] ? HeaderCollection::fromServer($serverParams) : new HeaderCollection($headers);
+        $this->cookies = CookieCollection::fromHeader($this->headers->get("Cookie", "") ?? "");
     }
 
     public static function fromGlobals(): self
@@ -70,9 +72,50 @@ final readonly class Request
         );
     }
 
+    /**
+     * @param array<string, mixed> $serverParams
+     * @param array<string, string|string[]|int|float|bool|null>|null $headers
+     */
+    public function withServerParams(array $serverParams, ?array $headers = null): self
+    {
+        return new self(
+            $this->method,
+            $this->path,
+            $this->query->toArray(),
+            $this->post->toArray(),
+            $this->body,
+            $serverParams,
+            $this->files->toArray(),
+            $headers ?? $this->headers->toArray()
+        );
+    }
+
     public function getPath(): string
     {
         return $this->path === "" ? "/" : $this->path;
+    }
+
+    public function isSecure(): bool
+    {
+        return $this->getScheme() === "https";
+    }
+
+    public function getScheme(): string
+    {
+        return in_array(strtolower($this->server->string("HTTPS")), ["1", "on", "true"], true)
+            || $this->server->int("SERVER_PORT") === 443
+            ? "https"
+            : "http";
+    }
+
+    public function getHost(): string
+    {
+        return $this->server->string("HTTP_HOST", $this->headers->get("Host", "") ?? "");
+    }
+
+    public function getClientIp(): string
+    {
+        return $this->server->string("REMOTE_ADDR");
     }
 
     public function query(): ParameterCollection
@@ -98,6 +141,11 @@ final readonly class Request
     public function headers(): HeaderCollection
     {
         return $this->headers;
+    }
+
+    public function cookies(): CookieCollection
+    {
+        return $this->cookies;
     }
 
     /**

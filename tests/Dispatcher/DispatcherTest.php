@@ -17,6 +17,8 @@ use Atom\Http\MiddlewareInterface;
 use Atom\Http\Request;
 use Atom\Http\RequestHandlerInterface;
 use Atom\Http\Response;
+use Atom\Http\TrustedProxyMiddleware;
+use Atom\Http\TrustedProxyOptions;
 use Atom\Modules\ErrorPages\DefaultErrorPageHandler;
 use Atom\Modules\ErrorPages\ErrorPageHandlerInterface;
 use Atom\Modules\ErrorPages\ErrorPagesOptions;
@@ -139,6 +141,28 @@ final class DispatcherTest extends TestCase
         $response = $dispatcher->handle(new Request("POST", "/articles"));
 
         $this->assertSame(405, $response->getStatus());
+    }
+
+    public function testRouteInjectionReceivesRequestDerivedByMiddleware(): void
+    {
+        $router = new Router();
+        $router->add(RouteEntry::get(
+            "/proxy",
+            fn(Request $request): string => $request->getScheme() . "://" . $request->getHost()
+        )->middleware(new TrustedProxyMiddleware(new TrustedProxyOptions("10.0.0.0/8"))));
+        $dispatcher = $this->dispatcher($router);
+
+        $response = $dispatcher->handle(new Request(
+            "GET",
+            "/proxy",
+            serverParams: ["REMOTE_ADDR" => "10.0.0.4"],
+            headers: [
+                "X-Forwarded-Proto" => "https",
+                "X-Forwarded-Host" => "app.example.com",
+            ]
+        ));
+
+        $this->assertSame("https://app.example.com", $response->getContent());
     }
 
     private function converter(Response $response): ResultConverter

@@ -135,12 +135,26 @@
         return String(value).replace(/\\/g, "\\\\").replace(/"/g, "\\\"");
     }
 
+    function csrfToken() {
+        var meta = document.querySelector('meta[name="csrf-token"]');
+        if (meta !== null) {
+            return meta.getAttribute("content") || "";
+        }
+
+        var input = document.querySelector('input[name="_token"]');
+        return input === null ? "" : input.value || "";
+    }
+
     function request(method, url, body, done, fail, headers) {
         var xhr = new XMLHttpRequest();
 
         xhr.open(method, url, true);
         xhr.setRequestHeader("X-Requested-With", "Atom");
         headers = headers || {};
+        var token = csrfToken();
+        if (!/^(GET|HEAD|OPTIONS)$/i.test(method) && token !== "" && !headers["X-CSRF-Token"]) {
+            headers["X-CSRF-Token"] = token;
+        }
         Object.keys(headers).forEach(function (name) {
             xhr.setRequestHeader(name, headers[name]);
         });

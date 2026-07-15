@@ -51,7 +51,7 @@ The framework module registers default UI and form components:
 <Panel title="Articles">...</Panel>
 <Stack gap="sm">...</Stack>
 <Inline align="center" justify="between">...</Inline>
-<Form submit="save">...</Form>
+<Form submit="save" csrf>...</Form>
 <FormActions>...</FormActions>
 <Field label="Title" name="title">...</Field>
 <TextInput name="title" maxlength="120" />
@@ -76,6 +76,8 @@ Use `Badge` for compact status or metadata, and `Tag` for pill-shaped classifica
 `CheckField` renders a hidden unchecked fallback value before the checkbox, so boolean form models receive `"0"` when the box is unchecked and `"1"` when checked.
 
 `HiddenField` binds from the current page or form model like the other field components, but renders only a hidden input without visible field chrome.
+
+Set `csrf` on a non-GET `Form` to prepend the session-backed `_token` field. The target route or route group must use `CsrfMiddleware` to validate it.
 
 ## Properties
 

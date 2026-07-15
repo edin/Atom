@@ -17,6 +17,10 @@ use Atom\Di\ServiceProviderRegistry;
 use Atom\Dispatcher\ResponseEmitterInterface;
 use Atom\Http\Request;
 use Atom\Http\Response;
+use Atom\Http\Cookie;
+use Atom\Http\CorsMiddleware;
+use Atom\Http\CorsOptions;
+use Atom\Http\MiddlewareRegistry;
 use Atom\Page\PageRegistry;
 use Atom\Profiler\Profile;
 use Atom\Profiler\Profiler;
@@ -73,6 +77,33 @@ final class ApplicationTest extends TestCase
         $this->assertSame("Hello Atom", $response->getContent());
         $this->assertNull($app->emitter->response);
         $this->assertSame(["name" => "Atom"], $app->getCurrentRoute()?->getRouteParams());
+    }
+
+    public function testGlobalCorsMiddlewareHandlesPreflightBeforeRouteMatching(): void
+    {
+        $app = new TestCorsApplication();
+
+        $response = $app->handle(new Request("OPTIONS", "/api", headers: [
+            "Origin" => "https://app.example.com",
+            "Access-Control-Request-Method" => "GET",
+        ]));
+
+        $this->assertSame(204, $response->getStatus());
+        $this->assertSame("https://app.example.com", $response->headers()->get("Access-Control-Allow-Origin"));
+        $this->assertContains(CorsMiddleware::class, $app->getMiddlewares()->all());
+    }
+
+    public function testQueuedCookieIsAppliedWhenActionReturnsDifferentResponse(): void
+    {
+        $app = new TestApplication();
+
+        $response = $app->handle(new Request("GET", "/cookie-on-other-response"));
+
+        $this->assertSame("final", $response->getContent());
+        $this->assertSame(
+            ["theme=dark; Path=/; HttpOnly; SameSite=Lax"],
+            $response->headers()->all("Set-Cookie")
+        );
     }
 
     public function testRunAddsProfilerHeadersAndBindsProfiler(): void
@@ -234,6 +265,10 @@ final class TestApplication extends Application
             Profile::measure("custom.work", static fn(): null => null);
 
             return "ok";
+        });
+        Route::get("/cookie-on-other-response", function (Response $response): Response {
+            $response->cookie(Cookie::create("theme", "dark"));
+            return (new Response())->content("final");
         });
     }
 }
@@ -408,6 +443,24 @@ final class TestComponentApplication extends Application
         $this->componentWasAvailableInBootstrap = $injector
             ->get(ComponentRegistry::class)
             ->has("App.Test");
+    }
+}
+
+final class TestCorsApplication extends Application
+{
+    protected function configure(Config $config): void
+    {
+        $config->set(new CorsOptions(allowedOrigins: "https://app.example.com"));
+    }
+
+    protected function middlewares(MiddlewareRegistry $middlewares): void
+    {
+        $middlewares->add(CorsMiddleware::class);
+    }
+
+    protected function bootstrap(Injector $injector): void
+    {
+        Route::get("/api", fn(): string => "api");
     }
 }
 

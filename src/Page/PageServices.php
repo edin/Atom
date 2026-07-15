@@ -29,8 +29,8 @@ final readonly class PageServices implements ServiceProviderInterface
             ->singleton();
 
         $bindings->bind(ComponentFactoryInterface::class)
-            ->toFactory(fn($injector, $context) => new InjectorComponentFactory($injector))
-            ->singleton();
+            ->toFactory(fn($injector, $context) => new InjectorComponentFactory($injector, $context))
+            ->scoped();
 
         $bindings->bind(ComponentHydrator::class)
             ->toSelf()

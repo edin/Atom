@@ -652,6 +652,23 @@ final class PageRendererTest extends TestCase
         $this->assertCount(1, $entries);
         $this->assertTrue($match->isFound());
     }
+
+    public function testPageRouteMiddlewareAppliesToRenderAndActionRoutes(): void
+    {
+        $router = new Router();
+        $descriptor = new \Atom\Page\PageDescriptor(
+            "/articles",
+            \Atom\Tests\View\PageFixtures\ArticleListPage::class,
+            middlewares: [\Atom\Security\CsrfMiddleware::class]
+        );
+
+        $entries = (new PageRouteRegistrar())->register($router, [$descriptor]);
+
+        $this->assertCount(2, $entries);
+        foreach ($entries as $entry) {
+            $this->assertSame([\Atom\Security\CsrfMiddleware::class], $entry->getOwnMiddlewares());
+        }
+    }
 }
 
 final class RenderedTestPage extends Page

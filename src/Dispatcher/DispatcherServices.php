@@ -9,8 +9,11 @@ use Atom\Di\InjectionContext;
 use Atom\Di\Injector;
 use Atom\Di\ServiceProviderInterface;
 use Atom\Http\Request;
+use Atom\Http\CookieJar;
 use Atom\Http\RequestHandlerInterface;
 use Atom\Http\Response;
+use Atom\Http\TrustedProxyMiddleware;
+use Atom\Http\CorsMiddleware;
 use Atom\Hydrator\DtoTypeFactory;
 use Atom\Router\Router;
 
@@ -34,8 +37,22 @@ final class DispatcherServices implements ServiceProviderInterface
             ->toFactory(fn() => Request::fromGlobals())
             ->scoped();
 
+        $bindings->bind(CookieJar::class)
+            ->toSelf()
+            ->scoped();
+
+        $bindings->bind(TrustedProxyMiddleware::class)
+            ->toSelf()
+            ->scoped();
+
+        $bindings->bind(CorsMiddleware::class)
+            ->toSelf()
+            ->scoped();
+
         $bindings->bind(Response::class)
-            ->toFactory(fn() => new Response())
+            ->toFactory(fn(Injector $injector, InjectionContext $context) => new Response(
+                $injector->get(CookieJar::class, $context)
+            ))
             ->scoped();
 
         $bindings->bind(ResponseEmitterInterface::class)

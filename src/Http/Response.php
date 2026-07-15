@@ -10,10 +10,26 @@ class Response
     private HeaderCollection $headers;
     private ResponseBodyInterface $body;
 
-    public function __construct()
+    public function __construct(private ?CookieJar $cookieJar = null)
     {
         $this->headers = new HeaderCollection();
         $this->body = new ContentStream();
+    }
+
+    public function cookie(Cookie $cookie): self
+    {
+        if ($this->cookieJar !== null) {
+            $this->cookieJar->set($cookie);
+        } else {
+            $this->addHeader("Set-Cookie", $cookie->toHeader());
+        }
+
+        return $this;
+    }
+
+    public function removeCookie(string $name, string $path = "/", string $domain = ""): self
+    {
+        return $this->cookie(Cookie::forget($name, $path, $domain));
     }
 
     public function status(int $status): self

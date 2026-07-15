@@ -47,6 +47,8 @@ final readonly class PageRouteRegistrar
                 $entry->name($descriptor->name);
             }
 
+            $this->applyMiddlewares($entry, $descriptor->middlewares);
+
             $router->add($entry);
             $entries[] = $entry;
 
@@ -56,6 +58,8 @@ final readonly class PageRouteRegistrar
                     $this->joinPaths($pathPrefix, $descriptor->path),
                     RouteAction::method(PageActionHandler::class, "handle")
                 )->metadata(new PageRouteMetadata($descriptor->pageClass));
+
+                $this->applyMiddlewares($actionEntry, $descriptor->middlewares);
 
                 $router->add($actionEntry);
                 $entries[] = $actionEntry;
@@ -101,5 +105,15 @@ final readonly class PageRouteRegistrar
     private function actionMethods(string $pageClass): array
     {
         return $this->actions->methods($pageClass);
+    }
+
+    /**
+     * @param array<class-string<\Atom\Http\MiddlewareInterface>|\Atom\Http\MiddlewareInterface> $middlewares
+     */
+    private function applyMiddlewares(RouteEntry $entry, array $middlewares): void
+    {
+        foreach ($middlewares as $middleware) {
+            $entry->middleware($middleware);
+        }
     }
 }

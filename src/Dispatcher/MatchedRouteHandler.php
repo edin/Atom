@@ -22,6 +22,8 @@ final readonly class MatchedRouteHandler implements RequestHandlerInterface
 
     public function handle(Request $request): Response
     {
+        $this->context->set(Request::class, $request);
+
         return $this->resultConverter->toResponse(
             $this->invoker->invoke($this->route, $this->context),
             $this->context

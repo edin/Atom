@@ -74,6 +74,8 @@ The base application registers framework services for:
 - legacy PHP views
 - router
 - request and response wrappers
+- lazy, request-scoped sessions and flash data
+- session-backed CSRF tokens and route middleware
 
 Application providers are added on top of those defaults.
 
