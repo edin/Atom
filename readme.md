@@ -13,14 +13,15 @@ The current direction is:
 - a lightweight database/query/ORM layer with migrations and model base classes
 - console command discovery
 
-The repository now contains both the framework and a sample app:
+The repository contains the framework, a sample API application, and a component showcase:
 
 ```text
 .
 ├── src/          Framework source
 ├── tests/        Framework tests
 ├── docs/         Framework documentation
-└── sample/       Sample application
+├── sample/       Sample application and API
+└── showcase/     Framework component showcase
 ```
 
 ## Requirements
@@ -29,7 +30,7 @@ The repository now contains both the framework and a sample app:
 - Composer
 - PDO SQLite for the sample app
 
-## Install
+## Install framework dependencies
 
 From the framework root:
 
@@ -40,7 +41,9 @@ composer check
 
 Run checks individually with `composer analyse` and `composer test`.
 
-From the sample app:
+## Run the sample API
+
+From the framework root:
 
 ```powershell
 cd sample
@@ -51,11 +54,27 @@ php atom db:seed
 php -S 127.0.0.1:8021 -t public public/server.php
 ```
 
-Open:
+Once the server is running, open:
 
 ```text
-http://127.0.0.1:8021
+Sample app:    http://127.0.0.1:8021/
+Sample API:    http://127.0.0.1:8021/api/articles
+API Explorer:  http://127.0.0.1:8021/atom/api/explorer
 ```
+
+The API Explorer lists the sample API routes and lets you inspect and execute their requests. Keep the server command running while using the app or explorer.
+
+## Run the component showcase
+
+From the framework root, in a separate terminal if the sample API is still running:
+
+```powershell
+cd showcase
+composer install
+php -S 127.0.0.1:8022 -t public
+```
+
+Open `http://127.0.0.1:8022/`. Use the showcase navigation to browse the framework components and their variants.
 
 ## Sample Shape
 

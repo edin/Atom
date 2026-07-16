@@ -46,7 +46,7 @@ final class Application extends \Atom\Application
     protected function components(ComponentRegistry $components): void
     {
         $components
-            ->register("Table", Table::class)
+            ->register("Sample.Table", Table::class)
             ->register("ConfirmDialog", ConfirmDialog::class);
     }
 

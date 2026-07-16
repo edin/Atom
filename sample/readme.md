@@ -24,11 +24,15 @@ php atom db:seed
 php -S 127.0.0.1:8021 -t public public/server.php
 ```
 
-Open:
+Once the server is running, open:
 
 ```text
-http://127.0.0.1:8021
+Sample app:    http://127.0.0.1:8021/
+Sample API:    http://127.0.0.1:8021/api/articles
+API Explorer:  http://127.0.0.1:8021/atom/api/explorer
 ```
+
+The API Explorer lists the sample API routes and lets you inspect and execute their requests.
 
 ## Useful Commands
 
