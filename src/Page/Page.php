@@ -56,6 +56,7 @@ abstract class Page
         return $this->validation->passed();
     }
 
+    /** @param array<string, mixed>|object $model */
     protected function validateModel(array|object $model, string|null $className = null): bool
     {
         $this->validation = Validator::for($className ?? (is_object($model) ? $model::class : null))->validate($model);

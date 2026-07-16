@@ -10,16 +10,27 @@ use IteratorAggregate;
 use JsonSerializable;
 use Traversable;
 
-/** @phpstan-consistent-constructor */
+/**
+ * @template TValue
+ * @implements IteratorAggregate<array-key, TValue>
+ * @phpstan-consistent-constructor
+ */
 class ReadOnlyCollection implements Countable, IteratorAggregate, JsonSerializable
 {
+    /** @var array<array-key, TValue> */
     protected array $items = [];
 
+    /** @param iterable<array-key, TValue> $items */
     public function __construct(iterable $items)
     {
         $this->items = is_array($items) ? $items : iterator_to_array($items);
     }
 
+    /**
+     * @template TItem
+     * @param iterable<array-key, TItem> $items
+     * @return static<TItem>
+     */
     public static function from(iterable $items): static
     {
         return new static($items);
@@ -30,6 +41,7 @@ class ReadOnlyCollection implements Countable, IteratorAggregate, JsonSerializab
         return in_array($value, $this->items, true);
     }
 
+    /** @param iterable<mixed> $values */
     public function containsAny(iterable $values): bool
     {
         foreach ($values as $value) {
@@ -41,6 +53,7 @@ class ReadOnlyCollection implements Countable, IteratorAggregate, JsonSerializab
         return false;
     }
 
+    /** @param iterable<mixed> $values */
     public function containsAll(iterable $values): bool
     {
         foreach ($values as $value) {
@@ -67,23 +80,37 @@ class ReadOnlyCollection implements Countable, IteratorAggregate, JsonSerializab
         return count($this->items) > 0;
     }
 
+    /** @return array<array-key, TValue> */
     public function toArray(): array
     {
         return $this->items;
     }
 
+    /**
+     * @param callable(TValue): bool $predicate
+     * @return static<TValue>
+     */
     public function filter(callable $predicate): static
     {
         $items = array_values(array_filter($this->items, $predicate));
         return new static($items);
     }
 
+    /**
+     * @template TMapped
+     * @param callable(TValue): TMapped $mapper
+     * @return static<TMapped>
+     */
     public function map(callable $mapper): static
     {
         $items = array_map($mapper, $this->items);
         return new static($items);
     }
 
+    /**
+     * @param callable(TValue): mixed $mapper
+     * @return static<mixed>
+     */
     public function flatMap(callable $mapper): static
     {
         $items = array_map($mapper, $this->items);
@@ -100,27 +127,41 @@ class ReadOnlyCollection implements Countable, IteratorAggregate, JsonSerializab
         return new static($result);
     }
 
+    /**
+     * @template TAccumulator
+     * @param callable(TAccumulator, TValue): TAccumulator $reducer
+     * @param TAccumulator $initial
+     * @return TAccumulator
+     */
     public function reduce(callable $reducer, mixed $initial = null): mixed
     {
         return array_reduce($this->items, $reducer, $initial);
     }
 
+    /** @return static<TValue> */
     public function reversed(): static
     {
         $items = array_reverse($this->items, false);
         return new static($items);
     }
 
+    /** @return TValue|null */
     public function first(): mixed
     {
         return $this->items[0] ?? null;
     }
 
+    /**
+     * @template TDefault
+     * @param TDefault $default
+     * @return TValue|TDefault
+     */
     public function at(int $index, mixed $default = null): mixed
     {
         return $this->items[$index] ?? $default;
     }
 
+    /** @return TValue|null */
     public function last(): mixed
     {
         if (count($this->items) > 0) {
@@ -131,6 +172,10 @@ class ReadOnlyCollection implements Countable, IteratorAggregate, JsonSerializab
         return null;
     }
 
+    /**
+     * @param iterable<array-key, TValue> $list
+     * @return static<TValue>
+     */
     public function concat(iterable $list): static
     {
         $items = is_array($list) ? $list : iterator_to_array($list);
@@ -138,36 +183,43 @@ class ReadOnlyCollection implements Countable, IteratorAggregate, JsonSerializab
         return new static($items);
     }
 
+    /** @return static<TValue> */
     public function slice(int $offset, ?int $length = null): static
     {
         return new static(array_slice($this->items, $offset, $length));
     }
 
+    /** @return static<TValue> */
     public function take(int $count): static
     {
         return $this->slice(0, $count);
     }
 
+    /** @return static<TValue> */
     public function skip(int $count): static
     {
         return $this->slice($count);
     }
 
+    /** @return Traversable<array-key, TValue> */
     public function getIterator(): Traversable
     {
         return new ArrayIterator($this->items);
     }
 
+    /** @return list<array-key> */
     public function keys(): array
     {
         return array_keys($this->items);
     }
 
+    /** @return list<TValue> */
     public function values(): array
     {
         return array_values($this->items);
     }
 
+    /** @return static<TValue> */
     public function unique(): static
     {
         return new static(array_values(array_unique($this->items)));
@@ -183,11 +235,16 @@ class ReadOnlyCollection implements Countable, IteratorAggregate, JsonSerializab
         return $this->items;
     }
 
+    /** @return static<non-empty-list<TValue>> */
     public function chunkBy(int $size): static
     {
         return new static(array_chunk($this->items, $size));
     }
 
+    /**
+     * @param (callable(TValue, TValue): int)|null $comparator
+     * @return static<TValue>
+     */
     public function sorted(?callable $comparator = null): static
     {
         $items = $this->items;
@@ -199,6 +256,7 @@ class ReadOnlyCollection implements Countable, IteratorAggregate, JsonSerializab
         return new static($items);
     }
 
+    /** @param callable(TValue, array-key, self<TValue>): mixed $callback */
     public function each(callable $callback): static
     {
         foreach ($this->items as $key => $value) {

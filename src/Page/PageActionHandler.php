@@ -265,6 +265,7 @@ final readonly class PageActionHandler
     }
 
     /**
+     * @param ReflectionClass<covariant object> $reflection
      * @return string[]
      */
     private function availableActionNames(ReflectionClass $reflection): array
@@ -289,6 +290,7 @@ final readonly class PageActionHandler
     }
 
     /**
+     * @param ReflectionClass<covariant object> $reflection
      * @return string[]
      */
     private function availableHttpMethods(ReflectionClass $reflection, string $actionName): array

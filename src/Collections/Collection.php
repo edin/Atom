@@ -6,6 +6,11 @@ namespace Atom\Collections;
 
 use ArrayAccess;
 
+/**
+ * @template TValue
+ * @extends ReadOnlyCollection<TValue>
+ * @implements ArrayAccess<array-key, TValue>
+ */
 class Collection extends ReadOnlyCollection implements ArrayAccess
 {
     public function add(mixed $value): void
@@ -45,12 +50,14 @@ class Collection extends ReadOnlyCollection implements ArrayAccess
         $this->items = array_values(array_filter($this->items, $predicate));
     }
 
+    /** @param iterable<array-key, TValue> $source */
     public function include(iterable $source): void
     {
         $items = is_array($source) ? $source : iterator_to_array($source);
         $this->items = array_merge($this->items, $items);
     }
 
+    /** @param iterable<array-key, mixed> $source */
     public function exclude(iterable $source): void
     {
         $items = is_array($source) ? $source : iterator_to_array($source);

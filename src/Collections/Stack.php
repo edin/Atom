@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace Atom\Collections;
 
+/**
+ * @template TValue
+ * @extends ReadOnlyCollection<TValue>
+ */
 class Stack extends ReadOnlyCollection
 {
     public function push(mixed $value): void

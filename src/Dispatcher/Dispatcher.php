@@ -99,6 +99,7 @@ final class Dispatcher implements RequestHandlerInterface
         return $request->withMethod("GET");
     }
 
+    /** @return list<MiddlewareInterface> */
     private function resolveMiddlewares(MatchedRoute $route, InjectionContext $context): array
     {
         $middlewares = $route->getMiddlewares();

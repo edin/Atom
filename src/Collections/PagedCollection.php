@@ -4,12 +4,21 @@ declare(strict_types=1);
 
 namespace Atom\Collections;
 
+/**
+ * @template TValue
+ * @extends ReadOnlyCollection<TValue>
+ */
 class PagedCollection extends ReadOnlyCollection
 {
     private int $currentPage = 1;
     private int $pageSize = 0;
     private int $totalCount = 0;
 
+    /**
+     * @template TItem
+     * @param iterable<array-key, TItem> $items
+     * @return static<TItem>
+     */
     public static function fromPage(iterable $items, int $totalCount, int $currentPage, int $pageSize): static
     {
         if ($pageSize <= 0) {

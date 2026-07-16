@@ -1,0 +1,49 @@
+name: Quality
+
+on:
+    push:
+    pull_request:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: quality-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    quality:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v6
+
+            - name: Set up PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: "8.4"
+                  extensions: pdo_sqlite
+                  coverage: none
+                  tools: composer:v2
+
+            - name: Locate Composer cache
+              id: composer-cache
+              run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+            - name: Cache Composer downloads
+              uses: actions/cache@v5
+              with:
+                  path: ${{ steps.composer-cache.outputs.dir }}
+                  key: composer-${{ runner.os }}-php-8.4-${{ hashFiles('composer.lock') }}
+                  restore-keys: composer-${{ runner.os }}-php-8.4-
+
+            - name: Validate Composer configuration
+              run: composer validate --strict
+
+            - name: Install dependencies
+              run: composer install --no-interaction --prefer-dist --no-progress
+
+            - name: Run quality checks
+              run: composer check

@@ -34,7 +34,8 @@ final readonly class PageActionDiscovery
     }
 
     /**
-     * @return ReflectionClass[]
+     * @param ReflectionClass<Page> $page
+     * @return list<ReflectionClass<covariant object>>
      */
     private function targets(ReflectionClass $page): array
     {
@@ -42,8 +43,9 @@ final readonly class PageActionDiscovery
     }
 
     /**
+     * @param ReflectionClass<covariant object> $class
      * @param array<class-string, true> $visited
-     * @return ReflectionClass[]
+     * @return list<ReflectionClass<covariant object>>
      */
     private function collectTargets(ReflectionClass $class, int $depth, array $visited): array
     {
@@ -84,6 +86,7 @@ final readonly class PageActionDiscovery
     }
 
     /**
+     * @param ReflectionClass<covariant object> $reflection
      * @return string[]
      */
     private function targetMethods(ReflectionClass $reflection): array
