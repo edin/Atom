@@ -62,7 +62,7 @@ final readonly class PageRenderer
             "currentPath" => $this->currentPath(),
         ];
 
-        $templatePath = $this->viewLocator->locate($page::class);
+        $templatePath = $this->viewLocator->locate($page);
         $template = $this->templates->remember(
             $templatePath,
             fn(): TemplateNode => Profile::measure(

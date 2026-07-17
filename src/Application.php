@@ -27,6 +27,8 @@ use Atom\Http\Response;
 use Atom\Http\RequestHandlerInterface;
 use Atom\Http\MiddlewareInterface;
 use Atom\Http\MiddlewareRegistry;
+use Atom\Identity\IdentityServices;
+use Atom\Identity\AuthenticatorInterface;
 use Atom\Dispatcher\MiddlewarePipeline;
 use Atom\Dispatcher\ExceptionRenderingRequestHandler;
 use Atom\Module\ModuleContext;
@@ -146,6 +148,11 @@ abstract class Application
         return $this->getInjector()->get(SessionInterface::class, $this->currentContext);
     }
 
+    final public function getAuthenticator(): AuthenticatorInterface
+    {
+        return $this->getInjector()->get(AuthenticatorInterface::class, $this->currentContext);
+    }
+
     final public function getCache(): CacheInterface
     {
         return $this->getInjector()->get(CacheInterface::class, $this->currentContext);
@@ -194,6 +201,7 @@ abstract class Application
             ->add(CacheServices::class)
             ->add(ConsoleServices::class)
             ->add(DispatcherServices::class)
+            ->add(IdentityServices::class)
             ->add(PageServices::class)
             ->add(SessionServices::class)
             ->add(SecurityServices::class);

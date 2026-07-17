@@ -185,12 +185,15 @@ $user->save();
 ## Documentation
 
 - [Documentation Index](docs/Index.md)
+- [Deployment](docs/Deployment.md)
 - [Pages and View Engine](docs/PagesAndViews.md)
 - [Components](docs/Components.md)
 - [Router](docs/Router.md)
 - [Database](docs/Database.md)
 - [Configuration](docs/Configuration.md)
 - [Dependency Injection](docs/DependencyInjection.md)
+- [Identity and Authentication](docs/Identity.md)
+- [Accounts Module](docs/Accounts.md)
 - [Console](docs/Console.md)
 - [Service Providers](docs/ServiceProviders.md)
 - [Middlewares](docs/Middlewares.md)

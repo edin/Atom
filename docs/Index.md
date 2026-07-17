@@ -4,6 +4,7 @@ Atom is currently organized as one framework package plus a sample app.
 
 The main concepts are:
 
+- [Deployment](Deployment.md)
 - [Application and Service Providers](ServiceProviders.md)
 - [Pages and View Engine](PagesAndViews.md)
 - [SIPA](SIPA.md)
@@ -12,6 +13,8 @@ The main concepts are:
 - [Modules](Modules.md)
 - [Paths](Paths.md)
 - [Logging](Logging.md)
+- [Identity and Authentication](Identity.md)
+- [Accounts Module](Accounts.md)
 - [Sessions](Sessions.md)
 - [Cookies](Cookies.md)
 - [CSRF Protection](Csrf.md)
@@ -68,7 +71,8 @@ Pages own browser-facing workflows. Controllers are still useful for APIs.
 ├── src/
 ├── tests/
 ├── docs/
-└── sample/
+├── sample/
+└── showcase/
 ```
 
 The sample app depends on the local framework package through:

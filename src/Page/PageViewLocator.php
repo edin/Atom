@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace Atom\Page;
 
 use ReflectionClass;
+use ReflectionObject;
 
 final readonly class PageViewLocator
 {
     /**
-     * @param class-string<Page> $pageClass
+     * @param Page|class-string<Page> $page
      */
-    public function locate(string $pageClass): string
+    public function locate(Page|string $page): string
     {
-        $reflection = new ReflectionClass($pageClass);
-        $template = $this->customTemplate($reflection);
+        $reflection = is_object($page) ? new ReflectionObject($page) : new ReflectionClass($page);
+        $template = is_object($page) ? $page->template() : $this->customTemplate($reflection);
 
         if ($template !== null) {
             return $this->resolveCustomTemplate($reflection, $template);
@@ -22,7 +23,7 @@ final readonly class PageViewLocator
 
         $fileName = $reflection->getFileName();
         if ($fileName === false) {
-            throw new PageViewLocatorException("Cannot locate view for page '{$pageClass}'.");
+            throw new PageViewLocatorException("Cannot locate view for page '{$reflection->getName()}'.");
         }
 
         $path = dirname($fileName) . DIRECTORY_SEPARATOR . pathinfo($fileName, PATHINFO_FILENAME) . ".atom.html";

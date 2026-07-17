@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex, nofollow">
+    <title>{{ $this->title }}</title>
+    <link rel="stylesheet" href="{{ $this->stylesheet }}">
+</head>
+<body class="atom-accounts">
+    <main class="accounts-shell">
+        <section class="accounts-card" aria-labelledby="accounts-title">
+            <div class="accounts-mark" aria-hidden="true">A</div>
+            <header class="accounts-header">
+                <p class="accounts-eyebrow">Account</p>
+                <h1 id="accounts-title">{{ $this->title }}</h1>
+                <p>Enter your credentials to continue.</p>
+            </header>
+
+            @if($this->error !== "")
+                <div class="accounts-error" role="alert">{{ $this->error }}</div>
+            @endif
+
+            <form method="post" action="{{ $this->action }}" class="accounts-form">
+                <input type="hidden" name="_token" value="{{ $this->csrfToken }}">
+                <input type="hidden" name="_action" value="login">
+                <input type="hidden" name="return" value="{{ $this->returnTo }}">
+
+                <label class="accounts-field">
+                    <span>Login</span>
+                    <input
+                        type="text"
+                        name="login"
+                        value="{{ $this->login }}"
+                        autocomplete="username"
+                        required
+                        autofocus
+                    >
+                </label>
+
+                <label class="accounts-field">
+                    <span>Password</span>
+                    <input
+                        type="password"
+                        name="password"
+                        autocomplete="current-password"
+                        required
+                    >
+                </label>
+
+                <button type="submit" class="accounts-submit">Sign in</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>
