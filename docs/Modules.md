@@ -2,7 +2,8 @@
 
 [Atom Framework](Index.md)
 
-Modules are pluggable framework or application features. A module can register routes, components, resources, pages, and later services or commands.
+Modules are pluggable framework or application features. A module can register bindings, routes,
+components, resources, pages, commands, background jobs, and scheduled tasks.
 
 ```php
 use Atom\Module\ModuleContext;
@@ -52,9 +53,31 @@ $context->bind(SomeService::class)->toSelf()->singleton();
 $context->route($entry);
 $context->component("TagName", ComponentClass::class);
 $context->component("Feature.AppShell", AppShell::class);
-$context->pages(__DIR__ . "/UI/Pages");
+$context->commands(__DIR__ . "/Commands", __NAMESPACE__ . "\\Commands");
+$context->jobs(FeatureJob::class);
+$context->schedule(static function (Schedule $schedule): void {
+    $schedule->command("feature:cleanup")->daily();
+});
+$context->pages(__DIR__ . "/UI/Pages", [
+    ModulePageMiddleware::class,
+]);
 $context->resources("/resources", __DIR__ . "/UI/Resources");
 ```
+
+Command directories registered through `ModuleContext::commands()` are added to the normal console discovery sources. Commands can extend `Command` or expose methods marked with `#[ConsoleCommand]`. Only installed modules contribute their commands.
+
+```php
+final readonly class FeatureCommands
+{
+    #[ConsoleCommand("feature:publish", "Publish feature scaffolding")]
+    public function publish(): int
+    {
+        return 0;
+    }
+}
+```
+
+Register module commands during normal application initialization, before `ConsoleApplication` is first resolved.
 
 The module convention is:
 

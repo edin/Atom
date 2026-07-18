@@ -28,6 +28,7 @@ use Atom\Http\RequestHandlerInterface;
 use Atom\Http\MiddlewareInterface;
 use Atom\Http\MiddlewareRegistry;
 use Atom\Identity\IdentityServices;
+use Atom\Mail\MailServices;
 use Atom\Identity\AuthenticatorInterface;
 use Atom\Dispatcher\MiddlewarePipeline;
 use Atom\Dispatcher\ExceptionRenderingRequestHandler;
@@ -37,6 +38,9 @@ use Atom\Module\ModuleRegistry;
 use Atom\Modules\ErrorPages\ErrorPageHandlerInterface;
 use Atom\Modules\ErrorPages\ErrorPages;
 use Atom\Page\PageRegistry;
+use Atom\Publish\PublishServices;
+use Atom\Queue\JobRegistry;
+use Atom\Queue\QueueServices;
 use Atom\Page\PageRouteRegistrar;
 use Atom\Page\PageServices;
 use Atom\Profiler\Profiler;
@@ -47,6 +51,8 @@ use Atom\Session\SessionInterface;
 use Atom\Session\FlashBag;
 use Atom\Session\SessionServices;
 use Atom\Security\SecurityServices;
+use Atom\Scheduler\Schedule;
+use Atom\Scheduler\ScheduleServices;
 use Atom\Support\Paths;
 use Atom\View\Component\ComponentRegistry;
 use RuntimeException;
@@ -202,7 +208,11 @@ abstract class Application
             ->add(ConsoleServices::class)
             ->add(DispatcherServices::class)
             ->add(IdentityServices::class)
+            ->add(MailServices::class)
             ->add(PageServices::class)
+            ->add(PublishServices::class)
+            ->add(QueueServices::class)
+            ->add(ScheduleServices::class)
             ->add(SessionServices::class)
             ->add(SecurityServices::class);
     }
@@ -224,6 +234,14 @@ abstract class Application
     }
 
     protected function middlewares(MiddlewareRegistry $middlewares): void
+    {
+    }
+
+    protected function jobs(JobRegistry $jobs): void
+    {
+    }
+
+    protected function schedule(Schedule $schedule): void
     {
     }
 
@@ -280,7 +298,11 @@ abstract class Application
         try {
             $root = $this->rootPath();
             $paths = new Paths($root);
-            $paths->alias("app", $root . "/app");
+            $paths
+                ->alias("app", $root . "/app")
+                ->alias("database", $root . "/app/Database")
+                ->alias("migrations", $root . "/app/Database/Migrations")
+                ->alias("seeders", $root . "/app/Database/Seeders");
             $this->paths = $paths;
             $this->configurePaths($paths);
 
@@ -324,6 +346,9 @@ abstract class Application
 
             Route::setRouter($this->injector->get(Router::class));
 
+            $this->jobs($this->injector->get(JobRegistry::class));
+            $this->schedule($this->injector->get(Schedule::class));
+
             $this->modules($this->modules);
             foreach ($this->modules->all() as $registration) {
                 $this->registerModule($registration->module, $registration->basePath);
@@ -338,7 +363,8 @@ abstract class Application
                 $pageRegistrar->registerDirectory(
                     $this->getRouter(),
                     $paths->resolve($directory->directory),
-                    $directory->pathPrefix
+                    $directory->pathPrefix,
+                    $directory->middlewares
                 );
             }
 

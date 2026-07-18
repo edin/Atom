@@ -188,7 +188,7 @@ final class ApplicationTest extends TestCase
         $this->assertSame("Injected", $service->options->name);
     }
 
-    public function testRootAndAppPathAliasesAreRegisteredByDefault(): void
+    public function testFrameworkPathAliasesAreRegisteredByDefault(): void
     {
         $app = new TestApplication();
         $app->initialize();
@@ -197,6 +197,9 @@ final class ApplicationTest extends TestCase
 
         $this->assertSame($root, $app->getPaths()->resolve("@root"));
         $this->assertSame($root . "/app", $app->getPaths()->resolve("@app"));
+        $this->assertSame($root . "/app/Database", $app->getPaths()->resolve("@database"));
+        $this->assertSame($root . "/app/Database/Migrations", $app->getPaths()->resolve("@migrations"));
+        $this->assertSame($root . "/app/Database/Seeders", $app->getPaths()->resolve("@seeders"));
     }
 
     public function testPathsAreConfiguredBeforeEnvironmentFiles(): void

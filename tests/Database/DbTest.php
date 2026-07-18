@@ -9,7 +9,6 @@ use Atom\Config\Config;
 use Atom\Database\DatabaseConnection;
 use Atom\Database\DatabaseConfig;
 use Atom\Database\DatabaseDriverInterface;
-use Atom\Database\DatabasePaths;
 use Atom\Database\DatabaseServices;
 use Atom\Database\Db;
 use Atom\Database\Driver\SqliteDriver;
@@ -324,47 +323,24 @@ final class DbTest extends TestCase
         $this->assertSame($connection, $db->connection());
     }
 
-    public function testDatabaseServicesCanBeCreatedFromConfigAndPathAliases(): void
+    public function testDatabaseServicesUseConventionalPathAliases(): void
     {
         $config = Config::fromEnv([
             "DB_DRIVER" => "sqlite",
             "DB_DATABASE" => "storage/app.sqlite",
-            "DB_PATH_ROOT" => "@root",
-            "DB_PATH_MIGRATIONS" => "@app/Migrations",
-            "DB_PATH_SEEDERS" => "@app/Seeders",
         ]);
         $paths = (new Paths())
             ->alias("root", "D:/Atom")
-            ->alias("app", "D:/Atom/app");
+            ->alias("migrations", "D:/Atom/app/Database/Migrations")
+            ->alias("seeders", "D:/Atom/app/Database/Seeders");
 
         $injector = ServiceProviderRegistry::create()
             ->add(DatabaseServices::fromConfig($config, $paths))
             ->injector();
 
         $this->assertSame("sqlite:D:/Atom/storage/app.sqlite", $injector->get(DatabaseDriverInterface::class)->dsn());
-        $this->assertSame("D:/Atom/app/Migrations", $injector->get(\Atom\Database\Migration\MigrationOptions::class)->directory);
-        $this->assertSame("D:/Atom/app/Seeders", $injector->get(\Atom\Database\Seeder\SeederOptions::class)->directory);
-    }
-
-    public function testDatabasePathOptionsCanBeOverriddenExplicitly(): void
-    {
-        $config = Config::fromEnv([
-            "DB_DRIVER" => "sqlite",
-            "DB_DATABASE" => ":memory:",
-        ]);
-        $config->set(new DatabasePaths(
-            root: "@root",
-            migrations: "@root/database/migrations",
-            seeders: "@root/database/seeders"
-        ));
-
-        $paths = (new Paths())->alias("root", "D:/Atom");
-        $injector = ServiceProviderRegistry::create()
-            ->add(DatabaseServices::fromConfig($config, $paths))
-            ->injector();
-
-        $this->assertSame("D:/Atom/database/migrations", $injector->get(\Atom\Database\Migration\MigrationOptions::class)->directory);
-        $this->assertSame("D:/Atom/database/seeders", $injector->get(\Atom\Database\Seeder\SeederOptions::class)->directory);
+        $this->assertSame("D:/Atom/app/Database/Migrations", $injector->get(\Atom\Database\Migration\MigrationOptions::class)->directory);
+        $this->assertSame("D:/Atom/app/Database/Seeders", $injector->get(\Atom\Database\Seeder\SeederOptions::class)->directory);
     }
 
     public function testDatabaseServicesCreatesSqliteStorageDirectoryFromConfig(): void
@@ -374,7 +350,10 @@ final class DbTest extends TestCase
             "DB_DRIVER" => "sqlite",
             "DB_DATABASE" => "storage/nested/app.sqlite",
         ]);
-        $paths = (new Paths())->alias("root", $root)->alias("app", $root . "/app");
+        $paths = (new Paths())
+            ->alias("root", $root)
+            ->alias("migrations", $root . "/app/Database/Migrations")
+            ->alias("seeders", $root . "/app/Database/Seeders");
 
         DatabaseServices::fromConfig($config, $paths);
 

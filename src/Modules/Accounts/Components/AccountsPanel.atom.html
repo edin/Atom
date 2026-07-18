@@ -1,0 +1,14 @@
+<section class="accounts-card" aria-labelledby="accounts-title">
+    <div class="accounts-mark" aria-hidden="true">A</div>
+    <header class="accounts-header">
+        @if($this->eyebrow !== "")
+            <p class="accounts-eyebrow">{{ $this->eyebrow }}</p>
+        @endif
+        <h1 id="accounts-title">{{ $this->title }}</h1>
+        @if($this->description !== "")
+            <p>{{ $this->description }}</p>
+        @endif
+    </header>
+
+    {{ $context->fragmentHtml($this->content) }}
+</section>

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Atom\Modules\Accounts\UI\Pages;
+namespace Atom\Modules\Accounts\Pages;
 
 use Atom\Http\Request;
 use Atom\Http\Response;
@@ -10,19 +10,25 @@ use Atom\Identity\AuthenticatorInterface;
 use Atom\Modules\Accounts\AccountsOptions;
 use Atom\Modules\Accounts\AccountsRedirects;
 use Atom\Modules\Accounts\AccountsRoutes;
-use Atom\Page\Page;
+use Atom\Modules\Accounts\Middlewares\LoginRateLimitMiddleware;
 use Atom\Page\PageAction;
 use Atom\Page\PageRoute;
 use Atom\Security\CsrfTokenManagerInterface;
 
-#[PageRoute("/login", name: "atom.accounts.login")]
-final class LoginPage extends Page
+#[PageRoute(
+    "/login",
+    name: "atom.accounts.login",
+    middleware: LoginRateLimitMiddleware::class,
+    title: "Sign in",
+    description: "Display or submit the account login form."
+)]
+final class LoginPage extends AccountsPage
 {
-    public string $title = "Sign in";
     public string $action = "";
-    public string $stylesheet = "";
     public string $csrfToken = "";
     public string $returnTo = "/";
+    public string $registerUrl = "";
+    public string $forgotPasswordUrl = "";
     public string $login = "";
     public string $error = "";
 
@@ -80,18 +86,13 @@ final class LoginPage extends Page
 
     private function prepare(string $returnTo, string $login): void
     {
-        $this->title = $this->options->title;
+        $this->preparePage($this->options->title, $this->routes);
         $this->action = $this->routes->login;
-        $this->stylesheet = $this->routes->stylesheet;
         $this->csrfToken = $this->csrf->token();
         $this->returnTo = $returnTo;
+        $this->registerUrl = $this->routes->register;
+        $this->forgotPasswordUrl = $this->routes->forgotPassword;
         $this->login = $login;
     }
 
-    private function redirect(string $target): Response
-    {
-        return (new Response())
-            ->redirect($target)
-            ->header("Cache-Control", "no-store");
-    }
 }

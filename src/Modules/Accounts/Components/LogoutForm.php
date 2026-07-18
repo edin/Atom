@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Atom\Modules\Accounts\UI\Components;
+namespace Atom\Modules\Accounts\Components;
 
 use Atom\Modules\Accounts\AccountsRoutes;
 use Atom\Security\CsrfTokenManagerInterface;

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Atom\Tests\Module;
 
 use Atom\Application;
+use Atom\Console\BufferedConsoleOutput;
 use Atom\Di\Injector;
 use Atom\Http\Response;
 use Atom\Module\ModuleRegistry;
@@ -31,6 +32,10 @@ use Atom\View\Component\ComponentInterface;
 use Atom\View\Component\ComponentRegistry;
 use Atom\Http\Request;
 use Atom\Support\Paths;
+use Atom\Queue\JobDispatcherInterface;
+use Atom\Queue\JobInterface;
+use Atom\Queue\JobRegistry;
+use Atom\Scheduler\Schedule;
 use PHPUnit\Framework\TestCase;
 
 final class ModuleTest extends TestCase
@@ -179,12 +184,15 @@ final class ModuleTest extends TestCase
             "/dev"
         );
 
-        $entries = $context->pages(__DIR__ . "/../Page/PageFixtures");
+        $entries = $context->pages(__DIR__ . "/../Page/PageFixtures", [
+            \Atom\Security\CsrfMiddleware::class,
+        ]);
         $match = (new RouteMatcher($app->getRouter()))->match("GET", "/dev/hello-page");
 
         $this->assertCount(1, $entries);
         $this->assertTrue($match->isFound());
         $this->assertSame(HelloPage::class, $entries[0]->getMetadataOfType(\Atom\Page\PageRouteMetadata::class)?->pageClass);
+        $this->assertSame([\Atom\Security\CsrfMiddleware::class], $entries[0]->getOwnMiddlewares());
     }
 
     public function testApplicationRegistersModulesFromHookBeforeBootstrap(): void
@@ -196,6 +204,46 @@ final class ModuleTest extends TestCase
         $this->assertSame("/hook/module", $app->getRouter()->getRoutes()[0]->getFullPath());
         $this->assertCount(2, $app->getModules()->all());
         $this->assertInstanceOf(ErrorPagesModule::class, $app->getModules()->all()[0]->module);
+    }
+
+    public function testInstalledModuleContributesConsoleCommands(): void
+    {
+        $app = new ModuleCommandTestApplication();
+        $app->initialize();
+        $output = new BufferedConsoleOutput();
+
+        $code = $app->getConsole()->run(["atom", "module:hello", "Edin"], $output);
+
+        $this->assertTrue($app->getConsole()->commands()->has("module:hello"));
+        $this->assertSame(0, $code);
+        $this->assertSame("Hello Edin from module" . PHP_EOL, $output->output());
+    }
+
+    public function testInstalledModuleRegistersJobsInSharedRegistry(): void
+    {
+        ModuleFixtureJob::$handled = false;
+        $app = new ModuleJobTestApplication();
+        $app->initialize();
+
+        $registry = $app->getInjector()->get(JobRegistry::class);
+        $this->assertSame(ModuleFixtureJob::class, $registry->resolve("module.fixture"));
+
+        $app->getInjector()
+            ->get(JobDispatcherInterface::class)
+            ->dispatch(new ModuleFixtureJob());
+
+        $this->assertTrue(ModuleFixtureJob::$handled);
+    }
+
+    public function testInstalledModuleContributesScheduledTasks(): void
+    {
+        $app = new ModuleScheduleTestApplication();
+        $app->initialize();
+
+        $tasks = $app->getInjector()->get(Schedule::class)->tasks();
+        $this->assertCount(1, $tasks);
+        $this->assertSame("module:cleanup", $tasks[0]->summary());
+        $this->assertSame("0 0 * * *", $tasks[0]->expression());
     }
 
     private function tempDirectory(): string
@@ -254,6 +302,84 @@ final class HookModuleApplication extends Application
     protected function bootstrap(Injector $injector): void
     {
         $this->moduleServiceName = $injector->get(TestModuleService::class)->name;
+    }
+}
+
+final class ModuleCommandTestApplication extends Application
+{
+    protected function modules(ModuleRegistry $modules): void
+    {
+        $modules->add(new ModuleCommandTestModule());
+    }
+}
+
+final readonly class ModuleCommandTestModule implements ModuleInterface
+{
+    public function register(ModuleContext $context): void
+    {
+        $context->commands(
+            __DIR__ . "/Fixtures/Commands",
+            "Atom\\Tests\\Module\\Fixtures\\Commands"
+        );
+    }
+}
+
+final class ModuleJobTestApplication extends Application
+{
+    protected function modules(ModuleRegistry $modules): void
+    {
+        $modules->add(new ModuleJobTestModule());
+    }
+}
+
+final readonly class ModuleJobTestModule implements ModuleInterface
+{
+    public function register(ModuleContext $context): void
+    {
+        $context->jobs(ModuleFixtureJob::class);
+    }
+}
+
+final class ModuleFixtureJob implements JobInterface
+{
+    public static bool $handled = false;
+
+    public static function type(): string
+    {
+        return "module.fixture";
+    }
+
+    public function payload(): array
+    {
+        return [];
+    }
+
+    public static function fromPayload(array $payload): self
+    {
+        return new self();
+    }
+
+    public function handle(): void
+    {
+        self::$handled = true;
+    }
+}
+
+final class ModuleScheduleTestApplication extends Application
+{
+    protected function modules(ModuleRegistry $modules): void
+    {
+        $modules->add(new ModuleScheduleTestModule());
+    }
+}
+
+final readonly class ModuleScheduleTestModule implements ModuleInterface
+{
+    public function register(ModuleContext $context): void
+    {
+        $context->schedule(static function (Schedule $schedule): void {
+            $schedule->command("module:cleanup")->daily();
+        });
     }
 }
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Atom\Modules\Accounts;
+namespace Atom\Modules\Accounts\Middlewares;
 
 use Atom\Http\MiddlewareInterface;
 use Atom\Http\Request;

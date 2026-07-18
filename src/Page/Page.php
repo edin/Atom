@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Atom\Page;
 
+use Atom\Http\MiddlewareInterface;
 use Atom\Router\Route;
 use Atom\Router\RouteEntry;
 use Atom\Validation\ValidationResult;
@@ -19,11 +20,16 @@ abstract class Page
     private string $flashVariant = "success";
 
     /**
+     * @param array<class-string<MiddlewareInterface>|MiddlewareInterface> $middlewares
      * @return RouteEntry[]
      */
-    public static function registerPages(?string $directory = null): array
+    public static function registerPages(?string $directory = null, array $middlewares = []): array
     {
-        return (new PageRouteRegistrar())->registerDirectory(Route::getRouter(), $directory ?? self::defaultPageDirectory());
+        return (new PageRouteRegistrar())->registerDirectory(
+            Route::getRouter(),
+            $directory ?? self::defaultPageDirectory(),
+            middlewares: $middlewares
+        );
     }
 
     private static function defaultPageDirectory(): string

@@ -659,14 +659,25 @@ final class PageRendererTest extends TestCase
         $descriptor = new \Atom\Page\PageDescriptor(
             "/articles",
             \Atom\Tests\View\PageFixtures\ArticleListPage::class,
-            middlewares: [\Atom\Security\CsrfMiddleware::class]
+            middlewares: [\Atom\Security\CsrfMiddleware::class],
+            title: "Articles",
+            description: "Browse articles."
         );
 
-        $entries = (new PageRouteRegistrar())->register($router, [$descriptor]);
+        $entries = (new PageRouteRegistrar())->register(
+            $router,
+            [$descriptor],
+            middlewares: [\Atom\Http\RequestIdMiddleware::class]
+        );
 
         $this->assertCount(2, $entries);
         foreach ($entries as $entry) {
-            $this->assertSame([\Atom\Security\CsrfMiddleware::class], $entry->getOwnMiddlewares());
+            $this->assertSame([
+                \Atom\Http\RequestIdMiddleware::class,
+                \Atom\Security\CsrfMiddleware::class,
+            ], $entry->getOwnMiddlewares());
+            $this->assertSame("Articles", $entry->getTitle());
+            $this->assertSame("Browse articles.", $entry->getDescription());
         }
     }
 }

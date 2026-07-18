@@ -1,0 +1,43 @@
+<Accounts.Panel
+    :title="$this->title"
+    description="Enter your details to create an account."
+>
+    <Accounts.Error :message="$this->error" />
+
+    <form method="post" action="{{ $this->action }}" class="accounts-form">
+        <input type="hidden" name="_token" value="{{ $this->csrfToken }}">
+        <input type="hidden" name="_action" value="register">
+
+        <Accounts.Field
+            label="Email"
+            name="login"
+            type="email"
+            :value="$this->login"
+            autocomplete="email"
+            required
+            autofocus
+        />
+
+        <Accounts.Field
+            label="Password"
+            name="password"
+            type="password"
+            autocomplete="new-password"
+            required
+        />
+
+        <Accounts.Field
+            label="Confirm password"
+            name="password_confirmation"
+            type="password"
+            autocomplete="new-password"
+            required
+        />
+
+        <Accounts.Button>Create account</Accounts.Button>
+    </form>
+
+    <nav class="accounts-links accounts-links--centered" aria-label="Account navigation">
+        <a href="{{ $this->loginUrl }}">Already have an account? Sign in</a>
+    </nav>
+</Accounts.Panel>

@@ -43,6 +43,8 @@ final class InjectorTest extends TestCase
 
         $injector = Injector::create($bindings);
 
+        $this->assertTrue($bindings->has(DiDatabaseInterface::class));
+        $this->assertFalse($bindings->has("missing"));
         $this->assertInstanceOf(DiRepository::class, $injector->get(DiRepository::class));
         $this->assertSame("atom-framework", $injector->get("alias"));
     }

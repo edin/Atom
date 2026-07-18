@@ -31,6 +31,24 @@ You can also mount a page directory under a route prefix:
 $pages->directory("@app/AdminPages", "/admin");
 ```
 
+Middleware shared by every page in a directory can be provided during registration:
+
+```php
+$pages->directory("@app/AdminPages", "/admin", [
+    AuthenticateMiddleware::class,
+    CsrfMiddleware::class,
+]);
+```
+
+Directory middleware runs before middleware declared by an individual `PageRoute`. Modules can use the equivalent `ModuleContext` API:
+
+```php
+$context->pages(__DIR__ . "/Pages", [
+    AccountsPageMiddleware::class,
+    CsrfMiddleware::class,
+]);
+```
+
 `Page::registerPages()` is still available for manual registration.
 
 Page templates and `TemplateComponent` `.atom.html` templates are parsed into an AST and cached in memory by template path and modified time. Rendering stays dynamic; only the parsed template structure is reused.
@@ -42,7 +60,12 @@ namespace App\Pages;
 
 use Atom\Page\PageRoute;
 
-#[PageRoute("/", name: "home")]
+#[PageRoute(
+    "/",
+    name: "home",
+    title: "Home",
+    description: "Application home page."
+)]
 final class HomePage extends AppPage
 {
     public string $title = "Atom Sample";
@@ -53,6 +76,19 @@ final class HomePage extends AppPage
     }
 }
 ```
+
+Route middleware can be declared on the same attribute. It applies to the page render route and every HTTP method discovered from its page actions:
+
+```php
+#[PageRoute(
+    "/account",
+    middleware: [AccountsPageMiddleware::class, CsrfMiddleware::class],
+    title: "Account",
+    description: "Manage the current account."
+)]
+```
+
+The title and description are copied to every generated route entry, making them available to API exploration and other route metadata consumers without a separate registration loop.
 
 The method matching the request method is invoked before rendering:
 

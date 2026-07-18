@@ -28,6 +28,11 @@ final class Bindings implements IteratorAggregate
         return new BindingBuilder($this, $token);
     }
 
+    public function has(string $token): bool
+    {
+        return isset($this->providers[$token]);
+    }
+
     public function type(string $token, ?string $className = null): BindingRegistration
     {
         return $this->bind($token)->to($className);

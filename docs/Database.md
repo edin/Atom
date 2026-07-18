@@ -15,7 +15,6 @@ Register database services from the application:
 
 ```php
 use Atom\Database\DatabaseConfig;
-use Atom\Database\DatabasePaths;
 use Atom\Database\DatabaseServices;
 
 protected function services(ServiceProviderRegistry $providers): void
@@ -49,22 +48,10 @@ Supported driver values:
 
 PostgreSQL has unit-level driver, SQL compiler, schema compiler, migration repository, inspector, resetter, and lock support. Real PostgreSQL integration tests are still optional and not part of the default test suite.
 
-Database structure paths come from `DatabasePaths` and can use path aliases:
-
-```php
-$config->set(new DatabasePaths(
-    root: "@root",
-    migrations: "@app/Database/Migrations",
-    seeders: "@app/Database/Seeders",
-));
-```
-
-They can also be hydrated from environment values:
-
-```env
-DB_PATH_MIGRATIONS=@root/database/migrations
-DB_PATH_SEEDERS=@root/database/seeders
-```
+Database structure follows the framework convention: migrations live in
+`app/Database/Migrations` and seeders live in `app/Database/Seeders`. The application registers
+these locations as `@migrations` and `@seeders`, so publishing bundles and database commands can
+use predictable paths without additional configuration.
 
 `DatabaseServices` configures the `Model` base class during application startup, so model classes can use `query()`, `find()`, `save()`, and `delete()` without manual bootstrap code.
 

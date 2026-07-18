@@ -5,14 +5,19 @@ declare(strict_types=1);
 namespace Atom\Module;
 
 use Atom\Config\Config;
+use Atom\Console\ConsoleCommandSources;
 use Atom\Di\BindingBuilder;
 use Atom\Di\Bindings;
 use Atom\Di\Injector;
 use Atom\Http\StaticFileHandler;
 use Atom\Http\StaticFileRouteMetadata;
+use Atom\Http\MiddlewareInterface;
 use Atom\Page\PageRouteRegistrar;
+use Atom\Queue\JobInterface;
+use Atom\Queue\JobRegistry;
 use Atom\Router\RouteEntry;
 use Atom\Router\Router;
+use Atom\Scheduler\Schedule;
 use Atom\View\Component\ComponentInterface;
 use Atom\View\Component\ComponentRegistry;
 
@@ -85,12 +90,47 @@ final readonly class ModuleContext
         return $this;
     }
 
+    public function commands(string $directory, string $namespace): self
+    {
+        $this->injector
+            ->get(ConsoleCommandSources::class)
+            ->add($directory, $namespace);
+
+        return $this;
+    }
+
     /**
+     * @param class-string<JobInterface> ...$jobs
+     */
+    public function jobs(string ...$jobs): self
+    {
+        $registry = $this->injector->get(JobRegistry::class);
+        foreach ($jobs as $job) {
+            $registry->register($job);
+        }
+
+        return $this;
+    }
+
+    /** @param callable(Schedule): void $definition */
+    public function schedule(callable $definition): self
+    {
+        $definition($this->injector->get(Schedule::class));
+        return $this;
+    }
+
+    /**
+     * @param array<class-string<MiddlewareInterface>|MiddlewareInterface> $middlewares
      * @return RouteEntry[]
      */
-    public function pages(string $directory): array
+    public function pages(string $directory, array $middlewares = []): array
     {
-        return (new PageRouteRegistrar())->registerDirectory($this->router, $directory, $this->basePath);
+        return (new PageRouteRegistrar())->registerDirectory(
+            $this->router,
+            $directory,
+            $this->basePath,
+            $middlewares
+        );
     }
 
     /**

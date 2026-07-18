@@ -9,6 +9,8 @@ Application setup is split into two hooks:
 - `rootPath()` and `configurePaths()` control path aliases
 - `environmentFiles()` customizes `.env` files loaded before config and services
 - `services()` registers providers and bindings
+- `jobs()` registers application background job types
+- `schedule()` registers application scheduled tasks
 - `modules()` registers framework and application modules
 - `components()` registers application component tags
 - `pages()` registers page directories

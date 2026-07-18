@@ -12,6 +12,8 @@ final readonly class PageRoute
 {
     public string $path;
     public ?string $name;
+    public ?string $title;
+    public ?string $description;
     /** @var array<class-string<MiddlewareInterface>|MiddlewareInterface> */
     public array $middlewares;
 
@@ -21,10 +23,14 @@ final readonly class PageRoute
     public function __construct(
         string $path,
         ?string $name = null,
-        string|MiddlewareInterface|array $middleware = []
+        string|MiddlewareInterface|array $middleware = [],
+        ?string $title = null,
+        ?string $description = null
     ) {
         $this->path = $path;
         $this->name = $name;
         $this->middlewares = is_array($middleware) ? array_values($middleware) : [$middleware];
+        $this->title = $title;
+        $this->description = $description;
     }
 }

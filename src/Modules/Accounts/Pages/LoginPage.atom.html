@@ -1,0 +1,36 @@
+<Accounts.Panel
+    :title="$this->title"
+    description="Enter your credentials to continue."
+>
+    <Accounts.Error :message="$this->error" />
+
+    <form method="post" action="{{ $this->action }}" class="accounts-form">
+        <input type="hidden" name="_token" value="{{ $this->csrfToken }}">
+        <input type="hidden" name="_action" value="login">
+        <input type="hidden" name="return" value="{{ $this->returnTo }}">
+
+        <Accounts.Field
+            label="Login"
+            name="login"
+            :value="$this->login"
+            autocomplete="username"
+            required
+            autofocus
+        />
+
+        <Accounts.Field
+            label="Password"
+            name="password"
+            type="password"
+            autocomplete="current-password"
+            required
+        />
+
+        <Accounts.Button>Sign in</Accounts.Button>
+    </form>
+
+    <nav class="accounts-links" aria-label="Account help">
+        <a href="{{ $this->forgotPasswordUrl }}">Forgot password?</a>
+        <a href="{{ $this->registerUrl }}">Create account</a>
+    </nav>
+</Accounts.Panel>

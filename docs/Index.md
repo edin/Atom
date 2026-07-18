@@ -15,6 +15,9 @@ The main concepts are:
 - [Logging](Logging.md)
 - [Identity and Authentication](Identity.md)
 - [Accounts Module](Accounts.md)
+- [Mail](Mail.md)
+- [Background Jobs and Queues](Queue.md)
+- [Task Scheduler](Scheduler.md)
 - [Sessions](Sessions.md)
 - [Cookies](Cookies.md)
 - [CSRF Protection](Csrf.md)
@@ -32,6 +35,7 @@ The main concepts are:
 - [Configuration](Configuration.md)
 - [Dependency Injection](DependencyInjection.md)
 - [Console](Console.md)
+- [Publishing Files](Publishing.md)
 - [Middlewares](Middlewares.md)
 - [Validation](Validation.md)
 - [Hydration](Hydration.md)
@@ -46,12 +50,14 @@ At runtime the base application:
 4. registers framework and application service providers
 5. creates the injector
 6. configures the shared router
-7. registers application modules
-8. registers application components
-9. registers application page directories
-10. runs service provider bootstrappers
-11. runs application bootstrap
-12. dispatches the request through the middleware pipeline
+7. registers application job types
+8. registers application scheduled tasks
+9. registers application modules and their jobs and schedules
+10. registers application components
+11. registers application page directories
+12. runs service provider bootstrappers
+13. runs application bootstrap
+14. dispatches the request through the middleware pipeline
 
 The sample application's bootstrap is intentionally small:
 

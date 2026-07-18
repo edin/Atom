@@ -41,13 +41,12 @@ final readonly class DatabaseServices implements ServiceProviderInterface, Conso
     public static function fromConfig(Config $config, Paths $paths): self
     {
         $database = $config->options(DatabaseConfig::class);
-        $databasePaths = $config->options(DatabasePaths::class);
-        self::prepareStorage($database, $databasePaths, $paths);
+        self::prepareStorage($database, $paths);
 
         return new self(
-            (new DatabaseDriverFactory($paths->resolve($databasePaths->root)))->create($database),
-            new MigrationOptions($paths->resolve($databasePaths->migrations)),
-            new SeederOptions($paths->resolve($databasePaths->seeders))
+            (new DatabaseDriverFactory($paths->resolve("@root")))->create($database),
+            new MigrationOptions($paths->resolve("@migrations")),
+            new SeederOptions($paths->resolve("@seeders"))
         );
     }
 
@@ -137,13 +136,13 @@ final readonly class DatabaseServices implements ServiceProviderInterface, Conso
         $bootstrappers->add(new ModelDatabaseBootstrapper());
     }
 
-    private static function prepareStorage(DatabaseConfig $database, DatabasePaths $databasePaths, Paths $paths): void
+    private static function prepareStorage(DatabaseConfig $database, Paths $paths): void
     {
         if (strtolower($database->driver) !== "sqlite" || $database->database === ":memory:") {
             return;
         }
 
-        $directory = dirname($paths->resolveFrom($databasePaths->root, $database->database));
+        $directory = dirname($paths->resolveFrom("@root", $database->database));
         if (!is_dir($directory)) {
             mkdir($directory, 0777, true);
         }

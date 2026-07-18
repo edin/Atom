@@ -16,7 +16,9 @@ final readonly class PageDescriptor
         public string $path,
         public string $pageClass,
         public ?string $name = null,
-        public array $middlewares = []
+        public array $middlewares = [],
+        public ?string $title = null,
+        public ?string $description = null
     ) {
     }
 }

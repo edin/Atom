@@ -6,6 +6,7 @@ namespace Atom\Tests\View;
 
 use Atom\Tests\View\PageFixtures\ArticleListPage;
 use Atom\Page\PageAction;
+use Atom\Page\PageRegistry;
 use Atom\Page\PageRoute;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -19,6 +20,8 @@ final class PageFoundationTest extends TestCase
 
         $this->assertSame("/articles", $route->path);
         $this->assertSame("articles.index", $route->name);
+        $this->assertSame("Articles", $route->title);
+        $this->assertSame("Browse and refresh articles.", $route->description);
     }
 
     public function testReadsPageActionAttribute(): void
@@ -28,5 +31,17 @@ final class PageFoundationTest extends TestCase
 
         $this->assertNull($action->name);
         $this->assertSame("post", $action->method);
+    }
+
+    public function testPageRegistryStoresCommonDirectoryMiddleware(): void
+    {
+        $registry = new PageRegistry();
+        $registry->directory("@app/Pages", "/admin", [\Atom\Security\CsrfMiddleware::class]);
+
+        $directory = $registry->directories()[0];
+
+        $this->assertSame("@app/Pages", $directory->directory);
+        $this->assertSame("/admin", $directory->pathPrefix);
+        $this->assertSame([\Atom\Security\CsrfMiddleware::class], $directory->middlewares);
     }
 }

@@ -267,6 +267,20 @@ final class BlogServices implements ServiceProviderInterface, ConsoleCommandProv
 
 When the application resolves `ConsoleApplication`, commands from all providers are discovered automatically. Atom also exposes built-in framework commands this way.
 
+Installed modules can contribute command directories directly from their `register()` method:
+
+```php
+public function register(ModuleContext $context): void
+{
+    $context->commands(
+        __DIR__ . "/Commands",
+        __NAMESPACE__ . "\\Commands"
+    );
+}
+```
+
+This uses the same command discovery mechanism as console command providers and keeps optional module commands tied to module installation.
+
 ## Run
 
 ```php

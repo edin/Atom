@@ -4,11 +4,14 @@
 
 Atom includes a small path alias service for application paths.
 
-The base application registers two aliases by default:
+The base application registers these aliases by default:
 
 ```text
-@root  directory containing the concrete Application class
-@app   @root/app
+@root        directory containing the concrete Application class
+@app         @root/app
+@database    @app/Database
+@migrations  @database/Migrations
+@seeders     @database/Seeders
 ```
 
 If your `Application` class lives inside `app/`, override the root path:
