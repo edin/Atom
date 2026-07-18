@@ -7,7 +7,7 @@ namespace Atom\Modules\ApiExplorer;
 use Atom\Api\ApiHidden;
 use Atom\Module\ModuleContext;
 use Atom\Module\ModuleInterface;
-use Atom\Modules\Framework\Framework;
+use Atom\Modules\Client\Client;
 use Atom\Router\RouteEntry;
 use Atom\Modules\ApiExplorer\UI\Components\AppShell;
 use Atom\Modules\ApiExplorer\UI\Components\EndpointDetails;
@@ -23,7 +23,7 @@ final readonly class ApiExplorerModule implements ModuleInterface
 
     public function register(ModuleContext $context): void
     {
-        Framework::resources($context->root());
+        Client::resources($context->root());
 
         $resourcePath = $context->resourcePath();
         $pagePath = $context->mountedPath("/explorer");

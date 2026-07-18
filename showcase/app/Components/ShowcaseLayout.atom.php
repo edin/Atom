@@ -3,7 +3,7 @@
 /** @var \Showcase\Components\ShowcaseLayout $component */
 /** @var \Atom\View\Component\ComponentTemplateContext $context */
 
-use Atom\Modules\Framework\Components\Icon;
+use Atom\Modules\Components\Icon;
 
 ?>
 <!doctype html>
@@ -13,7 +13,7 @@ use Atom\Modules\Framework\Components\Icon;
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= $context->encode($component->title()) ?></title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.0/css/all.min.css">
-    <link rel="stylesheet" href="/atom/framework/resources/atom.css?v=1">
+    <link rel="stylesheet" href="/atom/components/resources/atom.css?v=1">
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
@@ -47,9 +47,9 @@ use Atom\Modules\Framework\Components\Icon;
             <?= $context->fragment($component->content) ?>
         </section>
     </main>
-    <script src="/atom/framework/resources/atom.js?v=9"></script>
-    <script src="/atom/framework/resources/morphdom.js?v=2.7.8"></script>
-    <script src="/atom/framework/resources/atom-morphdom.js?v=3"></script>
+    <script src="/atom/client/resources/atom.js?v=9"></script>
+    <script src="/atom/client/resources/morphdom.js?v=2.7.8"></script>
+    <script src="/atom/client/resources/atom-morphdom.js?v=3"></script>
     <script src="/atom/dev/resources/reload.js" data-interval="1000"></script>
 </body>
 </html>

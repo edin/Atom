@@ -12,7 +12,8 @@ use Atom\Di\Injector;
 use Atom\Di\ServiceProviderRegistry;
 use Atom\Module\ModuleRegistry;
 use Atom\Modules\ApiExplorer\ApiExplorer;
-use Atom\Modules\Framework\Framework;
+use Atom\Modules\Client\Client;
+use Atom\Modules\Components\Components;
 use Atom\Page\PageRegistry;
 use Atom\Router\Route;
 use Atom\View\Component\ComponentRegistry;
@@ -34,7 +35,8 @@ final class Application extends \Atom\Application
     protected function modules(ModuleRegistry $modules): void
     {
         $modules
-            ->add(Framework::module())
+            ->add(Client::module())
+            ->add(Components::module())
             ->add(ApiExplorer::module(), "/atom/api");
     }
 

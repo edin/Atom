@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Showcase\Pages\Components;
 
-use Atom\Modules\Framework\Components\TabsModel;
+use Atom\Modules\Components\TabsModel;
 use Atom\Http\Request;
 use Atom\Page\PageRoute;
 use Atom\Page\State;

@@ -10,7 +10,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title><?= $context->encode($component->title()) ?></title>
-    <link rel="stylesheet" href="/atom/framework/resources/atom.css?v=1">
+    <link rel="stylesheet" href="/atom/components/resources/atom.css?v=1">
     <link rel="stylesheet" href="/style/style.css">
 </head>
 <body>
@@ -30,8 +30,8 @@
             <?= $context->fragment($component->content) ?>
         </section>
     </main>
-    <script src="/atom/framework/resources/atom.js?v=9"></script>
-    <script src="/atom/framework/resources/morphdom.js?v=2.7.8"></script>
-    <script src="/atom/framework/resources/atom-morphdom.js?v=3"></script>
+    <script src="/atom/client/resources/atom.js?v=9"></script>
+    <script src="/atom/client/resources/morphdom.js?v=2.7.8"></script>
+    <script src="/atom/client/resources/atom-morphdom.js?v=3"></script>
 </body>
 </html>

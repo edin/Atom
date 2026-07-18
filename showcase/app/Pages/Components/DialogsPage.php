@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Showcase\Pages\Components;
 
-use Atom\Modules\Framework\Components\DialogModel;
+use Atom\Modules\Components\DialogModel;
 use Atom\Page\PageAction;
 use Atom\Page\PageRoute;
 use Atom\Page\State;

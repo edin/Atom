@@ -7,66 +7,66 @@ namespace Atom\Tests\View;
 use Atom\Di\Bindings;
 use Atom\Di\Injector;
 use Atom\Collections\PagedCollection;
-use Atom\Modules\Framework\Components\FieldError;
-use Atom\Modules\Framework\Components\Alert;
-use Atom\Modules\Framework\Components\AppShell;
-use Atom\Modules\Framework\Components\Avatar;
-use Atom\Modules\Framework\Components\Badge;
-use Atom\Modules\Framework\Components\Breadcrumb;
-use Atom\Modules\Framework\Components\Breadcrumbs;
-use Atom\Modules\Framework\Components\Button;
-use Atom\Modules\Framework\Components\ButtonGroup;
-use Atom\Modules\Framework\Components\Card;
-use Atom\Modules\Framework\Components\CheckField;
-use Atom\Modules\Framework\Components\Column;
-use Atom\Modules\Framework\Components\ControlGroup;
-use Atom\Modules\Framework\Components\Dialog;
-use Atom\Modules\Framework\Components\Details;
-use Atom\Modules\Framework\Components\Divider;
-use Atom\Modules\Framework\Components\DialogModel;
-use Atom\Modules\Framework\Components\EmptyState;
-use Atom\Modules\Framework\Components\Field;
-use Atom\Modules\Framework\Components\Form;
-use Atom\Modules\Framework\Components\HiddenField;
-use Atom\Modules\Framework\Components\FormRow;
-use Atom\Modules\Framework\Components\FormSection;
-use Atom\Modules\Framework\Components\Panel;
-use Atom\Modules\Framework\Components\PageHeader;
-use Atom\Modules\Framework\Components\Pagination;
-use Atom\Modules\Framework\Components\Progress;
-use Atom\Modules\Framework\Components\RadioField;
-use Atom\Modules\Framework\Components\SelectField;
-use Atom\Modules\Framework\Components\Skeleton;
-use Atom\Modules\Framework\Components\Spinner;
-use Atom\Modules\Framework\Components\Sidebar;
-use Atom\Modules\Framework\Components\SidebarGroup;
-use Atom\Modules\Framework\Components\SidebarItem;
-use Atom\Modules\Framework\Components\SidePanelModel;
-use Atom\Modules\Framework\Components\SnackBar;
-use Atom\Modules\Framework\Components\SplitView;
-use Atom\Modules\Framework\Components\FormActions;
-use Atom\Modules\Framework\Components\Inline;
-use Atom\Modules\Framework\Components\Icon;
-use Atom\Modules\Framework\Components\Kbd;
-use Atom\Modules\Framework\Components\ListComponent;
-use Atom\Modules\Framework\Components\ListItem;
-use Atom\Modules\Framework\Components\Stack;
-use Atom\Modules\Framework\Components\Stats;
-use Atom\Modules\Framework\Components\StatusDot;
-use Atom\Modules\Framework\Components\SwitchField;
-use Atom\Modules\Framework\Components\Tab;
-use Atom\Modules\Framework\Components\Tabs;
-use Atom\Modules\Framework\Components\TabsModel;
-use Atom\Modules\Framework\Components\Table;
-use Atom\Modules\Framework\Components\Tag;
-use Atom\Modules\Framework\Components\TextArea;
-use Atom\Modules\Framework\Components\TextAreaField;
-use Atom\Modules\Framework\Components\TextField;
-use Atom\Modules\Framework\Components\TextInput;
-use Atom\Modules\Framework\Components\Toast;
-use Atom\Modules\Framework\Components\ToastModel;
-use Atom\Modules\Framework\Components\Toolbar;
-use Atom\Modules\Framework\Components\ValidationSummary;
+use Atom\Modules\Components\FieldError;
+use Atom\Modules\Components\Alert;
+use Atom\Modules\Components\AppShell;
+use Atom\Modules\Components\Avatar;
+use Atom\Modules\Components\Badge;
+use Atom\Modules\Components\Breadcrumb;
+use Atom\Modules\Components\Breadcrumbs;
+use Atom\Modules\Components\Button;
+use Atom\Modules\Components\ButtonGroup;
+use Atom\Modules\Components\Card;
+use Atom\Modules\Components\CheckField;
+use Atom\Modules\Components\Column;
+use Atom\Modules\Components\ControlGroup;
+use Atom\Modules\Components\Dialog;
+use Atom\Modules\Components\Details;
+use Atom\Modules\Components\Divider;
+use Atom\Modules\Components\DialogModel;
+use Atom\Modules\Components\EmptyState;
+use Atom\Modules\Components\Field;
+use Atom\Modules\Components\Form;
+use Atom\Modules\Components\HiddenField;
+use Atom\Modules\Components\FormRow;
+use Atom\Modules\Components\FormSection;
+use Atom\Modules\Components\Panel;
+use Atom\Modules\Components\PageHeader;
+use Atom\Modules\Components\Pagination;
+use Atom\Modules\Components\Progress;
+use Atom\Modules\Components\RadioField;
+use Atom\Modules\Components\SelectField;
+use Atom\Modules\Components\Skeleton;
+use Atom\Modules\Components\Spinner;
+use Atom\Modules\Components\Sidebar;
+use Atom\Modules\Components\SidebarGroup;
+use Atom\Modules\Components\SidebarItem;
+use Atom\Modules\Components\SidePanelModel;
+use Atom\Modules\Components\SnackBar;
+use Atom\Modules\Components\SplitView;
+use Atom\Modules\Components\FormActions;
+use Atom\Modules\Components\Inline;
+use Atom\Modules\Components\Icon;
+use Atom\Modules\Components\Kbd;
+use Atom\Modules\Components\ListComponent;
+use Atom\Modules\Components\ListItem;
+use Atom\Modules\Components\Stack;
+use Atom\Modules\Components\Stats;
+use Atom\Modules\Components\StatusDot;
+use Atom\Modules\Components\SwitchField;
+use Atom\Modules\Components\Tab;
+use Atom\Modules\Components\Tabs;
+use Atom\Modules\Components\TabsModel;
+use Atom\Modules\Components\Table;
+use Atom\Modules\Components\Tag;
+use Atom\Modules\Components\TextArea;
+use Atom\Modules\Components\TextAreaField;
+use Atom\Modules\Components\TextField;
+use Atom\Modules\Components\TextInput;
+use Atom\Modules\Components\Toast;
+use Atom\Modules\Components\ToastModel;
+use Atom\Modules\Components\Toolbar;
+use Atom\Modules\Components\ValidationSummary;
 use Atom\Page\Page;
 use Atom\Support\Paths;
 use Atom\Validation\Rules\Required;
@@ -103,7 +103,7 @@ final class ComponentViewTest extends TestCase
         $this->assertSame('<article class="card is-active" data-id="42"><h1>Hello &lt;Atom&gt;</h1>Body</article>' . "\n", $html);
     }
 
-    public function testFrameworkValidationComponentsRenderPageErrors(): void
+    public function testComponentsValidationComponentsRenderPageErrors(): void
     {
         $page = new ValidationComponentPage();
         $page->title = "";
@@ -122,7 +122,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<div class="atom-validation-summary"><ul><li>The field is required.</li></ul></div>', $html);
     }
 
-    public function testFrameworkValidationComponentsRenderNothingWithoutErrors(): void
+    public function testComponentsValidationComponentsRenderNothingWithoutErrors(): void
     {
         $page = new ValidationComponentPage();
 
@@ -138,7 +138,7 @@ final class ComponentViewTest extends TestCase
         $this->assertSame("", $html);
     }
 
-    public function testFrameworkValidationSummaryCanFilterFieldsAndRenderTitle(): void
+    public function testComponentsValidationSummaryCanFilterFieldsAndRenderTitle(): void
     {
         $page = new ValidationSummaryComponentPage();
         $page->validate();
@@ -163,7 +163,7 @@ final class ComponentViewTest extends TestCase
         $this->assertSame("", $empty);
     }
 
-    public function testFrameworkInputComponentsBindPageValuesAndValidationState(): void
+    public function testComponentsInputComponentsBindPageValuesAndValidationState(): void
     {
         $page = new ValidationComponentPage();
         $page->title = "";
@@ -189,7 +189,7 @@ final class ComponentViewTest extends TestCase
         );
     }
 
-    public function testFrameworkInputComponentsRenderWithoutExtraAttributes(): void
+    public function testComponentsInputComponentsRenderWithoutExtraAttributes(): void
     {
         $page = new ValidationComponentPage();
         $page->title = "Atom";
@@ -208,7 +208,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<textarea id="body" name="body" class="atom-textarea">Body</textarea>', $html);
     }
 
-    public function testFrameworkButtonComponentRendersButtonAndLink(): void
+    public function testComponentsButtonComponentRendersButtonAndLink(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Button", Button::class);
@@ -262,7 +262,7 @@ final class ComponentViewTest extends TestCase
         );
     }
 
-    public function testFrameworkButtonGroupRendersJoinedButtons(): void
+    public function testComponentsButtonGroupRendersJoinedButtons(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Button", Button::class);
@@ -284,7 +284,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<div class="atom-button-group" data-orientation="vertical" role="group"><button type="button" class="atom-button">Top</button><button type="button" class="atom-button">Bottom</button></div>', $html);
     }
 
-    public function testFrameworkAlertComponentRendersEscapedContent(): void
+    public function testComponentsAlertComponentRendersEscapedContent(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Alert", Alert::class);
@@ -303,7 +303,7 @@ final class ComponentViewTest extends TestCase
         );
     }
 
-    public function testFrameworkAlertComponentRendersTitleDescriptionAndActions(): void
+    public function testComponentsAlertComponentRendersTitleDescriptionAndActions(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Alert", Alert::class);
@@ -327,7 +327,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<div class="atom-alert__actions"><button type="button" class="atom-button" data-size="sm">Undo</button></div>', $html);
     }
 
-    public function testFrameworkBadgeComponentRendersVariantAndContent(): void
+    public function testComponentsBadgeComponentRendersVariantAndContent(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Badge", Badge::class);
@@ -346,9 +346,9 @@ final class ComponentViewTest extends TestCase
         );
     }
 
-    public function testFrameworkBadgeCssUsesCompactDaisyLikeRhythm(): void
+    public function testComponentsBadgeCssUsesCompactDaisyLikeRhythm(): void
     {
-        $css = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Framework/Resources/css/badge.css");
+        $css = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Components/Resources/css/badge.css");
 
         $this->assertIsString($css);
         $this->assertStringContainsString("justify-content: center;", $css);
@@ -362,7 +362,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('.atom-badge[data-appearance="solid"]', $css);
     }
 
-    public function testFrameworkPrimitiveComponentsRenderContentAndAccessibleDefaults(): void
+    public function testComponentsPrimitiveComponentsRenderContentAndAccessibleDefaults(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Avatar", Avatar::class);
@@ -395,10 +395,10 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<details class="atom-details" open><summary class="atom-details__summary">Advanced options</summary><div class="atom-details__content"><p>Optional settings.</p></div></details>', $html);
     }
 
-    public function testFrameworkPrimitiveCssDefinesVariantsSizesAndFocusState(): void
+    public function testComponentsPrimitiveCssDefinesVariantsSizesAndFocusState(): void
     {
-        $css = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Framework/Resources/css/primitives.css");
-        $entry = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Framework/Resources/atom.css");
+        $css = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Components/Resources/css/primitives.css");
+        $entry = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Components/Resources/atom.css");
 
         $this->assertIsString($css);
         $this->assertIsString($entry);
@@ -411,7 +411,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('@import url("./css/primitives.css");', $entry);
     }
 
-    public function testFrameworkPanelComponentRendersTitleAndBody(): void
+    public function testComponentsPanelComponentRendersTitleAndBody(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Panel", Panel::class);
@@ -425,7 +425,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<div class="atom-panel__body"><p>Hello</p></div>', $html);
     }
 
-    public function testFrameworkTableCollectsColumnChildren(): void
+    public function testComponentsTableCollectsColumnChildren(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Badge", Badge::class);
@@ -455,7 +455,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<td class="atom-table__cell">Linus</td>', $html);
     }
 
-    public function testFrameworkTableRendersEmptyAndPaginationFragmentsWithSourceContext(): void
+    public function testComponentsTableRendersEmptyAndPaginationFragmentsWithSourceContext(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("EmptyState", EmptyState::class);
@@ -486,7 +486,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<button class="atom-pagination__item is-active" aria-current="page" type="button" atom:action="setPage(2)">2</button>', $html);
     }
 
-    public function testFrameworkTableHidesSummaryAndPaginationWhenSourceIsEmpty(): void
+    public function testComponentsTableHidesSummaryAndPaginationWhenSourceIsEmpty(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("EmptyState", EmptyState::class);
@@ -514,7 +514,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringNotContainsString('<nav class="atom-pagination"', $html);
     }
 
-    public function testFrameworkLayoutComponentsRenderContentAndOptions(): void
+    public function testComponentsLayoutComponentsRenderContentAndOptions(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Stack", Stack::class);
@@ -553,7 +553,7 @@ final class ComponentViewTest extends TestCase
         );
     }
 
-    public function testFrameworkControlGroupAlignsControlsWithFieldLabels(): void
+    public function testComponentsControlGroupAlignsControlsWithFieldLabels(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Button", Button::class);
@@ -572,7 +572,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<div class="atom-control-group"><div class="atom-control-group__controls"><button type="button" class="atom-button">Plain</button></div></div>', $html);
     }
 
-    public function testFrameworkSplitViewRendersOptionalSidePane(): void
+    public function testComponentsSplitViewRendersOptionalSidePane(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("SplitView", SplitView::class);
@@ -606,7 +606,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringNotContainsString('atom-split-view__side', $closed);
     }
 
-    public function testFrameworkSplitViewCanBindSidePanelModel(): void
+    public function testComponentsSplitViewCanBindSidePanelModel(): void
     {
         $model = new SidePanelModel();
         $model->open(12);
@@ -639,7 +639,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringNotContainsString('atom-split-view__side', $closed);
     }
 
-    public function testFrameworkAppShellAndSidebarRenderNavigationSlots(): void
+    public function testComponentsAppShellAndSidebarRenderNavigationSlots(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("AppShell", AppShell::class);
@@ -678,7 +678,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<main class="atom-app-shell__main"><p>Main</p></main>', $html);
     }
 
-    public function testFrameworkSidebarCanUseAutoCurrentPathFromContext(): void
+    public function testComponentsSidebarCanUseAutoCurrentPathFromContext(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Sidebar", Sidebar::class);
@@ -698,7 +698,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<a href="/comments" class="atom-sidebar-item is-active" aria-current="page"><span class="atom-sidebar-item__label">Comments</span></a>', $html);
     }
 
-    public function testFrameworkSidebarItemCanUsePrefixMatch(): void
+    public function testComponentsSidebarItemCanUsePrefixMatch(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Sidebar", Sidebar::class);
@@ -719,7 +719,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<a href="/articles/12" class="atom-sidebar-item"><span class="atom-sidebar-item__label">Article detail</span></a>', $html);
     }
 
-    public function testFrameworkPageHeaderAndEmptyStateRenderNamedActions(): void
+    public function testComponentsPageHeaderAndEmptyStateRenderNamedActions(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("PageHeader", PageHeader::class);
@@ -745,7 +745,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<div class="atom-empty-state__actions"><button type="button" class="atom-button">New article</button></div>', $html);
     }
 
-    public function testFrameworkPanelAndCardRenderSurfaceFragments(): void
+    public function testComponentsPanelAndCardRenderSurfaceFragments(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Panel", Panel::class);
@@ -781,7 +781,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<footer class="atom-card__actions"><button type="button" class="atom-button" data-size="sm">Open</button></footer>', $html);
     }
 
-    public function testFrameworkStatsRenderValueTrendHrefAndIcon(): void
+    public function testComponentsStatsRenderValueTrendHrefAndIcon(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Stats", Stats::class);
@@ -803,7 +803,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<div class="atom-stats__icon"><span class="atom-icon" data-variant="success">A</span></div>', $html);
     }
 
-    public function testFrameworkStatsCanRenderIconAttribute(): void
+    public function testComponentsStatsCanRenderIconAttribute(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Stats", Stats::class);
@@ -818,7 +818,7 @@ final class ComponentViewTest extends TestCase
         );
     }
 
-    public function testFrameworkToastRendersWhenShownWithActions(): void
+    public function testComponentsToastRendersWhenShownWithActions(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Toast", Toast::class);
@@ -847,7 +847,7 @@ final class ComponentViewTest extends TestCase
         $this->assertSame("", $closed);
     }
 
-    public function testFrameworkToastCanBindPageFlashAutomatically(): void
+    public function testComponentsToastCanBindPageFlashAutomatically(): void
     {
         $page = new ValidationComponentPage();
         $page->flash("Article was saved.", "success", "Saved");
@@ -876,7 +876,7 @@ final class ComponentViewTest extends TestCase
         $this->assertSame("", $empty);
     }
 
-    public function testFrameworkToastCanBindToastModel(): void
+    public function testComponentsToastCanBindToastModel(): void
     {
         $model = new ToastModel();
         $model->open("Article was saved.", "success", "Saved");
@@ -906,7 +906,7 @@ final class ComponentViewTest extends TestCase
         $this->assertSame("", $empty);
     }
 
-    public function testFrameworkSnackBarRendersMessageAndActions(): void
+    public function testComponentsSnackBarRendersMessageAndActions(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("SnackBar", SnackBar::class);
@@ -934,7 +934,7 @@ final class ComponentViewTest extends TestCase
         $this->assertSame("", $closed);
     }
 
-    public function testFrameworkSnackBarCanBindPageFlashAutomatically(): void
+    public function testComponentsSnackBarCanBindPageFlashAutomatically(): void
     {
         $page = new ValidationComponentPage();
         $page->flash("Article was deleted.", "danger", "Deleted");
@@ -962,9 +962,9 @@ final class ComponentViewTest extends TestCase
         $this->assertSame("", $empty);
     }
 
-    public function testFrameworkAlertCssDefinesToastAndSnackBarSurfaces(): void
+    public function testComponentsAlertCssDefinesToastAndSnackBarSurfaces(): void
     {
-        $css = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Framework/Resources/css/alert.css");
+        $css = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Components/Resources/css/alert.css");
 
         $this->assertIsString($css);
         $this->assertStringContainsString("--atom-alert-color: var(--atom-color-base-content);", $css);
@@ -985,9 +985,9 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString(".atom-snackbar__actions", $css);
     }
 
-    public function testFrameworkButtonCssDefinesSemanticVariants(): void
+    public function testComponentsButtonCssDefinesSemanticVariants(): void
     {
-        $css = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Framework/Resources/css/button.css");
+        $css = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Components/Resources/css/button.css");
 
         $this->assertIsString($css);
         $this->assertStringContainsString("--atom-button-color: var(--atom-color-base-content);", $css);
@@ -1012,7 +1012,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString(".atom-button-group > .atom-button", $css);
     }
 
-    public function testFrameworkListRendersItemsIconsAndActions(): void
+    public function testComponentsListRendersItemsIconsAndActions(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("List", ListComponent::class);
@@ -1043,7 +1043,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<div class="atom-list-item__icon"><span class="atom-icon" data-variant="secondary">C</span></div>', $html);
     }
 
-    public function testFrameworkListCanRenderItemsFromSource(): void
+    public function testComponentsListCanRenderItemsFromSource(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("List", ListComponent::class);
@@ -1066,7 +1066,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<div class="atom-list-item__description">Published</div>', $html);
     }
 
-    public function testFrameworkIconRendersContentAndOptions(): void
+    public function testComponentsIconRendersContentAndOptions(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Icon", Icon::class);
@@ -1078,7 +1078,7 @@ final class ComponentViewTest extends TestCase
         $this->assertSame('<span class="atom-icon" data-variant="warning" data-appearance="soft" data-size="sm">!</span>', $html);
     }
 
-    public function testFrameworkIconRendersPublicSourceAsImage(): void
+    public function testComponentsIconRendersPublicSourceAsImage(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Icon", Icon::class);
@@ -1090,7 +1090,7 @@ final class ComponentViewTest extends TestCase
         $this->assertSame('<span class="atom-icon"><img src="/icons/article.svg" alt=""></span>', $html);
     }
 
-    public function testFrameworkIconRendersFontIconClass(): void
+    public function testComponentsIconRendersFontIconClass(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Icon", Icon::class);
@@ -1102,7 +1102,7 @@ final class ComponentViewTest extends TestCase
         $this->assertSame('<span class="atom-icon"><i class="fa-solid fa-file" aria-hidden="true"></i></span>', $html);
     }
 
-    public function testFrameworkIconRendersBundledLucideIcon(): void
+    public function testComponentsIconRendersBundledLucideIcon(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Icon", Icon::class);
@@ -1116,7 +1116,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<path d="m21 21-4.34-4.34" />', $html);
     }
 
-    public function testFrameworkIconFactoryUsesSingleIconValue(): void
+    public function testComponentsIconFactoryUsesSingleIconValue(): void
     {
         $source = Icon::from("@app/Resources/icons/article.svg");
         $font = Icon::from("fa-solid fa-file");
@@ -1127,9 +1127,9 @@ final class ComponentViewTest extends TestCase
         $this->assertSame("lucide:search", $lucide->icon);
     }
 
-    public function testFrameworkIconCssKeepsDefaultIconsPlainAndFramesOnlySoftAppearance(): void
+    public function testComponentsIconCssKeepsDefaultIconsPlainAndFramesOnlySoftAppearance(): void
     {
-        $css = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Framework/Resources/css/panel.css");
+        $css = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Components/Resources/css/panel.css");
 
         $this->assertIsString($css);
         $this->assertStringContainsString("gap: 2px;", $css);
@@ -1148,7 +1148,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('.atom-icon[data-size="sm"]', $css);
     }
 
-    public function testFrameworkIconInlinesSvgSourceResolvedFromPaths(): void
+    public function testComponentsIconInlinesSvgSourceResolvedFromPaths(): void
     {
         $root = str_replace("\\", "/", dirname(__DIR__, 2));
         $registry = new ComponentRegistry();
@@ -1166,7 +1166,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<path d="M3 2h7l3 3v9H3z" />', $html);
     }
 
-    public function testFrameworkDialogRendersWhenShownWithNamedActions(): void
+    public function testComponentsDialogRendersWhenShownWithNamedActions(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Dialog", Dialog::class);
@@ -1198,7 +1198,7 @@ final class ComponentViewTest extends TestCase
         $this->assertSame("", $closed);
     }
 
-    public function testFrameworkDialogCanRenderHeaderCloseAction(): void
+    public function testComponentsDialogCanRenderHeaderCloseAction(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Dialog", Dialog::class);
@@ -1213,7 +1213,7 @@ final class ComponentViewTest extends TestCase
         );
     }
 
-    public function testFrameworkDialogCanBindDialogModel(): void
+    public function testComponentsDialogCanBindDialogModel(): void
     {
         $model = new DialogModel();
         $model->open(12);
@@ -1246,7 +1246,7 @@ final class ComponentViewTest extends TestCase
         $this->assertSame("", $empty);
     }
 
-    public function testFrameworkNavigationComponentsRenderItems(): void
+    public function testComponentsNavigationComponentsRenderItems(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Breadcrumbs", Breadcrumbs::class);
@@ -1279,7 +1279,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<button class="atom-pagination__item" type="button" atom:action="setPage(3)">Next</button>', $html);
     }
 
-    public function testFrameworkTabsCanBindTabsModelAndGenerateActions(): void
+    public function testComponentsTabsCanBindTabsModelAndGenerateActions(): void
     {
         $model = new TabsModel("source");
 
@@ -1303,7 +1303,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringNotContainsString('<div class="atom-tabs__panel">Preview content</div>', $html);
     }
 
-    public function testFrameworkPaginationCanBindPagedSource(): void
+    public function testComponentsPaginationCanBindPagedSource(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Pagination", Pagination::class);
@@ -1320,7 +1320,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<button class="atom-pagination__item" type="button" atom:action="setPage(3)">Next</button>', $html);
     }
 
-    public function testFrameworkFormAndFieldComponentsRenderStructure(): void
+    public function testComponentsFormAndFieldComponentsRenderStructure(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Form", Form::class);
@@ -1346,7 +1346,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<label class="atom-field" for="title"><span class="atom-field-label">Title</span><input id="title" /></label>', $html);
     }
 
-    public function testFrameworkCompositeFieldComponentsRenderInputsAndErrors(): void
+    public function testComponentsCompositeFieldComponentsRenderInputsAndErrors(): void
     {
         $page = new ValidationComponentPage();
         $page->title = "";
@@ -1375,7 +1375,7 @@ final class ComponentViewTest extends TestCase
         );
     }
 
-    public function testFrameworkSelectFieldRendersOptionsFromObjects(): void
+    public function testComponentsSelectFieldRendersOptionsFromObjects(): void
     {
         $page = new ValidationComponentPage();
         $page->categoryId = 2;
@@ -1402,7 +1402,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<option value="2" selected>Updates</option>', $html);
     }
 
-    public function testFrameworkSelectFieldRendersExplicitEmptyOptionValue(): void
+    public function testComponentsSelectFieldRendersExplicitEmptyOptionValue(): void
     {
         $page = new ValidationComponentPage();
         $page->status = "";
@@ -1423,7 +1423,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<option value="Published">Published</option>', $html);
     }
 
-    public function testFrameworkCheckFieldRendersBooleanState(): void
+    public function testComponentsCheckFieldRendersBooleanState(): void
     {
         $page = new ValidationComponentPage();
         $page->published = true;
@@ -1445,7 +1445,7 @@ final class ComponentViewTest extends TestCase
         );
     }
 
-    public function testFrameworkCheckFieldRendersHelpText(): void
+    public function testComponentsCheckFieldRendersHelpText(): void
     {
         $page = new ValidationComponentPage();
 
@@ -1461,7 +1461,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<p id="published-help" class="atom-field-help">Visible to readers.</p>', $html);
     }
 
-    public function testFrameworkCheckFieldReadsModelContextAndRendersErrors(): void
+    public function testComponentsCheckFieldReadsModelContextAndRendersErrors(): void
     {
         $page = new ValidationComponentPage();
         $page->edit = (object) ["published" => false];
@@ -1480,7 +1480,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<p id="published-error" class="atom-field-error">The field is required.</p>', $html);
     }
 
-    public function testFrameworkRadioFieldRendersOptionsAndSelectedModelValue(): void
+    public function testComponentsRadioFieldRendersOptionsAndSelectedModelValue(): void
     {
         $page = new ValidationComponentPage();
         $page->edit = (object) ["visibility" => "team"];
@@ -1509,7 +1509,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<p id="visibility-help" class="atom-field-help">Choose an audience.</p>', $html);
     }
 
-    public function testFrameworkSwitchFieldRendersBooleanStateHelpAndHiddenFallback(): void
+    public function testComponentsSwitchFieldRendersBooleanStateHelpAndHiddenFallback(): void
     {
         $page = new ValidationComponentPage();
         $page->published = true;
@@ -1528,7 +1528,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<p id="published-help" class="atom-field-help">Visible to readers.</p>', $html);
     }
 
-    public function testFrameworkLoadingComponentsRenderAccessibleStates(): void
+    public function testComponentsLoadingComponentsRenderAccessibleStates(): void
     {
         $registry = new ComponentRegistry();
         $registry->register("Progress", Progress::class);
@@ -1552,10 +1552,10 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('class="atom-skeleton" data-shape="circle" style="--atom-skeleton-width: 75%; --atom-skeleton-height: 2rem; margin: 1rem;" aria-hidden="true"', $html);
     }
 
-    public function testFrameworkLoadingAndChoiceCssDefinesStatesAndReducedMotion(): void
+    public function testComponentsLoadingAndChoiceCssDefinesStatesAndReducedMotion(): void
     {
-        $form = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Framework/Resources/css/form.css");
-        $loading = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Framework/Resources/css/loading.css");
+        $form = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Components/Resources/css/form.css");
+        $loading = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Components/Resources/css/loading.css");
 
         $this->assertIsString($form);
         $this->assertIsString($loading);
@@ -1571,7 +1571,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString("prefers-reduced-motion: reduce", $loading);
     }
 
-    public function testFrameworkHiddenFieldBindsPageAndModelValues(): void
+    public function testComponentsHiddenFieldBindsPageAndModelValues(): void
     {
         $page = new ValidationComponentPage();
         $page->id = 42;
@@ -1593,7 +1593,7 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<input type="hidden" name="token" value="abc">', $html);
     }
 
-    public function testFrameworkFormProvidesModelContextToFields(): void
+    public function testComponentsFormProvidesModelContextToFields(): void
     {
         $page = new ValidationComponentPage();
         $page->edit = (object) [
@@ -1620,9 +1620,9 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('<textarea id="body" name="body" class="atom-textarea">Model body</textarea>', $html);
     }
 
-    public function testFrameworkFormCssDefinesControlStates(): void
+    public function testComponentsFormCssDefinesControlStates(): void
     {
-        $css = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Framework/Resources/css/form.css");
+        $css = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Components/Resources/css/form.css");
 
         $this->assertIsString($css);
         $this->assertStringContainsString(".atom-form {\n    display: grid;\n    gap: var(--atom-space-4);\n}", $css);
@@ -1652,9 +1652,9 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString(".atom-validation-summary__title", $css);
     }
 
-    public function testFrameworkTokensDefineDaisyLikeSemanticPalette(): void
+    public function testComponentsTokensDefineDaisyLikeSemanticPalette(): void
     {
-        $css = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Framework/Resources/css/tokens.css");
+        $css = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Components/Resources/css/tokens.css");
 
         $this->assertIsString($css);
         $this->assertStringContainsString("--atom-color-base-100: oklch(100% 0 0);", $css);
@@ -1666,9 +1666,9 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString("--atom-color-surface: var(--atom-color-base-100);", $css);
     }
 
-    public function testFrameworkLayoutCssKeepsToolbarControlsInline(): void
+    public function testComponentsLayoutCssKeepsToolbarControlsInline(): void
     {
-        $css = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Framework/Resources/css/layout.css");
+        $css = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Components/Resources/css/layout.css");
 
         $this->assertIsString($css);
         $this->assertStringContainsString(".atom-page-header__main", $css);
@@ -1693,9 +1693,9 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString(".atom-split-view__side", $css);
     }
 
-    public function testFrameworkTableCssDefinesActionColumnLayout(): void
+    public function testComponentsTableCssDefinesActionColumnLayout(): void
     {
-        $css = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Framework/Resources/css/table.css");
+        $css = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Components/Resources/css/table.css");
 
         $this->assertIsString($css);
         $this->assertStringContainsString(".atom-table-stack", $css);
@@ -1713,9 +1713,9 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString(".atom-table__cell--actions", $css);
     }
 
-    public function testFrameworkNavigationCssKeepsLinkTabsUnadorned(): void
+    public function testComponentsNavigationCssKeepsLinkTabsUnadorned(): void
     {
-        $css = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Framework/Resources/css/navigation.css");
+        $css = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Components/Resources/css/navigation.css");
 
         $this->assertIsString($css);
         $this->assertStringContainsString("a.atom-tab:hover", $css);
@@ -1726,18 +1726,18 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString("appearance: none;", $css);
     }
 
-    public function testFrameworkJavascriptAllowsPageActionsInsideForms(): void
+    public function testComponentsJavascriptAllowsPageActionsInsideForms(): void
     {
-        $script = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Framework/Resources/atom.js");
+        $script = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Client/Resources/atom.js");
 
         $this->assertIsString($script);
         $this->assertStringContainsString('button[type=\"submit\"], input[type=\"submit\"]', $script);
         $this->assertStringNotContainsString('element.form !== undefined && element.form !== null) {', $script);
     }
 
-    public function testFrameworkJavascriptSupportsChangeActionsWithFormContext(): void
+    public function testComponentsJavascriptSupportsChangeActionsWithFormContext(): void
     {
-        $script = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Framework/Resources/atom.js");
+        $script = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Client/Resources/atom.js");
 
         $this->assertIsString($script);
         $this->assertStringContainsString('var changeAttribute = "atom:change";', $script);
@@ -1750,9 +1750,9 @@ final class ComponentViewTest extends TestCase
         $this->assertStringContainsString('document.addEventListener("change"', $script);
     }
 
-    public function testFrameworkJavascriptSupportsDebouncedInputActionsWithFormContext(): void
+    public function testComponentsJavascriptSupportsDebouncedInputActionsWithFormContext(): void
     {
-        $script = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Framework/Resources/atom.js");
+        $script = file_get_contents(dirname(__DIR__, 2) . "/src/Modules/Client/Resources/atom.js");
 
         $this->assertIsString($script);
         $this->assertStringContainsString('var inputAttribute = "atom:input";', $script);

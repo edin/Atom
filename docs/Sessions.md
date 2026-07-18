@@ -88,7 +88,7 @@ $message = $flash->pull("notice");
 
 Available flash operations are `put()`, `now()`, `get()`, `has()`, `pull()`, `all()`, `keep()`, and `reflash()`.
 
-`Page::flash()` remains a current-page presentation helper used by `Toast` and `SnackBar`. `FlashBag` is the request-to-request storage primitive; a later UI integration can map stored flash payloads into those components without coupling the session layer to the Framework module.
+`Page::flash()` remains a current-page presentation helper used by `Toast` and `SnackBar`. `FlashBag` is the request-to-request storage primitive; a later UI integration can map stored flash payloads into those components without coupling the session layer to the Components module.
 
 ## Configuration
 

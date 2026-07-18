@@ -129,9 +129,9 @@ The default update engine is intentionally small. It replaces the update root co
 For smoother updates, load the optional morphdom adapter:
 
 ```html
-<script src="/atom/framework/resources/atom.js"></script>
-<script src="/atom/framework/resources/morphdom.js"></script>
-<script src="/atom/framework/resources/atom-morphdom.js"></script>
+<script src="/atom/client/resources/atom.js"></script>
+<script src="/atom/client/resources/morphdom.js"></script>
+<script src="/atom/client/resources/atom-morphdom.js"></script>
 ```
 
 The adapter plugs into the same facade:

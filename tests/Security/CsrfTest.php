@@ -10,7 +10,7 @@ use Atom\Di\Injector;
 use Atom\Http\Request;
 use Atom\Http\RequestHandlerInterface;
 use Atom\Http\Response;
-use Atom\Modules\Framework\Components\Form;
+use Atom\Modules\Components\Form;
 use Atom\Security\CsrfMiddleware;
 use Atom\Security\CsrfTokenManager;
 use Atom\Security\CsrfTokenManagerInterface;

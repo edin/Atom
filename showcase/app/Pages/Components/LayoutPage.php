@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Showcase\Pages\Components;
 
-use Atom\Modules\Framework\Components\SidePanelModel;
+use Atom\Modules\Components\SidePanelModel;
 use Atom\Page\PageRoute;
 use Atom\Page\State;
 use Showcase\Pages\AppPage;

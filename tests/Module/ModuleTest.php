@@ -9,18 +9,19 @@ use Atom\Console\BufferedConsoleOutput;
 use Atom\Di\Injector;
 use Atom\Http\Response;
 use Atom\Module\ModuleRegistry;
-use Atom\Modules\Framework\Components\FieldError;
-use Atom\Modules\Framework\Components\TextArea;
-use Atom\Modules\Framework\Components\TextInput;
-use Atom\Modules\Framework\Components\Progress;
-use Atom\Modules\Framework\Components\RadioField;
-use Atom\Modules\Framework\Components\Skeleton;
-use Atom\Modules\Framework\Components\Spinner;
-use Atom\Modules\Framework\Components\SwitchField;
-use Atom\Modules\Framework\Components\ValidationSummary;
+use Atom\Modules\Client\Client;
+use Atom\Modules\Components\Components;
+use Atom\Modules\Components\FieldError;
+use Atom\Modules\Components\TextArea;
+use Atom\Modules\Components\TextInput;
+use Atom\Modules\Components\Progress;
+use Atom\Modules\Components\RadioField;
+use Atom\Modules\Components\Skeleton;
+use Atom\Modules\Components\Spinner;
+use Atom\Modules\Components\SwitchField;
+use Atom\Modules\Components\ValidationSummary;
 use Atom\Modules\DevReload\DevReloadModule;
 use Atom\Modules\DevReload\DevReloadWatcher;
-use Atom\Modules\Framework\Framework;
 use Atom\Modules\ErrorPages\ErrorPagesModule;
 use Atom\Module\ModuleContext;
 use Atom\Module\ModuleInterface;
@@ -113,12 +114,12 @@ final class ModuleTest extends TestCase
         $this->assertSame("/resources/app.css", $context->root()->resourcePath("/resources", "app.css"));
     }
 
-    public function testFrameworkModuleRegistersSharedComponents(): void
+    public function testComponentsModuleRegistersSharedComponentsAndResources(): void
     {
         $app = new ModuleTestApplication();
         $app->initialize();
 
-        $app->registerModule(Framework::module());
+        $app->registerModule(Components::module());
 
         $components = $app->getInjector()->get(ComponentRegistry::class);
 
@@ -131,6 +132,22 @@ final class ModuleTest extends TestCase
         $this->assertSame(Progress::class, $components->get("Progress"));
         $this->assertSame(Spinner::class, $components->get("Spinner"));
         $this->assertSame(Skeleton::class, $components->get("Skeleton"));
+        $this->assertTrue(
+            (new RouteMatcher($app->getRouter()))->match("GET", "/atom/components/resources/atom.css")->isFound()
+        );
+    }
+
+    public function testClientModuleRegistersOnlyBrowserResources(): void
+    {
+        $app = new ModuleTestApplication();
+        $app->initialize();
+
+        $app->registerModule(Client::module());
+
+        $this->assertTrue(
+            (new RouteMatcher($app->getRouter()))->match("GET", "/atom/client/resources/atom.js")->isFound()
+        );
+        $this->assertFalse($app->getInjector()->get(ComponentRegistry::class)->has("Button"));
     }
 
     public function testDevReloadModuleRegistersVersionEndpointAndResources(): void

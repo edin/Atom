@@ -183,7 +183,7 @@ $modules->add(Accounts::module(new AccountsOptions(
 
 The equivalent options for the other pages are `registerTemplate`, `forgotPasswordTemplate`, and `resetPasswordTemplate`.
 
-The template receives the normal page context through `$this`. It is a body template: the page declares `AccountsLayout` through its `layout` property, so the document shell and stylesheet are applied automatically. The module also registers `Accounts.Panel`, `Accounts.Field`, `Accounts.Button`, `Accounts.Error`, and `Accounts.Message` for composing a custom form without depending on the Framework UI module. Error and message components render nothing when their message is empty, so templates do not need a conditional around them.
+The template receives the normal page context through `$this`. It is a body template: the page declares `AccountsLayout` through its `layout` property, so the document shell and stylesheet are applied automatically. The module also registers `Accounts.Panel`, `Accounts.Field`, `Accounts.Button`, `Accounts.Error`, and `Accounts.Message` for composing a custom form without depending on the Components module. Error and message components render nothing when their message is empty, so templates do not need a conditional around them.
 
 The login page exposes its title, form action, stylesheet URL, CSRF token, validated return destination, retained login value, and generic authentication error. Password values are read directly from the request and are never stored in page state or passed back to the template.
 

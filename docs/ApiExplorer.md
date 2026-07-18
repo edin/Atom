@@ -44,10 +44,10 @@ The module serves its CSS from:
 /atom/api/resources/api-explorer.css
 ```
 
-It also registers the shared Atom browser runtime from the framework module:
+It also registers the shared Atom browser runtime from the client module:
 
 ```text
-/atom/framework/resources/atom.js
+/atom/client/resources/atom.js
 ```
 
 Use `ResponseOf` with wrapper response models when the action returns a container such as a paged response:

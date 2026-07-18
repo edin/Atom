@@ -44,9 +44,9 @@ final class ArticlesPage extends Page
 
 Invalid requests receive a `403 Forbidden` plain-text response with `Cache-Control: no-store` and do not reach the route handler.
 
-## Framework Forms
+## Component Forms
 
-Enable token rendering on a Framework form:
+Enable token rendering on a Components module form:
 
 ```html
 <Form submit="save" csrf>
@@ -77,7 +77,7 @@ or:
 <meta name="csrf-token" content="...">
 ```
 
-A CSRF-enabled Framework form provides the hidden input automatically. For standalone `atom:action` controls outside a form, render the meta token from an injected `CsrfTokenManagerInterface` in the application layout.
+A CSRF-enabled component form provides the hidden input automatically. For standalone `atom:action` controls outside a form, render the meta token from an injected `CsrfTokenManagerInterface` in the application layout.
 
 ## Token Manager
 

@@ -119,22 +119,41 @@ Registering the same resource route more than once returns the existing route in
 Use `root()` when a module needs to register shared routes or resources outside its mounted path:
 
 ```php
-Framework::resources($context->root());
+Client::resources($context->root());
 ```
 
-Shared framework browser assets can be mounted by a module with:
+The optional client module serves the Atom browser runtime and MorphDOM integration:
 
 ```php
-use Atom\Modules\Framework\Framework;
+use Atom\Modules\Client\Client;
 
-Framework::resources($context);
+Client::resources($context);
 ```
 
-This exposes the small Atom client runtime at:
+Its default URLs are:
 
 ```text
-/atom/framework/resources/atom.js
+/atom/client/resources/atom.js
+/atom/client/resources/morphdom.js
+/atom/client/resources/atom-morphdom.js
 ```
+
+The optional components module registers the shared PHP component tags and serves their CSS and icons:
+
+```php
+use Atom\Modules\Components\Components;
+
+$modules->add(Components::module());
+```
+
+Its resources are exposed at:
+
+```text
+/atom/components/resources/atom.css
+/atom/components/resources/icons/...
+```
+
+Register either module independently, or register both when an application uses both layers.
 
 Pages discovered through `pages()` are registered under the context base path.
 
