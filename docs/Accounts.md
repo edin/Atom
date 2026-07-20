@@ -2,7 +2,7 @@
 
 [Atom Framework](Index.md)
 
-The optional Accounts module provides login, registration, password-recovery, and logout pages on top of Atom's [identity and authentication](Identity.md) foundation. Each form uses Atom's page foundation: `get()` prepares the initial page and a `#[PageAction]` handles submission. The module does not define a user model, database schema, or reset-token storage.
+The optional Accounts module provides login, registration, password-recovery, and logout pages on top of Atom's [identity and authentication](Identity.md) foundation. Each form uses Atom's page foundation: `get()` prepares the initial page and a `#[PageAction]` handles submission. The module does not impose a user model or database schema; it provides an optional publish bundle with application-owned defaults.
 
 ## Requirements
 
@@ -27,6 +27,53 @@ final readonly class ApplicationIdentityServices implements ServiceProviderInter
 ```
 
 Add that provider from the application's `services()` hook. See [Identity and Authentication](Identity.md) for the complete provider contract.
+
+## Publish the Application Foundation
+
+After mounting the module, publish the default application-owned implementation:
+
+```shell
+php atom accounts:publish
+```
+
+This creates:
+
+```text
+app/Models/User.php
+app/Models/PasswordResetToken.php
+app/Identity/AppIdentityProvider.php
+app/Accounts/AccountManager.php
+app/Providers/AccountsServiceProvider.php
+app/Database/Migrations/M0001_create_users.php
+app/Database/Migrations/M0002_create_password_reset_tokens.php
+```
+
+Existing files are skipped. Use `--force` only when the published application files should be replaced.
+
+Register the published provider before the Accounts module is used:
+
+```php
+use App\Providers\AccountsServiceProvider;
+use Atom\Di\ServiceProviderRegistry;
+
+protected function services(ServiceProviderRegistry $providers): void
+{
+    $providers->add(DatabaseServices::fromConfig($this->getConfig(), $this->getPaths()));
+    $providers->add(AccountsServiceProvider::class);
+}
+```
+
+Set the application's `baseUrl` so reset emails contain an absolute link, then migrate:
+
+```php
+protected string $baseUrl = "https://example.com";
+```
+
+```shell
+php atom migrate
+```
+
+The published implementation normalizes email addresses, hashes passwords with `PasswordHasherInterface`, stores only SHA-256 reset-token hashes, expires tokens after 60 minutes, deletes them after use, and rejects replay. Reset mail is dispatched through Atom's queue; with the default synchronous driver it is delivered during the request.
 
 ## Registration
 
@@ -61,9 +108,7 @@ The POST routes use CSRF protection. Login, registration, reset-link requests, a
 
 Registration and password recovery delegate to one `AccountManagerInterface`. The module supplies `NullAccountManager` when the application does not bind one, preserving safe "not configured" behavior without requiring persistence or email services. The forgot-password response is identical whether an account exists or not.
 
-The module provides `PasswordResetMail` with plain-text and HTML content. The application account
-manager creates and stores the reset token, builds the absolute reset URL, and sends the provided
-mailable through Atom's [mail service](Mail.md):
+The module provides `PasswordResetMail` with plain-text and HTML content and registers the stable `atom.accounts.send-password-reset` job. A custom application manager can create and store its own reset token and dispatch `SendPasswordResetJob`:
 
 ```php
 public function requestPasswordReset(string $login): void
@@ -79,15 +124,11 @@ public function requestPasswordReset(string $login): void
         "token" => $token,
     ]);
 
-    $this->mailer->send(new PasswordResetMail($user->email, $url, $user->name));
+    $this->jobs->dispatch(new SendPasswordResetJob($user->email, $url, $user->name));
 }
 ```
 
-Keeping token generation in the application prevents the module from assuming a database schema,
-while mail composition and delivery use framework defaults.
-
-For asynchronous delivery, dispatch a job containing only the recipient and reset URL. See
-[Background Jobs and Queues](Queue.md) for a complete password-reset job example.
+Keeping token generation in the application prevents the module from assuming a database schema, while mail composition and delivery use framework defaults. See [Background Jobs and Queues](Queue.md) to configure file or database-backed asynchronous delivery.
 
 `AccountManagerInterface::register()` receives a `RegisterAccount` command. In addition to the canonical login and password, it contains every submitted registration field except `_token`, `_action`, `_state`, `password_confirmation`, and the canonical credential fields. Application managers must explicitly select the additional fields they recognize rather than mass-assigning `RegisterAccount::fields()`.
 
@@ -189,4 +230,4 @@ The login page exposes its title, form action, stylesheet URL, CSRF token, valid
 
 ## Scope
 
-The framework intentionally leaves account persistence and reset-token generation and storage to the bound account manager. Remember-me cookies, email verification, and database migrations remain outside this slice. The framework [publisher](Publishing.md) now provides the collision-safe foundation for a later `accounts:publish` command that supplies an optional application-owned model, manager, provider, and fixed-name migrations without coupling this module to one schema.
+The framework still leaves account persistence and reset-token policy to the bound account manager. The published files are sensible defaults, not hidden framework behavior, and can be changed after publication. Remember-me cookies and email verification remain outside this slice.

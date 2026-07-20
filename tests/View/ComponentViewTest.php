@@ -7,6 +7,7 @@ namespace Atom\Tests\View;
 use Atom\Di\Bindings;
 use Atom\Di\Injector;
 use Atom\Collections\PagedCollection;
+use Atom\Modules\Client\ClientScripts;
 use Atom\Modules\Components\FieldError;
 use Atom\Modules\Components\Alert;
 use Atom\Modules\Components\AppShell;
@@ -20,6 +21,7 @@ use Atom\Modules\Components\Card;
 use Atom\Modules\Components\CheckField;
 use Atom\Modules\Components\Column;
 use Atom\Modules\Components\ControlGroup;
+use Atom\Modules\Components\ComponentsStyles;
 use Atom\Modules\Components\Dialog;
 use Atom\Modules\Components\Details;
 use Atom\Modules\Components\Divider;
@@ -81,6 +83,31 @@ use PHPUnit\Framework\TestCase;
 
 final class ComponentViewTest extends TestCase
 {
+    public function testAssetComponentsRenderInsideAtomTemplate(): void
+    {
+        $registry = new ComponentRegistry();
+        $registry->register("ClientScripts", ClientScripts::class);
+        $registry->register("ComponentsStyles", ComponentsStyles::class);
+
+        $html = (new ViewRenderer(components: $registry))->render(
+            (new ViewParser())->parse('<head><ComponentsStyles /></head><body><ClientScripts morphdom /></body>')
+        );
+
+        $this->assertStringContainsString(
+            '<link rel="stylesheet" href="/atom/components/resources/atom.css?v=1">',
+            $html
+        );
+        $this->assertStringContainsString('<script src="/atom/client/resources/atom.js?v=9"></script>', $html);
+        $this->assertStringContainsString(
+            '<script src="/atom/client/resources/morphdom.js?v=2.7.8"></script>',
+            $html
+        );
+        $this->assertStringContainsString(
+            '<script src="/atom/client/resources/atom-morphdom.js?v=3"></script>',
+            $html
+        );
+    }
+
     public function testRendersTemplateNextToComponentClass(): void
     {
         $component = new TemplateBackedComponent();

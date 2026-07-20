@@ -16,7 +16,7 @@ final readonly class ComponentsModule implements ModuleInterface
 
     public function register(ModuleContext $context): void
     {
-        Components::components($context);
+        $context->importComponents(Components::definitions());
         Components::resources($context, $this->resourcePath);
     }
 }

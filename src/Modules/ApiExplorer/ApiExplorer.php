@@ -10,12 +10,27 @@ use Atom\Module\ModuleContext;
 use Atom\Router\RouteEntry;
 use Atom\Router\Router;
 use Atom\View\Component\ComponentRegistry;
+use Atom\View\Component\ComponentSet;
+use Atom\Modules\ApiExplorer\UI\Components\AppShell;
+use Atom\Modules\ApiExplorer\UI\Components\EndpointDetails;
+use Atom\Modules\ApiExplorer\UI\Components\EndpointList;
+use Atom\Modules\ApiExplorer\UI\Components\TryRequestPanel;
 
 final readonly class ApiExplorer
 {
     public static function module(string $apiPathPrefix = "/api"): ApiExplorerModule
     {
         return new ApiExplorerModule($apiPathPrefix);
+    }
+
+    public static function definitions(): ComponentSet
+    {
+        return ComponentSet::from([
+            "ApiExplorer.AppShell" => AppShell::class,
+            "ApiExplorer.EndpointList" => EndpointList::class,
+            "ApiExplorer.EndpointDetails" => EndpointDetails::class,
+            "ApiExplorer.TryRequest" => TryRequestPanel::class,
+        ]);
     }
 
     public static function register(Router $router, string $path = "/atom/api", string $apiPathPrefix = "/api"): RouteEntry

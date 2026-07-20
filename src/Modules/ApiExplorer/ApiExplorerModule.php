@@ -9,10 +9,6 @@ use Atom\Module\ModuleContext;
 use Atom\Module\ModuleInterface;
 use Atom\Modules\Client\Client;
 use Atom\Router\RouteEntry;
-use Atom\Modules\ApiExplorer\UI\Components\AppShell;
-use Atom\Modules\ApiExplorer\UI\Components\EndpointDetails;
-use Atom\Modules\ApiExplorer\UI\Components\EndpointList;
-use Atom\Modules\ApiExplorer\UI\Components\TryRequestPanel;
 
 final readonly class ApiExplorerModule implements ModuleInterface
 {
@@ -32,10 +28,7 @@ final readonly class ApiExplorerModule implements ModuleInterface
             $entry->metadata(new ApiHidden());
         }
 
-        $context->component("ApiExplorer.AppShell", AppShell::class);
-        $context->component("ApiExplorer.EndpointList", EndpointList::class);
-        $context->component("ApiExplorer.EndpointDetails", EndpointDetails::class);
-        $context->component("ApiExplorer.TryRequest", TryRequestPanel::class);
+        $context->importComponents(ApiExplorer::definitions());
 
         foreach ($context->pages(__DIR__ . "/UI/Pages") as $entry) {
             $entry->metadata($options);

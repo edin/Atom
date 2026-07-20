@@ -85,7 +85,7 @@ sample/app/
 ├── Application.php
 ├── Components/
 │   ├── Layout.php
-│   └── Layout.atom.php
+│   └── Layout.atom.html
 ├── Controllers/
 │   └── ApiController.php
 ├── Database/

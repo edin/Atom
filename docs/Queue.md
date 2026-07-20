@@ -7,19 +7,21 @@ objects are never serialized into queue storage.
 
 ## Defining Jobs
 
-A job declares a stable type, its JSON-safe payload, and how to rebuild itself. Its public
+A job extends `Job`, declares a stable type, and keeps its JSON-safe payload in typed constructor
+properties. The base class derives `payload()` and `fromPayload()` from that constructor. Its public
 `handle()` method can request framework or application services:
 
 ```php
 use Atom\Mail\MailerInterface;
 use Atom\Modules\Accounts\Mail\PasswordResetMail;
-use Atom\Queue\JobInterface;
+use Atom\Queue\Job;
 
-final readonly class SendPasswordResetJob implements JobInterface
+final readonly class SendPasswordResetJob extends Job
 {
     public function __construct(
         private string $email,
-        private string $resetUrl
+        private string $resetUrl,
+        private string $recipientName = ""
     ) {
     }
 
@@ -28,22 +30,21 @@ final readonly class SendPasswordResetJob implements JobInterface
         return "accounts.send-password-reset";
     }
 
-    public function payload(): array
-    {
-        return ["email" => $this->email, "resetUrl" => $this->resetUrl];
-    }
-
-    public static function fromPayload(array $payload): self
-    {
-        return new self((string) $payload["email"], (string) $payload["resetUrl"]);
-    }
-
     public function handle(MailerInterface $mailer): void
     {
-        $mailer->send(new PasswordResetMail($this->email, $this->resetUrl));
+        $mailer->send(new PasswordResetMail($this->email, $this->resetUrl, $this->recipientName));
     }
 }
 ```
+
+Constructor parameter names become payload keys. Every parameter must have a corresponding
+property and use `string`, `int`, `float`, `bool`, `array`, `mixed`, or a nullable form of those
+types. Arrays may contain only JSON-safe values. Missing required fields, unknown fields, invalid
+types, object values, and resources fail with a `QueueException`. Default constructor values allow
+older queued payloads to omit newly added optional fields.
+
+Implement `JobInterface` directly when a job needs a custom payload shape or migration logic.
+Existing manually serialized jobs remain supported.
 
 Register job classes from the application:
 

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ $this->title() }}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.0/css/all.min.css">
+    <ComponentsStyles />
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <main class="showcase-shell">
+        <aside class="showcase-sidebar">
+            <a class="showcase-brand" href="/" atom:navigate>Atom Showcase</a>
+            <nav class="showcase-nav" aria-label="Showcase navigation">
+                <a href="/" atom:navigate><Icon icon="lucide:layout-dashboard" /><span>Overview</span></a>
+                <span class="showcase-nav-label">Examples</span>
+                <a href="/examples/article-admin" atom:navigate><Icon icon="lucide:newspaper" /><span>Article Admin</span></a>
+                <span class="showcase-nav-label">Components</span>
+                <a href="/components/buttons" atom:navigate><Icon icon="lucide:mouse-pointer-click" /><span>Buttons</span></a>
+                <a href="/components/alerts" atom:navigate><Icon icon="lucide:circle-alert" /><span>Alerts</span></a>
+                <a href="/components/badges" atom:navigate><Icon icon="lucide:badge" /><span>Badges</span></a>
+                <a href="/components/feedback" atom:navigate><Icon icon="lucide:message-circle" /><span>Feedback</span></a>
+                <a href="/components/icons" atom:navigate><Icon icon="lucide:sparkles" /><span>Icons</span></a>
+                <a href="/components/forms" atom:navigate><Icon icon="lucide:clipboard-pen" /><span>Forms</span></a>
+                <a href="/components/surfaces" atom:navigate><Icon icon="lucide:panel-top" /><span>Surfaces</span></a>
+                <a href="/components/data" atom:navigate><Icon icon="lucide:table-2" /><span>Data</span></a>
+                <a href="/components/dialogs" atom:navigate><Icon icon="lucide:message-square-warning" /><span>Dialogs</span></a>
+                <a href="/components/navigation" atom:navigate><Icon icon="lucide:route" /><span>Navigation</span></a>
+                <a href="/components/pagination" atom:navigate><Icon icon="lucide:list-ordered" /><span>Pagination</span></a>
+                <a href="/components/tabs" atom:navigate><Icon icon="lucide:notebook-tabs" /><span>Tabs</span></a>
+                <a href="/components/layout" atom:navigate><Icon icon="lucide:panels-top-left" /><span>Layout</span></a>
+                <a href="/components/composition" atom:navigate><Icon icon="lucide:blocks" /><span>Composition</span></a>
+                <a href="/components/actions" atom:navigate><Icon icon="lucide:bolt" /><span>Actions</span></a>
+            </nav>
+        </aside>
+
+        <section class="showcase-main" data-width="{{ $this->contentWidth() }}" atom:update-root>
+            {{ $context->fragmentHtml($this->content) }}
+        </section>
+    </main>
+    <ClientScripts morphdom />
+    <script src="/atom/dev/resources/reload.js" data-interval="1000"></script>
+</body>
+</html>

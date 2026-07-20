@@ -33,6 +33,21 @@ final class ComponentRegistry
         return $this;
     }
 
+    public function import(ComponentSet $set): self
+    {
+        foreach ($set as $name => $_className) {
+            if (isset($this->components[$name])) {
+                throw new ComponentRegistryException("Component '{$name}' is already registered.");
+            }
+        }
+
+        foreach ($set as $name => $className) {
+            $this->components[$name] = $className;
+        }
+
+        return $this;
+    }
+
     public function has(string $name): bool
     {
         return isset($this->components[$name]);

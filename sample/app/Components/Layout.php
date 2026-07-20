@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace App\Components;
 
 use Atom\Page\Page;
-use Atom\View\Component\ComponentInterface;
-use Atom\View\Component\ComponentView;
 use Atom\View\Component\Fragment;
+use Atom\View\Component\TemplateComponent;
+use Atom\View\Component\TemplateFragment;
 
-final class Layout implements ComponentInterface
+final class Layout extends TemplateComponent
 {
     public Page $page;
 
-    public ?Fragment $content = null;
+    public Fragment|TemplateFragment|null $content = null;
 
     public function title(): string
     {
@@ -22,8 +22,4 @@ final class Layout implements ComponentInterface
             : "Atom Sample";
     }
 
-    public function render(): string
-    {
-        return ComponentView::render($this);
-    }
 }

@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Showcase\Components;
 
 use Atom\Page\Page;
-use Atom\View\Component\ComponentInterface;
-use Atom\View\Component\ComponentView;
 use Atom\View\Component\Fragment;
+use Atom\View\Component\TemplateComponent;
+use Atom\View\Component\TemplateFragment;
 
-final class ShowcaseLayout implements ComponentInterface
+final class ShowcaseLayout extends TemplateComponent
 {
     public Page $page;
 
-    public ?Fragment $content = null;
+    public Fragment|TemplateFragment|null $content = null;
 
     public function title(): string
     {
@@ -25,8 +25,4 @@ final class ShowcaseLayout implements ComponentInterface
         return property_exists($this->page, "contentWidth") ? (string) $this->page->contentWidth : "";
     }
 
-    public function render(): string
-    {
-        return ComponentView::render($this);
-    }
 }

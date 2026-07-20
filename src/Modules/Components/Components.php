@@ -62,74 +62,79 @@ use Atom\Modules\Components\Toast;
 use Atom\Modules\Components\Toolbar;
 use Atom\Modules\Components\ValidationSummary;
 use Atom\Router\RouteEntry;
+use Atom\View\Component\ComponentSet;
 
 final readonly class Components
 {
     public const DEFAULT_RESOURCE_PATH = "/atom/components/resources";
+    public const STYLES_VERSION = "1";
 
     public static function module(string $resourcePath = self::DEFAULT_RESOURCE_PATH): ComponentsModule
     {
         return new ComponentsModule($resourcePath);
     }
 
-    public static function components(ModuleContext $context): void
+    public static function definitions(): ComponentSet
     {
-        $context->component("Alert", Alert::class);
-        $context->component("AppShell", AppShell::class);
-        $context->component("Avatar", Avatar::class);
-        $context->component("Badge", Badge::class);
-        $context->component("Breadcrumb", Breadcrumb::class);
-        $context->component("Breadcrumbs", Breadcrumbs::class);
-        $context->component("Button", Button::class);
-        $context->component("ButtonGroup", ButtonGroup::class);
-        $context->component("Card", Card::class);
-        $context->component("CheckField", CheckField::class);
-        $context->component("Column", Column::class);
-        $context->component("ControlGroup", ControlGroup::class);
-        $context->component("Dialog", Dialog::class);
-        $context->component("Details", Details::class);
-        $context->component("Divider", Divider::class);
-        $context->component("EmptyState", EmptyState::class);
-        $context->component("Field", Field::class);
-        $context->component("FieldError", FieldError::class);
-        $context->component("Form", Form::class);
-        $context->component("FormActions", FormActions::class);
-        $context->component("FormRow", FormRow::class);
-        $context->component("FormSection", FormSection::class);
-        $context->component("HiddenField", HiddenField::class);
-        $context->component("Icon", Icon::class);
-        $context->component("Inline", Inline::class);
-        $context->component("Kbd", Kbd::class);
-        $context->component("List", ListComponent::class);
-        $context->component("ListItem", ListItem::class);
-        $context->component("Panel", Panel::class);
-        $context->component("PageHeader", PageHeader::class);
-        $context->component("Pagination", Pagination::class);
-        $context->component("Progress", Progress::class);
-        $context->component("RadioField", RadioField::class);
-        $context->component("SelectField", SelectField::class);
-        $context->component("Sidebar", Sidebar::class);
-        $context->component("SidebarGroup", SidebarGroup::class);
-        $context->component("SidebarItem", SidebarItem::class);
-        $context->component("SnackBar", SnackBar::class);
-        $context->component("Skeleton", Skeleton::class);
-        $context->component("Spinner", Spinner::class);
-        $context->component("SplitView", SplitView::class);
-        $context->component("Stack", Stack::class);
-        $context->component("Stats", Stats::class);
-        $context->component("StatusDot", StatusDot::class);
-        $context->component("SwitchField", SwitchField::class);
-        $context->component("Tab", Tab::class);
-        $context->component("Tabs", Tabs::class);
-        $context->component("Table", Table::class);
-        $context->component("Tag", Tag::class);
-        $context->component("TextArea", TextArea::class);
-        $context->component("TextAreaField", TextAreaField::class);
-        $context->component("TextField", TextField::class);
-        $context->component("TextInput", TextInput::class);
-        $context->component("Toast", Toast::class);
-        $context->component("Toolbar", Toolbar::class);
-        $context->component("ValidationSummary", ValidationSummary::class);
+        return ComponentSet::from([
+            "Alert" => Alert::class,
+            "AppShell" => AppShell::class,
+            "Avatar" => Avatar::class,
+            "Badge" => Badge::class,
+            "Breadcrumb" => Breadcrumb::class,
+            "Breadcrumbs" => Breadcrumbs::class,
+            "Button" => Button::class,
+            "ButtonGroup" => ButtonGroup::class,
+            "Card" => Card::class,
+            "CheckField" => CheckField::class,
+            "Column" => Column::class,
+            "ComponentsStyles" => ComponentsStyles::class,
+            "ControlGroup" => ControlGroup::class,
+            "Dialog" => Dialog::class,
+            "Details" => Details::class,
+            "Divider" => Divider::class,
+            "EmptyState" => EmptyState::class,
+            "Field" => Field::class,
+            "FieldError" => FieldError::class,
+            "Form" => Form::class,
+            "FormActions" => FormActions::class,
+            "FormRow" => FormRow::class,
+            "FormSection" => FormSection::class,
+            "HiddenField" => HiddenField::class,
+            "Icon" => Icon::class,
+            "Inline" => Inline::class,
+            "Kbd" => Kbd::class,
+            "List" => ListComponent::class,
+            "ListItem" => ListItem::class,
+            "Panel" => Panel::class,
+            "PageHeader" => PageHeader::class,
+            "Pagination" => Pagination::class,
+            "Progress" => Progress::class,
+            "RadioField" => RadioField::class,
+            "SelectField" => SelectField::class,
+            "Sidebar" => Sidebar::class,
+            "SidebarGroup" => SidebarGroup::class,
+            "SidebarItem" => SidebarItem::class,
+            "SnackBar" => SnackBar::class,
+            "Skeleton" => Skeleton::class,
+            "Spinner" => Spinner::class,
+            "SplitView" => SplitView::class,
+            "Stack" => Stack::class,
+            "Stats" => Stats::class,
+            "StatusDot" => StatusDot::class,
+            "SwitchField" => SwitchField::class,
+            "Tab" => Tab::class,
+            "Tabs" => Tabs::class,
+            "Table" => Table::class,
+            "Tag" => Tag::class,
+            "TextArea" => TextArea::class,
+            "TextAreaField" => TextAreaField::class,
+            "TextField" => TextField::class,
+            "TextInput" => TextInput::class,
+            "Toast" => Toast::class,
+            "Toolbar" => Toolbar::class,
+            "ValidationSummary" => ValidationSummary::class,
+        ]);
     }
 
     /**

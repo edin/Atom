@@ -33,9 +33,47 @@ Then use it from a template:
 <Button label="Save" />
 ```
 
+## Component Sets
+
+Use `ComponentSet` when a package or module provides several tag mappings as one reusable definition:
+
+```php
+use Atom\View\Component\ComponentSet;
+
+final readonly class BlogComponents
+{
+    public static function definitions(): ComponentSet
+    {
+        return ComponentSet::from([
+            "Blog.ArticleCard" => ArticleCard::class,
+            "Blog.CategoryBadge" => CategoryBadge::class,
+        ]);
+    }
+}
+```
+
+A registry can import the complete set:
+
+```php
+$components->import(BlogComponents::definitions());
+```
+
+Modules import sets through their context:
+
+```php
+public function register(ModuleContext $context): void
+{
+    $context->importComponents(BlogComponents::definitions());
+}
+```
+
+Sets are immutable. Add a definition by creating a derived set with `with()`, or combine disjoint sets with `merge()`. Duplicate tags and classes that do not implement `ComponentInterface` fail immediately. Registry imports are atomic: if any imported tag is already registered, none of the set is added.
+
+The built-in `Components`, `Client`, `Accounts`, and `ApiExplorer` modules expose their mappings through a `definitions()` method. This contract will also allow module-local registries to import shared component sets without exporting them to the application.
+
 Framework internals may also use component class names directly, but application templates should usually prefer registered names.
 
-The framework module registers default UI and form components:
+The Components module registers its default UI and form component set:
 
 ```html
 <Button>Save</Button>
@@ -64,6 +102,23 @@ The framework module registers default UI and form components:
 <FieldError name="title" />
 <ValidationSummary />
 ```
+
+Use the optional asset components from an `.atom.html` layout when the Client and Components modules are registered:
+
+```html
+<!doctype html>
+<html lang="en">
+<head>
+    <ComponentsStyles />
+</head>
+<body>
+    {{ $context->fragmentHtml($this->content) }}
+    <ClientScripts morphdom />
+</body>
+</html>
+```
+
+`ClientScripts` always loads the Atom runtime. Set `morphdom` to also load MorphDOM and the Atom adapter. Both asset components accept a custom `resource-path`; their default paths match the module defaults.
 
 `Avatar` renders an image when `src` is provided and otherwise derives up to two initials from `name`. `StatusDot` requires a `label` when its meaning is not also written next to it. `Details` uses native `<details>` disclosure behavior and does not require JavaScript.
 

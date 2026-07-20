@@ -12,6 +12,7 @@ use Atom\Di\ServiceProviderRegistry;
 use Atom\Http\Request;
 use Atom\Identity\IdentityInterface;
 use Atom\Identity\IdentityProviderInterface;
+use Atom\Mail\ArrayMailer;
 use Atom\Module\ModuleRegistry;
 use Atom\Modules\Accounts\AccountManagerInterface;
 use Atom\Modules\Accounts\Accounts;
@@ -32,7 +33,9 @@ use Atom\Modules\Accounts\Pages\LoginPage;
 use Atom\Modules\Accounts\Pages\RegisterPage;
 use Atom\Modules\Accounts\Pages\ResetPasswordPage;
 use Atom\Modules\Accounts\RegisterAccount;
+use Atom\Modules\Accounts\Jobs\SendPasswordResetJob;
 use Atom\Page\PageRouteMetadata;
+use Atom\Queue\JobRegistry;
 use Atom\Router\Route;
 use Atom\Router\RouteMatcher;
 use Atom\Security\CsrfMiddleware;
@@ -51,6 +54,24 @@ final class AccountsModuleTest extends TestCase
     {
         Application::$app = null;
         Route::clearRouter();
+    }
+
+    public function testPasswordResetJobRoundTripsPayloadAndBuildsMail(): void
+    {
+        $job = SendPasswordResetJob::fromPayload((new SendPasswordResetJob(
+            "edin@example.com",
+            "https://example.test/account/reset-password?token=secret",
+            "Edin"
+        ))->payload());
+        $mailer = new ArrayMailer();
+
+        $job->handle($mailer);
+
+        $message = $mailer->messages()[0];
+        $this->assertSame("edin@example.com", $message->recipients()[0]->address);
+        $this->assertSame("Edin", $message->recipients()[0]->name);
+        $this->assertSame("Reset your password", $message->subjectLine());
+        $this->assertStringContainsString("token=secret", $message->textContent() ?? "");
     }
 
     public function testModuleRendersLoginFormRegistersResourcesAndLogoutComponent(): void
@@ -89,6 +110,11 @@ final class AccountsModuleTest extends TestCase
         $this->assertSame(Message::class, $components->get("Accounts.Message"));
         $this->assertSame(LogoutForm::class, $components->get("Accounts.LogoutForm"));
         $this->assertInstanceOf(NullAccountManager::class, $app->getInjector()->get(AccountManagerInterface::class));
+        $this->assertSame(
+            SendPasswordResetJob::class,
+            $app->getInjector()->get(JobRegistry::class)->resolve(SendPasswordResetJob::type())
+        );
+        $this->assertNotNull($app->getConsole()->commands()->get("accounts:publish"));
         $this->assertSame(
             LoginPage::class,
             $loginRoute->matchedRoute->getRouteEntry()->getMetadataOfType(PageRouteMetadata::class)?->pageClass

@@ -22,11 +22,13 @@ use Atom\Queue\DatabaseQueue;
 use Atom\Queue\FailedJob;
 use Atom\Queue\FileQueue;
 use Atom\Queue\JobEnvelope;
+use Atom\Queue\Job;
 use Atom\Queue\JobExecutor;
 use Atom\Queue\JobInterface;
 use Atom\Queue\JobRegistry;
 use Atom\Queue\QueueJobDispatcher;
 use Atom\Queue\QueueOptions;
+use Atom\Queue\QueueException;
 use Atom\Queue\QueueServices;
 use Atom\Queue\QueueWorker;
 use Atom\Queue\WorkerResult;
@@ -36,6 +38,58 @@ use Atom\Support\Paths;
 
 final class QueueTest extends TestCase
 {
+    public function testJobConventionRoundTripsConstructorProperties(): void
+    {
+        $job = new ConventionalJob("hello", attempts: 2, label: null, metadata: ["source" => "test"]);
+
+        $payload = $job->payload();
+        $restored = ConventionalJob::fromPayload($payload);
+
+        $this->assertSame([
+            "value" => "hello",
+            "attempts" => 2,
+            "label" => null,
+            "metadata" => ["source" => "test"],
+        ], $payload);
+        $this->assertSame("hello", $restored->value);
+        $this->assertSame(2, $restored->attempts);
+        $this->assertNull($restored->label);
+        $this->assertSame(["source" => "test"], $restored->metadata);
+    }
+
+    public function testJobConventionUsesDefaultsForMissingOptionalFields(): void
+    {
+        $job = ConventionalJob::fromPayload(["value" => "hello"]);
+
+        $this->assertSame(1, $job->attempts);
+        $this->assertNull($job->label);
+        $this->assertSame([], $job->metadata);
+    }
+
+    public function testJobConventionRejectsMissingUnknownAndInvalidFields(): void
+    {
+        foreach ([
+            [[], "missing required payload field 'value'"],
+            [["value" => "hello", "extra" => true], "unknown payload field 'extra'"],
+            [["value" => 42], "must be string"],
+        ] as [$payload, $message]) {
+            try {
+                ConventionalJob::fromPayload($payload);
+                $this->fail("Expected invalid conventional job payload to fail.");
+            } catch (QueueException $exception) {
+                $this->assertStringContainsString($message, $exception->getMessage());
+            }
+        }
+    }
+
+    public function testJobConventionRejectsNonJsonSafeValues(): void
+    {
+        $this->expectException(QueueException::class);
+        $this->expectExceptionMessage("must be JSON-safe");
+
+        (new MixedPayloadJob(new \stdClass()))->payload();
+    }
+
     public function testEnvelopeRoundTripsAsJsonWithoutSerializingObjects(): void
     {
         $envelope = JobEnvelope::for(new RecordingJob("hello"), delay: 10);
@@ -282,6 +336,35 @@ final readonly class RecordingJob implements JobInterface
     public function handle(RecordingJobHandler $handler): void
     {
         $handler->handle($this->value);
+    }
+}
+
+final readonly class ConventionalJob extends Job
+{
+    /** @param array<string, mixed> $metadata */
+    public function __construct(
+        public string $value,
+        public int $attempts = 1,
+        public ?string $label = null,
+        public array $metadata = []
+    ) {
+    }
+
+    public static function type(): string
+    {
+        return "test.conventional";
+    }
+}
+
+final readonly class MixedPayloadJob extends Job
+{
+    public function __construct(public mixed $value)
+    {
+    }
+
+    public static function type(): string
+    {
+        return "test.mixed-payload";
     }
 }
 

@@ -7,18 +7,12 @@ namespace Atom\Modules\Accounts;
 use Atom\Identity\AuthenticateMiddleware;
 use Atom\Module\ModuleContext;
 use Atom\Module\ModuleInterface;
-use Atom\Modules\Accounts\Components\AccountsLayout;
-use Atom\Modules\Accounts\Components\AccountsPanel;
-use Atom\Modules\Accounts\Components\Button;
-use Atom\Modules\Accounts\Components\Error;
-use Atom\Modules\Accounts\Components\Field;
-use Atom\Modules\Accounts\Components\LogoutForm;
-use Atom\Modules\Accounts\Components\Message;
 use Atom\Modules\Accounts\Middlewares\AccountsPageMiddleware;
 use Atom\Modules\Accounts\Middlewares\ForgotPasswordRateLimitMiddleware;
 use Atom\Modules\Accounts\Middlewares\LoginRateLimitMiddleware;
 use Atom\Modules\Accounts\Middlewares\RegisterRateLimitMiddleware;
 use Atom\Modules\Accounts\Middlewares\ResetPasswordRateLimitMiddleware;
+use Atom\Modules\Accounts\Jobs\SendPasswordResetJob;
 use Atom\Router\RouteEntry;
 use Atom\Security\CsrfMiddleware;
 
@@ -32,6 +26,9 @@ final readonly class AccountsModule implements ModuleInterface
     {
         $options = $this->options ?? $context->config->options(AccountsOptions::class);
         $context->config->set($options);
+        $context->bind(AccountsPublishBundle::class)->toSelf()->singleton();
+        $context->commands(__DIR__ . "/Commands", __NAMESPACE__ . "\\Commands");
+        $context->jobs(SendPasswordResetJob::class);
 
         if (!$context->bindings->has(AccountManagerInterface::class)) {
             $context->bind(AccountManagerInterface::class)
@@ -54,13 +51,7 @@ final readonly class AccountsModule implements ModuleInterface
         $context->bind(RegisterRateLimitMiddleware::class)->toSelf()->scoped();
         $context->bind(ForgotPasswordRateLimitMiddleware::class)->toSelf()->scoped();
         $context->bind(ResetPasswordRateLimitMiddleware::class)->toSelf()->scoped();
-        $context->component("Accounts.Layout", AccountsLayout::class);
-        $context->component("Accounts.Panel", AccountsPanel::class);
-        $context->component("Accounts.Field", Field::class);
-        $context->component("Accounts.Button", Button::class);
-        $context->component("Accounts.Error", Error::class);
-        $context->component("Accounts.Message", Message::class);
-        $context->component("Accounts.LogoutForm", LogoutForm::class);
+        $context->importComponents(Accounts::definitions());
         $context->resources("/resources", __DIR__ . "/Resources");
 
         $context->pages(__DIR__ . "/Pages", [

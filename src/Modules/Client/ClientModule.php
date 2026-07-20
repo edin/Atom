@@ -15,6 +15,7 @@ final readonly class ClientModule implements ModuleInterface
 
     public function register(ModuleContext $context): void
     {
+        $context->importComponents(Client::definitions());
         Client::resources($context, $this->resourcePath);
     }
 }

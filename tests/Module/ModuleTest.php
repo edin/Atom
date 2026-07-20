@@ -10,7 +10,9 @@ use Atom\Di\Injector;
 use Atom\Http\Response;
 use Atom\Module\ModuleRegistry;
 use Atom\Modules\Client\Client;
+use Atom\Modules\Client\ClientScripts;
 use Atom\Modules\Components\Components;
+use Atom\Modules\Components\ComponentsStyles;
 use Atom\Modules\Components\FieldError;
 use Atom\Modules\Components\TextArea;
 use Atom\Modules\Components\TextInput;
@@ -124,6 +126,7 @@ final class ModuleTest extends TestCase
         $components = $app->getInjector()->get(ComponentRegistry::class);
 
         $this->assertSame(FieldError::class, $components->get("FieldError"));
+        $this->assertSame(ComponentsStyles::class, $components->get("ComponentsStyles"));
         $this->assertSame(TextArea::class, $components->get("TextArea"));
         $this->assertSame(TextInput::class, $components->get("TextInput"));
         $this->assertSame(ValidationSummary::class, $components->get("ValidationSummary"));
@@ -146,6 +149,10 @@ final class ModuleTest extends TestCase
 
         $this->assertTrue(
             (new RouteMatcher($app->getRouter()))->match("GET", "/atom/client/resources/atom.js")->isFound()
+        );
+        $this->assertSame(
+            ClientScripts::class,
+            $app->getInjector()->get(ComponentRegistry::class)->get("ClientScripts")
         );
         $this->assertFalse($app->getInjector()->get(ComponentRegistry::class)->has("Button"));
     }

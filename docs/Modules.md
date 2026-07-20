@@ -175,6 +175,25 @@ Components can use dotted names to keep module UI tags grouped:
 $context->component("BlogTools.AppShell", AppShell::class);
 ```
 
+When a module provides several components, expose them as a reusable `ComponentSet` and import the set through the context:
+
+```php
+public static function definitions(): ComponentSet
+{
+    return ComponentSet::from([
+        "BlogTools.AppShell" => AppShell::class,
+        "BlogTools.ArticleList" => ArticleList::class,
+    ]);
+}
+
+public function register(ModuleContext $context): void
+{
+    $context->importComponents(BlogTools::definitions());
+}
+```
+
+The set separates component definitions from where they are registered. This allows another module to reuse the mappings and prepares them for module-local registry scopes.
+
 Then a module page template can render:
 
 ```html

@@ -20,6 +20,7 @@ use Atom\Router\Router;
 use Atom\Scheduler\Schedule;
 use Atom\View\Component\ComponentInterface;
 use Atom\View\Component\ComponentRegistry;
+use Atom\View\Component\ComponentSet;
 
 final readonly class ModuleContext
 {
@@ -86,6 +87,13 @@ final readonly class ModuleContext
     public function component(string $name, string $className): self
     {
         $this->components->register($name, $className);
+
+        return $this;
+    }
+
+    public function importComponents(ComponentSet $set): self
+    {
+        $this->components->import($set);
 
         return $this;
     }

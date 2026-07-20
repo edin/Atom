@@ -1,16 +1,10 @@
-<?php
-
-/** @var \App\Components\Layout $component */
-/** @var \Atom\View\Component\ComponentTemplateContext $context */
-
-?>
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= $context->encode($component->title()) ?></title>
-    <link rel="stylesheet" href="/atom/components/resources/atom.css?v=1">
+    <title>{{ $this->title() }}</title>
+    <ComponentsStyles />
     <link rel="stylesheet" href="/style/style.css">
 </head>
 <body>
@@ -27,11 +21,9 @@
         </header>
 
         <section atom:update-root>
-            <?= $context->fragment($component->content) ?>
+            {{ $context->fragmentHtml($this->content) }}
         </section>
     </main>
-    <script src="/atom/client/resources/atom.js?v=9"></script>
-    <script src="/atom/client/resources/morphdom.js?v=2.7.8"></script>
-    <script src="/atom/client/resources/atom-morphdom.js?v=3"></script>
+    <ClientScripts morphdom />
 </body>
 </html>

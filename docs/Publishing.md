@@ -18,8 +18,8 @@ $bundle = (new PublishBundle(
         "@app/Models/User.php"
     )
     ->file(
-        "Migrations/M0001_accounts_create_users.php",
-        "@migrations/M0001_accounts_create_users.php"
+        "Migrations/M0001_create_users.php",
+        "@migrations/M0001_create_users.php"
     );
 ```
 
@@ -60,6 +60,7 @@ An installed module can register its command directory with `ModuleContext::comm
 final readonly class AccountsCommands
 {
     public function __construct(
+        private AccountsPublishBundle $bundle,
         private Publisher $publisher,
         private ConsoleOutput $output
     ) {
@@ -68,7 +69,7 @@ final readonly class AccountsCommands
     #[ConsoleCommand("accounts:publish", "Publish account scaffolding")]
     public function publish(bool $force = false): int
     {
-        $result = $this->publisher->publish(AccountsPublishBundle::create(), $force);
+        $result = $this->publisher->publish($this->bundle->bundle(), $force);
 
         foreach ($result->published as $file) {
             $this->output->line("Published: " . $this->output->command($file));
